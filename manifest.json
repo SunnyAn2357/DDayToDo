@@ -1,0 +1,24 @@
+{
+  "name": "D-Day 일정관리",
+  "short_name": "일정관리",
+  "description": "업무 및 개인 일정을 위한 D-Day 캘린더 및 실시간 동기화 웹앱",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
