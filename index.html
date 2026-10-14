@@ -1965,7 +1965,53 @@
         max-height: 104px;
       }
     }
-  </style>
+  
+      /* 기간 일정 미니 진척도 바 (Mini Progress Bar) */
+      .period-progress-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
+        width: 100%;
+      }
+      .period-progress-bar {
+        flex: 0 0 65px;
+        width: 65px;
+        height: 5px;
+        background-color: #e2e8f0;
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+      .period-progress-fill {
+        height: 100%;
+        border-radius: 9999px;
+        transition: width 0.3s ease;
+      }
+      .period-progress-fill.ongoing {
+        background: linear-gradient(90deg, #6366f1, #4f46e5);
+      }
+      .period-progress-fill.waiting {
+        background: #94a3b8;
+      }
+      .period-progress-fill.done {
+        background: #10b981;
+      }
+      .period-progress-fill.overdue {
+        background: #ef4444;
+      }
+      .period-progress-text {
+        font-size: 10px;
+        color: #64748b;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .period-progress-text.done {
+        color: #059669;
+      }
+      .period-progress-text.overdue {
+        color: #dc2626;
+      }
+</style>
 </head>
 
 <body>
@@ -2195,6 +2241,18 @@
   <script>
     (function () {
       'use strict';
+
+      /* =====================================================================
+       * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
+       * ===================================================================== */
+      window.APP_VERSION = 'v1.0.0';
+      window.APP_MODE = '온라인 PWA';
+      console.log(
+        '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
+        'background: #4f46e5; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 13px;'
+      );
+      console.log('기간 일정 미니 진척도 게이지 바 엔진: 정상 로드됨');
+
 
       /* =====================================================================
        * [SECTION 1/3] 음력 변환 라이브러리 (외부 데이터 · 수정 금지)
@@ -4358,6 +4416,44 @@
         }
       }
 
+      
+      /* 기간 일정 진척도 계산 및 미니 프로그레스 바 렌더링 */
+      function getTaskPeriodProgress(t, base = today()) {
+        if (!t || !t.startDate || !t.dueDate || t.startDate >= t.dueDate) return null;
+        const s = new Date(t.startDate + 'T00:00:00');
+        const e = new Date(t.dueDate + 'T00:00:00');
+        const b = new Date(base + 'T00:00:00');
+        const totalDays = Math.round((e - s) / 86400000) + 1;
+        if (totalDays <= 1) return null;
+
+        if (t.completed) {
+          return { percent: 100, text: '완료됨', status: 'done', totalDays, elapsedDays: totalDays };
+        }
+
+        if (b < s) {
+          const waitDays = Math.round((s - b) / 86400000);
+          return { percent: 0, text: `대기 (시작 D-${waitDays})`, status: 'waiting', totalDays, elapsedDays: 0 };
+        } else if (b > e) {
+          const overDays = Math.round((b - e) / 86400000);
+          return { percent: 100, text: `기간종료 (${overDays}일 지연)`, status: 'overdue', totalDays, elapsedDays: totalDays + overDays };
+        } else {
+          const elapsedDays = Math.round((b - s) / 86400000) + 1;
+          const pct = Math.min(100, Math.max(1, Math.round((elapsedDays / totalDays) * 100)));
+          return { percent: pct, text: `${pct}% 진행 (${elapsedDays}/${totalDays}일)`, status: 'ongoing', totalDays, elapsedDays };
+        }
+      }
+
+      function renderPeriodProgressBar(t, base = today()) {
+        const prog = getTaskPeriodProgress(t, base);
+        if (!prog) return '';
+        return `<div class="period-progress-wrap" title="전체 ${prog.totalDays}일 중 ${prog.elapsedDays}일차 (${prog.percent}%)">
+          <div class="period-progress-bar">
+            <div class="period-progress-fill ${prog.status}" style="width: ${prog.percent}%;"></div>
+          </div>
+          <span class="period-progress-text ${prog.status}">${prog.text}</span>
+        </div>`;
+      }
+
       function taskRow(t, base = today(), inList = false) {
         const g = group(t, base);
         const dText = ddayBadgeText(t, base);
@@ -4368,6 +4464,7 @@
         const isMulti = t.startDate && t.dueDate && t.startDate < t.dueDate;
         const dateRangeStr = isMulti ? `${t.startDate.slice(5)}~${t.dueDate.slice(5)}` : '';
         const prefixTags = renderTaskPrefixTags(t);
+        const progBar = isMulti && isWork(t) ? renderPeriodProgressBar(t, base) : '';
         return `<div class="task-row ${g}" ${inList ? `data-action="selectListTask" data-id="${t.id}" style="cursor:pointer; background:${isSelected ? '#f1f5f9' : 'transparent'};"` : ''}>
           ${!isWork(t) ? '' : `<button type="button" class="check-small ${t.completed ? 'checked' : ''}" data-action="toggle" data-id="${t.id}" data-date="${t.dueDate}" aria-label="완료 토글">${t.completed ? icon('check') : ''}</button>`}
           <div class="task-open" ${!inList ? `data-action="edit" data-id="${t.id}"` : ''}>
@@ -4376,6 +4473,7 @@
               <span class="dday-badge ${g}">${dText}</span>
               ${!isWork(t) ? '' : `${dateRangeStr ? `<span>${dateRangeStr}</span>` : ''}<span>${priShort}</span>`}
             </div>
+            ${progBar}
           </div>
         </div>`;
       }
