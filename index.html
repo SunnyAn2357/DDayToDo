@@ -2114,6 +2114,43 @@
         color: #3730a3;
         transform: scale(1.08);
       }
+
+      /* [V1.1.1] 일정 생성/수정 모달 라벨 우측 보조 버튼 전용 공통 스타일 */
+      .label-addon-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f8fafc;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xs);
+        padding: 2px 8px;
+        height: 24px;
+        box-sizing: border-box;
+        font-size: 12px;
+        font-weight: 700;
+        font-family: inherit;
+        color: #475569;
+        cursor: pointer;
+        user-select: none;
+        line-height: 1;
+        text-decoration: none;
+        transition: all 0.12s ease;
+      }
+      .label-addon-btn:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+      }
+      .label-addon-btn.primary {
+        color: #4f46e5;
+      }
+      .label-addon-btn.primary:hover {
+        background: #eef2ff;
+        border-color: #c7d2fe;
+      }
+      .label-addon-btn input[type="checkbox"] {
+        margin: 0;
+        cursor: pointer;
+      }
 </style>
 </head>
 
@@ -2359,7 +2396,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.1.0';
+      window.APP_VERSION = 'v1.1.1';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4918,7 +4955,7 @@
                 <label>제목 <span class="req">*</span></label>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <input id="modalTitle" class="control" style="flex:1; min-width:0;" value="${esc(editTarget.title)}" required placeholder="일정 제목 또는 공휴일 명칭" autocomplete="off">
-                  <label class="inline-check" style="white-space:nowrap; flex:none; background:#f8fafc; border:1px solid var(--border); border-radius:var(--radius-sm); padding:6px 10px; height:38px; box-sizing:border-box; align-items:center; display:inline-flex;">
+                  <label class="label-addon-btn" style="height:38px; padding:0 10px;">
                     <input type="checkbox" id="modalHoliday" ${editTarget.isHoliday ? 'checked' : ''}> 공휴일
                   </label>
                   <button type="button" id="modalHolidayWorkBtn" class="btn" style="height:38px; width:80px; min-width:80px; padding:0; justify-content:center; align-items:center; font-size:11.5px; display:none; white-space:nowrap; box-sizing:border-box; flex:none;">+ 일정추가</button>
@@ -4929,15 +4966,11 @@
               <div class="field" id="fieldMemo">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                   <label style="margin-bottom:0;">내용</label>
-                  <button type="button" id="openSpecialCharsBtn" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; color:#475569; font-size:11px; font-weight:600; cursor:pointer; padding:2px 8px; line-height:16px;">특수문자</button>
+                  <button type="button" class="label-addon-btn" id="openSpecialCharsBtn">특수문자</button>
                 </div>
-                <div class="memo-resize-container">
-                  <textarea id="modalMemo" class="control" style="min-height:48px; width:100%; box-sizing:border-box; resize:none;" placeholder="상세 내용을 입력하세요">${esc(editTarget.memo)}</textarea>
-                  <div class="memo-resize-handle" id="memoResizeHandle" title="하단 라인을 잡고 상하로 드래그하여 크기 조절">
-                    <svg viewBox="0 0 16 16" width="10" height="10" style="opacity:0.4; pointer-events:none;">
-                      <path d="M14 14L14 10L10 14ZM14 7L7 14M14 4L4 14" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                  </div>
+                <div style="position:relative; width:100%;">
+                  <textarea id="modalMemo" class="control" style="min-height:48px; width:100%; box-sizing:border-box; resize:vertical;" placeholder="상세 내용을 입력하세요">${esc(editTarget.memo)}</textarea>
+                  <div id="memoResizeHandle" style="position:absolute; bottom:0; left:0; width:calc(100% - 18px); height:6px; cursor:ns-resize;" title="하단 라인을 드래그하여 높이 조절"></div>
                 </div>
               </div>
 
@@ -4970,7 +5003,7 @@
               <div class="field" id="fieldDateRange">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                   <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
-                  <button type="button" id="modalResetPeriodBtn" style="background:none; border:none; color:#4f46e5; font-size:11.5px; font-weight:600; cursor:pointer; padding:0; text-decoration:underline;">기간리셋</button>
+                  <button type="button" class="label-addon-btn primary" id="modalResetPeriodBtn">기간리셋</button>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <input type="date" id="modalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.startDate || editTarget.dueDate}" required style="flex:1;">
@@ -4995,7 +5028,7 @@
                   <label>반복 주기</label>
                   <div style="display:inline-flex; align-items:center; gap:6px;">
                     <span id="modalLunarDateDisplay" style="font-size:12px; color:#2563eb; font-weight:600; display:none;"></span>
-                    <label class="inline-check" style="font-size:12px; color:var(--text-sub);">
+                    <label class="label-addon-btn">
                       <input type="checkbox" id="modalIsLunar" ${editTarget.isLunar ? 'checked' : ''}> 음력
                     </label>
                   </div>
@@ -5337,14 +5370,18 @@
           }
         };
 
-        // [V1.1.0] 내용 입력창 자동 높이 확장 (입력된 내용 전체 노출)
+        // [V1.1.1] 내용 입력창 자동 높이 확장 (기존 내용 전체 노출 & 타이핑 시 실시간 자동 확장)
         const memoEl = $('modalMemo');
         if (memoEl) {
           lastActiveTextarea = memoEl;
           memoEl.onfocus = () => { lastActiveTextarea = memoEl; };
-          memoEl.style.height = 'auto';
-          const sH = memoEl.scrollHeight;
-          memoEl.style.height = Math.max(50, sH + 4) + 'px';
+          const autoExpand = () => {
+            memoEl.style.height = 'auto';
+            const sH = memoEl.scrollHeight;
+            memoEl.style.height = Math.max(48, sH + 4) + 'px';
+          };
+          autoExpand();
+          memoEl.addEventListener('input', autoExpand);
         }
 
         // [V1.1.0] 내용 하단 라인 전체 리사이즈 핸들 연결
@@ -5403,15 +5440,11 @@
               <div class="field">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                   <label style="margin-bottom:0;">내용</label>
-                  <button type="button" id="recOpenSpecialCharsBtn" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; color:#475569; font-size:11px; font-weight:600; cursor:pointer; padding:2px 8px; line-height:16px;">특수문자</button>
+                  <button type="button" class="label-addon-btn" id="recOpenSpecialCharsBtn">특수문자</button>
                 </div>
-                <div class="memo-resize-container">
-                  <textarea id="recModalMemo" class="control" style="min-height:48px; width:100%; box-sizing:border-box; resize:none;" placeholder="상세 내용을 입력하세요">${esc(editingRule.memo)}</textarea>
-                  <div class="memo-resize-handle" id="recMemoResizeHandle" title="하단 라인을 잡고 상하로 드래그하여 크기 조절">
-                    <svg viewBox="0 0 16 16" width="10" height="10" style="opacity:0.4; pointer-events:none;">
-                      <path d="M14 14L14 10L10 14ZM14 7L7 14M14 4L4 14" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
-                    </svg>
-                  </div>
+                <div style="position:relative; width:100%;">
+                  <textarea id="recModalMemo" class="control" style="min-height:48px; width:100%; box-sizing:border-box; resize:vertical;" placeholder="상세 내용을 입력하세요">${esc(editingRule.memo)}</textarea>
+                  <div id="recMemoResizeHandle" style="position:absolute; bottom:0; left:0; width:calc(100% - 18px); height:6px; cursor:ns-resize;" title="하단 라인을 드래그하여 높이 조절"></div>
                 </div>
               </div>
 
@@ -5444,7 +5477,7 @@
               <div class="field">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                   <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
-                  <button type="button" id="recModalResetPeriodBtn" style="background:none; border:none; color:#4f46e5; font-size:11.5px; font-weight:600; cursor:pointer; padding:0; text-decoration:underline;">기간리셋</button>
+                  <button type="button" class="label-addon-btn primary" id="recModalResetPeriodBtn">기간리셋</button>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <input type="date" id="recModalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editingRule.startDate || editingRule.dueDate}" required style="flex:1;">
@@ -5469,7 +5502,7 @@
                   <label>반복 주기 <span class="req">*</span></label>
                   <div style="display:inline-flex; align-items:center; gap:6px;">
                     <span id="recModalLunarDateDisplay" style="font-size:12px; color:#2563eb; font-weight:600; display:none;"></span>
-                    <label class="inline-check" style="font-size:12px; color:var(--text-sub);">
+                    <label class="label-addon-btn">
                       <input type="checkbox" id="recModalIsLunar" ${editingRule.isLunar ? 'checked' : ''}> 음력
                     </label>
                   </div>
@@ -5601,14 +5634,18 @@
         };
 
         
-        // [V1.1.0] rec 내용 입력창 자동 높이 확장
+        // [V1.1.1] rec 내용 입력창 자동 높이 확장 (기존 내용 전체 노출 & 타이핑 시 실시간 자동 확장)
         const recMemoEl = $('recModalMemo');
         if (recMemoEl) {
           lastActiveTextarea = recMemoEl;
           recMemoEl.onfocus = () => { lastActiveTextarea = recMemoEl; };
-          recMemoEl.style.height = 'auto';
-          const sH = recMemoEl.scrollHeight;
-          recMemoEl.style.height = Math.max(50, sH + 4) + 'px';
+          const autoExpandRec = () => {
+            recMemoEl.style.height = 'auto';
+            const sH = recMemoEl.scrollHeight;
+            recMemoEl.style.height = Math.max(48, sH + 4) + 'px';
+          };
+          autoExpandRec();
+          recMemoEl.addEventListener('input', autoExpandRec);
         }
         setupTextareaDragResizer($('recMemoResizeHandle'), recMemoEl);
 
