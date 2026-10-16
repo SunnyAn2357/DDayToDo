@@ -878,7 +878,8 @@
       transition: opacity 0.1s ease;
     }
 
-    .calendar-grid .chip {
+    .calendar-grid .chip,
+    .calendar-grid .period-track-row {
       pointer-events: none;
     }
 
@@ -1856,7 +1857,8 @@
         line-height: 1.25;
       }
 
-      .calendar-grid .chip {
+      .calendar-grid .chip,
+      .calendar-grid .period-track-row {
         pointer-events: none;
       }
 
@@ -2052,7 +2054,7 @@
         accent-color: #4f46e5;
       }
 
-      /* [V1.1.3] 기간 일정 슬림 2px 연속 실선 스타일 (박스 배경 완전 제거, z-index:2로 셀 경계선 완벽 관통) */
+      /* [V1.1.3 / V1.2.0] 기간 일정 슬림 2px 연속 실선 스타일 (셀 오클릭 방지: pointer-events: none 및 cursor: default) */
       .period-track-row {
         height: 18px;
         min-height: 18px;
@@ -2060,16 +2062,13 @@
         align-items: center;
         position: relative;
         z-index: 2;
-        cursor: pointer;
+        cursor: default;
+        pointer-events: none;
         user-select: none;
         margin: 1px 0;
         background: transparent !important;
         border: none !important;
         box-sizing: border-box;
-      }
-      .period-track-row:hover .period-track-line {
-        height: 3px;
-        filter: brightness(0.9);
       }
       .period-track-row.mid {
         margin-left: -7px;
@@ -2503,7 +2502,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.1.9';
+      window.APP_VERSION = 'v1.2.0';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4754,28 +4753,28 @@
             const checkPrefix = t.completed ? '✓ ' : '';
 
             if (isStart && isEnd) {
-              html += `<div class="period-track-row" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+              html += `<div class="period-track-row" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
                 <span class="period-track-arrow" style="color:${color.line};">&lt;</span>
                 <span class="period-track-text" style="color:${color.line};">${checkPrefix}${esc(t.title)}</span>
                 <span class="period-track-arrow" style="color:${color.line};">&gt;</span>
               </div>`;
             } else if (isStart) {
               // 초일: < + 제목 + 오른쪽 셀로 이어지는 2px 실선
-              html += `<div class="period-track-row start" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+              html += `<div class="period-track-row start" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
                 <span class="period-track-arrow" style="color:${color.line};">&lt;</span>
                 <span class="period-track-text" style="color:${color.line};">${checkPrefix}[${t.dueDate.slice(5)}] ${esc(t.title)}</span>
                 <div class="period-track-line" style="background:${color.line};"></div>
               </div>`;
             } else if (isEnd) {
               // 말일: 왼쪽 셀에서 이어지는 2px 실선 + 제목 + >
-              html += `<div class="period-track-row end" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+              html += `<div class="period-track-row end" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
                 <div class="period-track-line" style="background:${color.line};"></div>
                 <span class="period-track-text" style="color:${color.line};">${checkPrefix}${esc(t.title)}</span>
                 <span class="period-track-arrow" style="color:${color.line};">&gt;</span>
               </div>`;
             } else {
               // 중간일: 텍스트 없이 셀 전체를 꽉 채워 다음 셀과 딱 붙는 2px 실선만!
-              html += `<div class="period-track-row mid" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+              html += `<div class="period-track-row mid" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
                 <div class="period-track-line" style="background:${color.line};"></div>
               </div>`;
             }
