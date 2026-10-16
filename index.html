@@ -9,11 +9,10 @@
   <title>일정관리</title>
 
   <!-- Browser Favicon & Bookmarks Icon -->
-  <link rel="shortcut icon" href="./favicon.ico">
-  <link rel="icon" type="image/x-icon" href="./favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png">
+    <!-- [V1.1.7] 오프라인 단독 완결형 내장 파비콘 (Base64 Data URI) -->
+  <link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAICAQAAAAAADoAgAAFgAAACgAAAAgAAAAQAAAAAEABAAAAAAAgAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAgICAAMDAwAAAAP8AAP8AAAD//wD/AAAA/wD/AP//AAD///8AAABGzMzMzMzMzMzMzGQAAABMzMzMzMzMzMzMzMzMxAAAzMzMzMzMzMzMzMzMzMxADMzMzMzMzMzMzMzMzMzMwEzMzHiIiIiIiIiIiIjMzMRMzMf/////////////jMzGzMx/+Hd3d3d3d3d3j/fMzMzMj4zMzMbmzMzMzMj4zMzMzI+MzMxu7mzMzMzH+MzMzMyPjMzG7u7mzMzMx/jMzMzMj4zMbubG7mzMzMf4zMzMzI+MzO5szG7mzMzH+MzMzMyPjMxmzMzG7mzMx/jMzMzMj4zMzMzMzG7mzMf4zMzMzI+MzMzMzMzG7szH+MzMzMyPjMzMzMzMzG7Mx/jMzMzMj4zMzMzMzMzMzMf4zMzMzI+IiIiIiIiIiIiI/8zMzMz////////////////MzMzMj4iIiIiIiIiIiIj/zMzMzI+MzMzMzMzMzMzH+MzMzMyPjMzMzMzMzMzMyPjMzMzMf/zMiMzMzMx4fMj4zMzMzMj/iP+IiIiI/4j/98zMzMzHj////////////3zMzEzMzMeI/4iIiIj/iHzMzMxMzMzMx/jMzMzMj4zMzMzETMzMzMf4zMzMzI+MzMzMxATMzMzMiMzMzMx4fMzMzGAAzMzMzMzMzMzMzMzMzMwAAATMzMzMzMzMzMzMzMxgAAAAREzMzMzMzMzMzMREAAD8AAA/8AAAD8AAAAPAAAADgAAAAYAAAAGAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAYAAAAGAAAABwAAAA+AAAAfwAAAP/gAAfw==">
+  <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64,AAABAAEAICAQAAAAAADoAgAAFgAAACgAAAAgAAAAQAAAAAEABAAAAAAAgAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAACAAAAAgIAAgAAAAIAAgACAgAAAgICAAMDAwAAAAP8AAP8AAAD//wD/AAAA/wD/AP//AAD///8AAABGzMzMzMzMzMzMzGQAAABMzMzMzMzMzMzMzMzMxAAAzMzMzMzMzMzMzMzMzMxADMzMzMzMzMzMzMzMzMzMwEzMzHiIiIiIiIiIiIjMzMRMzMf/////////////jMzGzMx/+Hd3d3d3d3d3j/fMzMzMj4zMzMbmzMzMzMj4zMzMzI+MzMxu7mzMzMzH+MzMzMyPjMzG7u7mzMzMx/jMzMzMj4zMbubG7mzMzMf4zMzMzI+MzO5szG7mzMzH+MzMzMyPjMxmzMzG7mzMx/jMzMzMj4zMzMzMzG7mzMf4zMzMzI+MzMzMzMzG7szH+MzMzMyPjMzMzMzMzG7Mx/jMzMzMj4zMzMzMzMzMzMf4zMzMzI+IiIiIiIiIiIiI/8zMzMz////////////////MzMzMj4iIiIiIiIiIiIj/zMzMzI+MzMzMzMzMzMzH+MzMzMyPjMzMzMzMzMzMyPjMzMzMf/zMiMzMzMx4fMj4zMzMzMj/iP+IiIiI/4j/98zMzMzHj////////////3zMzEzMzMeI/4iIiIj/iHzMzMxMzMzMx/jMzMzMj4zMzMzETMzMzMf4zMzMzI+MzMzMxATMzMzMiMzMzMx4fMzMzGAAzMzMzMzMzMzMzMzMzMwAAATMzMzMzMzMzMzMzMxgAAAAREzMzMzMzMzMzMREAAD8AAA/8AAAD8AAAAPAAAADgAAAAYAAAAGAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAYAAAAGAAAABwAAAA+AAAAfwAAAP/gAAfw==">
+  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAASLSURBVFhHvZdbUFR1HMfPY4899uhTitlFK3ZX4tJN94bgLgsoxi4lhl2GmqjJJiYoWYIeGNMZmrG0i0UI2jQ5bToiZRmmFEbGdpuhB/fc9nIW9shelH7N73/Oyjl/dteFNv4z37f/+X++/9/tP4dhqGW3BKptFrbbamVHrVYWLCgbC2YbC5tRdhY22TnYVMnBo5UcPLJF0cNVHDxUxcGD1YoqtnJQjnJwUObgR8ucQl+pg/OUu6dvoZlkWa3Tt9nNAZ/NwoLNykIB4VDm5KHUycMDNUR+kyOwRgev2sytspkD0grAocTFg6mGjxfX8sYbBuyWwGgueKWDg3NjcfD2SjeFt7aHYeJyEnY8G8oI34gGXDwYa3k/SYfNfKU+Fxxv3rYnDLguTSZzwvHmvjNzZG/3gZmscFMtMQAGF/cyYzNz/bngGPa2V1QDvygGssEx7F+qBrwHZnLDUXW8j7FZ2Ils8NYXQtB/cBZOnlYO5YXr8MFAjOj9Txd0GDWIkuHP6Wtk77cXEnDoqAzPdESgYruQCQ7FdbzEZII763i4OJ4gBxVi/X3lGjS+FKLgAhTXC8DQcLz5z5NJ8mE4Mg/HPpfh5IgSAU64nvXmqEODMvj/UiJw9kICPvxMJnBcIWkerLtEHfx+YiBLwWG4q7cJJOcWFw9nzsahvVtalHO61RpaQ3B+IgmVzSIJe3mDAD/+qlzo4JCsg9+3TQCGLriPPomRzQPD8k0LjoZnK7hWb4Sc+f2lpA5ODNBDJl1wvfuiBYFjznd3KgYwElr4vdvRADXhRr6Ok83nzidyVns651jpqPdUvYsaUoQhR51Qz5z8I6WDb0AD9Hj97fcU2fx/LGl2Xgff0IAGqNl++hvF7Xc/JP7zzYmGZTihnokR0MLXN4jA0LP9K7Xlet6OLjvndKs9+YZEzhyfSurg63eIwNCz3acaeHN/dFlw414JDPtnddWuM6CB35M2oK32tIFuNLBEuKE3CsaRBBhPxaG4UbxRcLs0BrTwux8TgaFbTWtg2fC2sK7am1UDF6dSOjgxQPf5goEZHbzkxTBs3BNeMhxz3rx3wYAWflejCAw9ZLK958bhqwqkJ7okOOZca0ALvzNtIJ/33PRqRAGheqN5wzHnzV16A2n4OjRAt1raQJdqQJfzdo2JI3JecMz5To0BLXydWwSGbrWjX1wlm985EstccFoTecAx5094VQP+lA5+BzFAtdprfVGy+afLycVwdcgQE0NzecEx5P3HlUsNjszp4GvRQKmDn9ZW+5adIoSlefLB8VNz8HRHBJ7qiMBuVGcEWjolaHldEQ4YFPY5thoWG1GXRMKON983KEMi9Q85r8kr6eBrPWKcKXPwA3SfIzQmKx8VavV8HKPhUOQJjjGlW/nnMg2Z+udDJAL4hms1rtXUgrDAFsmfAt9YAlreimaCQ9HjwT6mvEq6tcTJcRkLLsPDkk/O6VbLCG8Kxle7uVXkz6jEyVWsMBxWuwWP5u+QYYw1rNlUy3ErAI8vgqcXpsPgEvoMddxYoeFrPMGJoqbg4dvdQd2f8b/gb8vHUIAgCQAAAABJRU5ErkJggg==">
 
   <!-- PWA Manifest & App Icons -->
   <link rel="manifest" href="./manifest.json">
@@ -2501,7 +2500,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.1.6';
+      window.APP_VERSION = 'v1.1.7';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
