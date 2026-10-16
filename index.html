@@ -2175,31 +2175,37 @@
         border-color: #4f46e5;
         transform: scale(0.92);
       }
-      .recent-char-chip {
+      /* [V1.1.6] 한글(HWP) 스타일 최근 입력 특수문자 히스토리 리스트 */
+      .recent-char-item {
+        width: 26px;
+        height: 26px;
+        min-width: 26px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        min-width: 28px;
-        height: 24px;
-        padding: 0 6px;
-        font-size: 13px;
+        font-size: 13.5px;
         font-weight: 700;
-        color: #4f46e5;
+        color: #1e293b;
         background: #ffffff;
-        border: 1px solid #c7d2fe;
-        border-radius: 4px;
+        border: 1px solid #cbd5e1;
+        border-radius: var(--radius-xs);
         cursor: pointer;
         user-select: none;
+        flex: none;
         transition: all 0.12s ease;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        line-height: 1;
+        padding: 0;
       }
-      .recent-char-chip:hover {
-        background: #4f46e5 !important;
-        color: #ffffff !important;
-        border-color: #4f46e5 !important;
+      .recent-char-item:hover {
+        background: #e0e7ff;
+        border-color: #818cf8;
+        color: #4338ca;
         transform: translateY(-1px);
       }
-      .recent-char-chip:active {
+      .recent-char-item:active {
+        background: #4f46e5;
+        color: #ffffff;
+        border-color: #4f46e5;
         transform: scale(0.92);
       }
 
@@ -2474,10 +2480,9 @@
     </div>
     <div id="specialCharGrid" style="padding:8px; display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; max-height:200px; overflow-y:auto;">
     </div>
-    <div id="specialCharPreview" style="padding:5px 12px; border-top:1px solid #f1f5f9; background:#f8fafc; font-size:11.5px; color:#64748b; display:flex; align-items:center; gap:8px; min-height:32px; box-sizing:border-box; border-bottom-left-radius:7px; border-bottom-right-radius:7px;">
-      <span style="font-weight:600; color:#475569; flex:none;">최근 입력:</span>
-      <button type="button" id="recentCharBtn" class="recent-char-chip" title="클릭 시 본문에 다시 입력">(선택 대기)</button>
-      <span style="font-size:10.5px; color:#94a3b8;">(클릭 시 재입력)</span>
+    <div id="specialCharRecentBar" style="padding:6px 12px; border-top:1px solid #f1f5f9; background:#f8fafc; font-size:11.5px; display:flex; align-items:center; gap:6px; min-height:38px; box-sizing:border-box; border-bottom-left-radius:7px; border-bottom-right-radius:7px; overflow:hidden;">
+      <span style="font-weight:700; color:#475569; flex:none; font-size:11.5px;">최근 입력:</span>
+      <div id="recentCharList" style="display:flex; gap:4px; align-items:center; flex:1; overflow-x:auto; -webkit-overflow-scrolling:touch;"></div>
     </div>
   </dialog>
 
@@ -2496,7 +2501,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.1.5';
+      window.APP_VERSION = 'v1.1.6';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4497,35 +4502,61 @@
 
       let lastActiveTextarea = null;
       let currentSpecTab = 1;
-      let lastUsedSpecialChar = localStorage.getItem('dday_last_special_char') || '';
+            // [V1.1.6] 한글(HWP) 스타일 최근 입력 특수문자 히스토리 (최대 8개, 최근 입력순 좌측 정렬)
+      const MAX_RECENT_CHARS = 8;
+      let recentSpecialChars = [];
+      try {
+        const stored = localStorage.getItem('dday_recent_special_chars');
+        if (stored) recentSpecialChars = JSON.parse(stored);
+      } catch (e) {
+        recentSpecialChars = [];
+      }
 
       function setupSpecialChars() {
         const tab1 = $('tabSpecialChar1');
         const tab2 = $('tabSpecialChar2');
         const tab3 = $('tabSpecialChar3');
         const grid = $('specialCharGrid');
-        const recentBtn = $('recentCharBtn');
+        const recentContainer = $('recentCharList');
         if (!grid) return;
 
-        // 최근 입력 문자 버튼 초기 갱신
-        if (recentBtn) {
-          if (lastUsedSpecialChar) {
-            recentBtn.textContent = lastUsedSpecialChar;
-            recentBtn.style.color = '#4f46e5';
-          } else {
-            recentBtn.textContent = '(선택 대기)';
-            recentBtn.style.color = '#94a3b8';
+        const renderRecent = () => {
+          if (!recentContainer) return;
+          if (!recentSpecialChars || recentSpecialChars.length === 0) {
+            recentContainer.innerHTML = '';
+            return;
           }
-          recentBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (!lastUsedSpecialChar) return;
+          recentContainer.innerHTML = recentSpecialChars.map(ch => 
+            `<button type="button" class="recent-char-item" data-char="${ch}" title="${ch}">${ch}</button>`
+          ).join('');
+        };
+
+        const pushRecentChar = (ch) => {
+          // 이미 리스트에 있으면 기존 위치 제거 후 맨 앞에 추가
+          recentSpecialChars = [ch, ...recentSpecialChars.filter(c => c !== ch)];
+          if (recentSpecialChars.length > MAX_RECENT_CHARS) {
+            recentSpecialChars = recentSpecialChars.slice(0, MAX_RECENT_CHARS);
+          }
+          try {
+            localStorage.setItem('dday_recent_special_chars', JSON.stringify(recentSpecialChars));
+          } catch (e) {}
+          renderRecent();
+        };
+
+        if (recentContainer) {
+          recentContainer.onclick = (e) => {
+            const btn = e.target.closest('.recent-char-item');
+            if (!btn) return;
+            const ch = btn.dataset.char;
             const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
             if (target) {
-              insertCharIntoTextarea(target, lastUsedSpecialChar);
+              insertCharIntoTextarea(target, ch);
             }
+            pushRecentChar(ch);
           };
         }
+
+        renderRecent();
 
         const renderGrid = () => {
           let list = SPECIAL_CHARS_1;
@@ -4555,12 +4586,7 @@
           if (target) {
             insertCharIntoTextarea(target, ch);
           }
-          lastUsedSpecialChar = ch;
-          try { localStorage.setItem('dday_last_special_char', ch); } catch(err) {}
-          if (recentBtn) {
-            recentBtn.textContent = ch;
-            recentBtn.style.color = '#4f46e5';
-          }
+          pushRecentChar(ch);
         };
 
         const closeBtn = $('closeSpecialCharBtn');
