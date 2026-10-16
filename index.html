@@ -563,7 +563,7 @@
     }
 
     .navgroup .btn.icon {
-      width: 36px;
+      width: 45px; /* [V1.1.8] 기존 정사각형(36px)의 1.25배 가로폭 확장 (높이 36px 유지) */
       height: 36px;
       min-height: 36px;
       border-radius: var(--radius-sm);
@@ -1576,6 +1576,8 @@
 
     /* RESPONSIVE DESIGN (MOBILE & TABLET) */
     @media (max-width: 767px) {
+
+
       body {
         overflow-y: auto;
         height: auto;
@@ -1694,7 +1696,7 @@
       }
 
       .navgroup .btn.icon {
-        width: 32px;
+        width: 40px; /* [V1.1.8] 모바일 정사각형(32px)의 1.25배 가로폭 확장 (높이 34px 유지) */
         height: 34px;
         min-height: 34px;
         padding: 0;
@@ -1788,7 +1790,7 @@
       }
 
       .list-navgroup .btn.icon {
-        width: 32px;
+        width: 40px; /* [V1.1.8] 모바일 목록 네비게이션 가로폭 1.25배 확장 */
         height: 34px;
         min-height: 34px;
         padding: 0;
@@ -2501,7 +2503,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.1.7';
+      window.APP_VERSION = 'v1.1.9';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
