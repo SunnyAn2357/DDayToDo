@@ -2016,7 +2016,7 @@
 
       
 
-      /* [V1.1.2] 일정 생성/수정 모달 라벨 우측 보조 버튼 전용 공통 스타일 (기간리셋 색상 #4f46e5 로 완전 통일) */
+      /* [V1.1.3] 일정 생성/수정 모달 라벨 우측 보조 버튼 전용 공통 스타일 (기간리셋 색상 #4f46e5 로 완전 통일) */
       .label-addon-btn {
         display: inline-flex;
         align-items: center;
@@ -2047,13 +2047,14 @@
         accent-color: #4f46e5;
       }
 
-      /* [V1.1.2] 기간 일정 슬림 2px 연속 실선 스타일 (박스 배경 완전 제거, 셀간 완전 밀착) */
+      /* [V1.1.3] 기간 일정 슬림 2px 연속 실선 스타일 (박스 배경 완전 제거, z-index:2로 셀 경계선 완벽 관통) */
       .period-track-row {
         height: 18px;
         min-height: 18px;
         display: flex;
         align-items: center;
         position: relative;
+        z-index: 2;
         cursor: pointer;
         user-select: none;
         margin: 1px 0;
@@ -2066,17 +2067,17 @@
         filter: brightness(0.9);
       }
       .period-track-row.mid {
-        margin-left: -6px;
-        margin-right: -6px;
-        width: calc(100% + 12px);
+        margin-left: -7px;
+        margin-right: -7px;
+        width: calc(100% + 14px);
       }
       .period-track-row.start {
-        margin-right: -6px;
-        width: calc(100% + 6px);
+        margin-right: -7px;
+        width: calc(100% + 7px);
       }
       .period-track-row.end {
-        margin-left: -6px;
-        width: calc(100% + 6px);
+        margin-left: -7px;
+        width: calc(100% + 7px);
       }
       .period-track-line {
         height: 2px;
@@ -2090,15 +2091,124 @@
         overflow: hidden;
         text-overflow: ellipsis;
         line-height: 1;
-        padding: 0 4px;
+        padding: 0 3px;
         flex: none;
         max-width: 90%;
       }
-      .period-track-dot {
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
+      .period-track-arrow {
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1;
         flex: none;
+        padding: 0 1px;
+        font-family: inherit;
+      }
+      @media (max-width: 768px) {
+        .period-track-row.mid {
+          margin-left: -3px;
+          margin-right: -3px;
+          width: calc(100% + 6px);
+        }
+        .period-track-row.start {
+          margin-right: -3px;
+          width: calc(100% + 3px);
+        }
+        .period-track-row.end {
+          margin-left: -3px;
+          width: calc(100% + 3px);
+        }
+      }
+
+      /* [V1.1.3] 특수문자 팔레트 탭 및 버튼 호버/클릭 효과 */
+      .spec-tab-btn {
+        padding: 3px 8px;
+        font-size: 11.5px;
+        font-weight: 700;
+        border-radius: var(--radius-xs);
+        border: 1px solid var(--border);
+        background: #ffffff;
+        color: #64748b;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.12s ease;
+      }
+      .spec-tab-btn:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+        border-color: #cbd5e1;
+      }
+      .spec-tab-btn:active {
+        transform: scale(0.95);
+      }
+      .spec-tab-btn.active {
+        background: #4f46e5;
+        color: #ffffff;
+        border-color: #4f46e5;
+        box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25);
+      }
+      .special-char-btn {
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xs);
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.12s ease;
+        color: #1e293b;
+      }
+      .special-char-btn:hover {
+        background: #e0e7ff;
+        border-color: #818cf8;
+        color: #4338ca;
+        transform: translateY(-1px);
+      }
+      .special-char-btn:active {
+        background: #4f46e5;
+        color: #ffffff;
+        border-color: #4f46e5;
+        transform: scale(0.92);
+      }
+
+      /* [V1.1.3] 완료 처리 섹션 컴팩트화 및 블루/인디고 테마 적용 */
+      .completion-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #eef2ff !important;
+        border: 1px solid #c7d2fe !important;
+        border-radius: var(--radius-sm);
+        padding: 4px 10px !important;
+        min-height: 32px;
+        box-sizing: border-box;
+      }
+      .completion-box label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #3730a3 !important;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin: 0;
+        cursor: pointer;
+      }
+      .completion-box input[type="checkbox"] {
+        margin: 0;
+        cursor: pointer;
+        accent-color: #4f46e5;
+      }
+      .completion-box input[type="date"] {
+        height: 26px;
+        padding: 2px 6px;
+        font-size: 11.5px;
+        border: 1px solid #c7d2fe;
+        border-radius: var(--radius-xs);
+        background: #ffffff;
+        color: #1e293b;
+        box-sizing: border-box;
       }
 
 </style>
@@ -2321,13 +2431,20 @@
   <dialog id="settings"></dialog>
 
   
-  <!-- 특수문자 팔레트 팝업 모달 -->
+  <!-- 특수문자 팔레트 팝업 모달 [V1.1.3 2-Tab & 미리보기] -->
   <dialog id="specialCharModal" style="border:1px solid #cbd5e1; border-radius:8px; padding:0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.18); width:320px; max-width:92vw; background:#ffffff;">
-    <div style="padding:8px 12px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top-left-radius:7px; border-top-right-radius:7px;">
-      <span style="font-weight:700; font-size:12.5px; color:#1e293b;">특수문자</span>
+    <div style="padding:6px 12px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top-left-radius:7px; border-top-right-radius:7px;">
+      <div style="display:flex; gap:6px; align-items:center;">
+        <button type="button" id="tabSpecialChar1" class="spec-tab-btn active">특수문자1</button>
+        <button type="button" id="tabSpecialChar2" class="spec-tab-btn">특수문자2</button>
+      </div>
       <button type="button" id="closeSpecialCharBtn" style="background:none; border:none; font-size:15px; cursor:pointer; color:#64748b; line-height:1; padding:2px;">✕</button>
     </div>
     <div id="specialCharGrid" style="padding:8px; display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; max-height:200px; overflow-y:auto;">
+    </div>
+    <div id="specialCharPreview" style="padding:6px 12px; border-top:1px solid #f1f5f9; background:#f8fafc; font-size:11.5px; color:#64748b; display:flex; align-items:center; justify-content:space-between; min-height:30px; box-sizing:border-box; border-bottom-left-radius:7px; border-bottom-right-radius:7px;">
+      <span>입력된 문자: <strong id="specialCharPreviewChar" style="color:#4f46e5; font-size:13px; margin-left:4px;">(선택 대기)</strong></span>
+      <span id="specialCharPreviewStatus" style="font-size:11px; color:#4f46e5; font-weight:700; opacity:0; transition:opacity 0.2s ease;">✓ 본문에 삽입됨</span>
     </div>
   </dialog>
 
@@ -2346,7 +2463,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.1.2';
+      window.APP_VERSION = 'v1.1.3';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4320,7 +4437,7 @@
         { name: 'sky', line: '#0284c7', bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' }
       ];
 
-      const SPECIAL_CHAR_LIST = [
+            const SPECIAL_CHARS_1 = [
         '·', '•', '□', '■', '○', '●', '※',
         '▶', '▷', '▲', '▼', '◆', '◇', '★',
         '☆', '✓', '✔', '✕', '→', '←', '↑',
@@ -4328,22 +4445,56 @@
         '▣', '◐', '◑', '☎', '☞', '㈜', '№'
       ];
 
-      let lastActiveTextarea = null;
+      const SPECIAL_CHARS_2 = [
+        '①', '②', '③', '④', '⑤', '⑥', '⑦',
+        '⑧', '⑨', '⑩', '⑴', '⑵', '⑶', '⑷',
+        '⑸', '㈎', '㈏', '㈐', '㈑', '㈒', '㉠',
+        '㉡', '㉢', '㉣', '㉤', '『', '』', '「',
+        '」', '【', '】', '《', '》', '§', '¶'
+      ];
 
-            function setupSpecialChars() {
+      let lastActiveTextarea = null;
+      let currentSpecTab = 1;
+      let previewTimeout = null;
+
+      function setupSpecialChars() {
+        const tab1 = $('tabSpecialChar1');
+        const tab2 = $('tabSpecialChar2');
         const grid = $('specialCharGrid');
         if (!grid) return;
-        grid.innerHTML = SPECIAL_CHAR_LIST.map(ch => 
-          `<button type="button" class="special-char-btn" data-char="${ch}" title="${ch}">${ch}</button>`
-        ).join('');
+
+        const renderGrid = () => {
+          const list = (currentSpecTab === 1) ? SPECIAL_CHARS_1 : SPECIAL_CHARS_2;
+          grid.innerHTML = list.map(ch => 
+            `<button type="button" class="special-char-btn" data-char="${ch}" title="${ch}">${ch}</button>`
+          ).join('');
+          if (tab1) tab1.classList.toggle('active', currentSpecTab === 1);
+          if (tab2) tab2.classList.toggle('active', currentSpecTab === 2);
+        };
+
+        if (tab1) tab1.onclick = () => { currentSpecTab = 1; renderGrid(); };
+        if (tab2) tab2.onclick = () => { currentSpecTab = 2; renderGrid(); };
+
+        renderGrid();
 
         grid.onclick = (e) => {
           const btn = e.target.closest('.special-char-btn');
           if (!btn) return;
           const ch = btn.dataset.char;
           const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
-          if (!target) return;
-          insertCharIntoTextarea(target, ch);
+          if (target) {
+            insertCharIntoTextarea(target, ch);
+          }
+          const charEl = $('specialCharPreviewChar');
+          const statEl = $('specialCharPreviewStatus');
+          if (charEl) charEl.textContent = `[ ${ch} ]`;
+          if (statEl) {
+            statEl.style.opacity = '1';
+            if (previewTimeout) clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(() => {
+              statEl.style.opacity = '0';
+            }, 1500);
+          }
         };
 
         const closeBtn = $('closeSpecialCharBtn');
@@ -4510,23 +4661,23 @@
 
             if (isStart && isEnd) {
               html += `<div class="period-track-row" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
-                <span class="period-track-dot" style="background:${color.line};"></span>
+                <span class="period-track-arrow" style="color:${color.line};">&lt;</span>
                 <span class="period-track-text" style="color:${color.line};">${checkPrefix}${esc(t.title)}</span>
-                <div class="period-track-line" style="background:${color.line};"></div>
+                <span class="period-track-arrow" style="color:${color.line};">&gt;</span>
               </div>`;
             } else if (isStart) {
-              // 초일: 점 + 제목 + 오른쪽 셀로 이어지는 2px 실선
+              // 초일: < + 제목 + 오른쪽 셀로 이어지는 2px 실선
               html += `<div class="period-track-row start" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
-                <span class="period-track-dot" style="background:${color.line};"></span>
+                <span class="period-track-arrow" style="color:${color.line};">&lt;</span>
                 <span class="period-track-text" style="color:${color.line};">${checkPrefix}[${t.dueDate.slice(5)}] ${esc(t.title)}</span>
                 <div class="period-track-line" style="background:${color.line};"></div>
               </div>`;
             } else if (isEnd) {
-              // 말일: 왼쪽 셀에서 이어지는 2px 실선 + 제목 + 점
+              // 말일: 왼쪽 셀에서 이어지는 2px 실선 + 제목 + >
               html += `<div class="period-track-row end" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
                 <div class="period-track-line" style="background:${color.line};"></div>
                 <span class="period-track-text" style="color:${color.line};">${checkPrefix}${esc(t.title)}</span>
-                <span class="period-track-dot" style="background:${color.line};"></span>
+                <span class="period-track-arrow" style="color:${color.line};">&gt;</span>
               </div>`;
             } else {
               // 중간일: 텍스트 없이 셀 전체를 꽉 채워 다음 셀과 딱 붙는 2px 실선만!
@@ -5004,7 +5155,7 @@
               ${editing ? `
               <div class="completion-box" id="fieldCompletion">
                 <label class="inline-check"><input type="checkbox" id="modalCompleted" ${editTarget.completed ? 'checked' : ''}> 완료 처리</label>
-                <input type="date" id="modalCompletedDate" class="control" min="1900-01-01" max="2099-12-31" style="width:140px; margin-left:auto;" value="${editTarget.completedDate || today()}">
+                <input type="date" id="modalCompletedDate" class="control" min="1900-01-01" max="2099-12-31" style="width:130px; margin-left:auto;" value="${editTarget.completedDate || today()}">
               </div>` : ''}
             </div>
             <div class="modal-foot">
