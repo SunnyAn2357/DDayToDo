@@ -2011,6 +2011,109 @@
       .period-progress-text.overdue {
         color: #dc2626;
       }
+
+      /* 기간 일정 연속 라인 바 스타일 */
+      .period-bar {
+        height: 18px;
+        min-height: 18px;
+        margin: 1px -4px 2px -4px;
+        padding: 0 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        transition: filter 0.12s ease;
+        box-sizing: border-box;
+      }
+      .period-bar:hover {
+        filter: brightness(0.95);
+      }
+      .period-bar.start {
+        margin-left: 2px;
+        border-radius: 4px 0 0 4px;
+        padding-left: 5px;
+      }
+      .period-bar.end {
+        margin-right: 2px;
+        border-radius: 0 4px 4px 0;
+        padding-right: 5px;
+      }
+      .period-bar.start.end {
+        margin-left: 2px;
+        margin-right: 2px;
+        border-radius: 4px;
+      }
+      .period-bar.mid {
+        justify-content: center;
+      }
+      .period-line-inner {
+        width: 100%;
+        height: 4px;
+        border-radius: 2px;
+        opacity: 0.85;
+      }
+      .period-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex: none;
+      }
+      .period-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 10px;
+        line-height: 18px;
+      }
+
+      /* 메모 리사이즈 핸들 */
+      .memo-resize-container {
+        position: relative;
+        width: 100%;
+      }
+      .memo-resize-handle {
+        width: 100%;
+        height: 14px;
+        margin-top: -3px;
+        cursor: ns-resize;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding-right: 4px;
+        background: transparent;
+        transition: background 0.15s ease;
+        border-bottom-left-radius: var(--radius-xs);
+        border-bottom-right-radius: var(--radius-xs);
+      }
+      .memo-resize-handle:hover {
+        background: #f1f5f9;
+      }
+
+      /* 특수문자 팝업 그리드 버튼 */
+      .special-char-btn {
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.1s ease;
+        user-select: none;
+      }
+      .special-char-btn:hover {
+        background: #e0e7ff;
+        border-color: #a5b4fc;
+        color: #3730a3;
+        transform: scale(1.08);
+      }
 </style>
 </head>
 
@@ -2230,6 +2333,17 @@
   <dialog id="detail"></dialog>
   <dialog id="settings"></dialog>
 
+  
+  <!-- 특수문자 팔레트 팝업 모달 -->
+  <dialog id="specialCharModal" style="border:1px solid #cbd5e1; border-radius:8px; padding:0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.18); width:320px; max-width:92vw; background:#ffffff;">
+    <div style="padding:8px 12px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top-left-radius:7px; border-top-right-radius:7px;">
+      <span style="font-weight:700; font-size:12.5px; color:#1e293b;">특수문자</span>
+      <button type="button" id="closeSpecialCharBtn" style="background:none; border:none; font-size:15px; cursor:pointer; color:#64748b; line-height:1; padding:2px;">✕</button>
+    </div>
+    <div id="specialCharGrid" style="padding:8px; display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; max-height:200px; overflow-y:auto;">
+    </div>
+  </dialog>
+
   <div id="toasts" class="toast-host"></div>
 
 
@@ -2245,7 +2359,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.0';
+      window.APP_VERSION = 'v1.1.0';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4208,6 +4322,99 @@
         return tags;
       }
 
+      
+      /* 기간 일정 전용 6색 파스텔/슬레이트 팔레트 */
+      const PERIOD_PALETTE = [
+        { name: 'indigo', line: '#4f46e5', bg: '#e0e7ff', text: '#3730a3', border: '#c7d2fe' },
+        { name: 'emerald', line: '#059669', bg: '#d1fae5', text: '#065f46', border: '#a7f3d0' },
+        { name: 'amber', line: '#d97706', bg: '#fef3c7', text: '#92400e', border: '#fde68a' },
+        { name: 'violet', line: '#7c3aed', bg: '#ede9fe', text: '#5b21b6', border: '#ddd6fe' },
+        { name: 'rose', line: '#e11d48', bg: '#ffe4e6', text: '#9f1239', border: '#fecdd3' },
+        { name: 'sky', line: '#0284c7', bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' }
+      ];
+
+      const SPECIAL_CHAR_LIST = [
+        '·', '•', '□', '■', '○', '●', '※',
+        '▶', '▷', '▲', '▼', '◆', '◇', '★',
+        '☆', '✓', '✔', '✕', '→', '←', '↑',
+        '↓', '↔', '―', '~', '℃', '±', '◈',
+        '▣', '◐', '◑', '☎', '☞', '㈜', '№'
+      ];
+
+      let lastActiveTextarea = null;
+
+      function setupSpecialChars() {
+        const grid = $('specialCharGrid');
+        if (!grid) return;
+        grid.innerHTML = SPECIAL_CHAR_LIST.map(ch => 
+          `<button type="button" class="special-char-btn" data-char="${ch}" title="${ch}">${ch}</button>`
+        ).join('');
+
+        grid.onclick = (e) => {
+          const btn = e.target.closest('.special-char-btn');
+          if (!btn) return;
+          const ch = btn.dataset.char;
+          const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
+          if (!target) return;
+          insertCharIntoTextarea(target, ch);
+        };
+
+        const closeBtn = $('closeSpecialCharBtn');
+        if (closeBtn) {
+          closeBtn.onclick = () => $('specialCharModal').close();
+        }
+
+        const modal = $('specialCharModal');
+        if (modal) {
+          modal.onclick = (e) => {
+            if (e.target === modal) modal.close();
+          };
+        }
+      }
+
+      function insertCharIntoTextarea(textarea, ch) {
+        textarea.focus();
+        const start = textarea.selectionStart || 0;
+        const end = textarea.selectionEnd || 0;
+        const val = textarea.value;
+        textarea.value = val.substring(0, start) + ch + val.substring(end);
+        textarea.selectionStart = textarea.selectionEnd = start + ch.length;
+        textarea.dispatchEvent(new Event('input'));
+      }
+
+      function setupTextareaDragResizer(handleEl, textareaEl) {
+        if (!handleEl || !textareaEl) return;
+        let isDragging = false;
+        let startY = 0;
+        let startH = 0;
+
+        handleEl.onmousedown = (e) => {
+          isDragging = true;
+          startY = e.clientY;
+          startH = textareaEl.offsetHeight;
+          document.body.style.cursor = 'ns-resize';
+          document.body.style.userSelect = 'none';
+          e.preventDefault();
+        };
+
+        const onMouseMove = (e) => {
+          if (!isDragging) return;
+          const diff = e.clientY - startY;
+          const newH = Math.max(48, startH + diff);
+          textareaEl.style.height = newH + 'px';
+        };
+
+        const onMouseUp = () => {
+          if (!isDragging) return;
+          isDragging = false;
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+      }
+
       function renderCalendar() {
         updateClock();
 
@@ -4291,14 +4498,64 @@
               <div class="day-number">${d.getDate()}</div>
               ${extraHeaderText}
             </div>`;
-          html += tasks.slice(0, 4).map(t => {
+          /* [V1.1.0] 기간 일정 연속 라인 바(상단) + 단일 일정(하단) 분리 렌더링 */
+          const multiList = tasks.filter(t => t.startDate && t.dueDate && t.startDate < t.dueDate);
+          const singleList = tasks.filter(t => !t.startDate || !t.dueDate || t.startDate >= t.dueDate);
+
+          // 기간 일정은 생성순(data.tasks 순서) 정렬 및 고유 컬러 순환 할당
+          const multiTasksInScope = data.tasks.filter(t => t.startDate && t.dueDate && t.startDate < t.dueDate);
+          multiList.sort((a, b) => multiTasksInScope.indexOf(a) - multiTasksInScope.indexOf(b));
+
+          let renderedCount = 0;
+          const maxCellItems = 4;
+
+          // 1. 기간 일정 바 렌더링 (셀 상단)
+          multiList.forEach(t => {
+            if (renderedCount >= maxCellItems) return;
+            const colorIdx = multiTasksInScope.indexOf(t);
+            const color = PERIOD_PALETTE[colorIdx >= 0 ? (colorIdx % PERIOD_PALETTE.length) : 0];
+            const isStart = (s === t.startDate);
+            const isEnd = (s === t.dueDate);
+            const checkPrefix = t.completed ? '✓ ' : '';
+
+            let barClass = 'period-bar';
+            if (isStart && isEnd) barClass += ' start end';
+            else if (isStart) barClass += ' start';
+            else if (isEnd) barClass += ' end';
+            else barClass += ' mid';
+
+            if (isStart) {
+              html += `<div class="${barClass}" style="background:${color.bg}; border-left:3px solid ${color.line}; color:${color.text};" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+                <span class="period-dot" style="background:${color.line};"></span>
+                <span class="period-title">${checkPrefix}[${t.dueDate.slice(5)}] ${esc(t.title)}</span>
+              </div>`;
+            } else if (isEnd) {
+              html += `<div class="${barClass}" style="background:${color.bg}; border-right:3px solid ${color.line}; color:${color.text};" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+                <span class="period-title">${checkPrefix}${esc(t.title)}</span>
+              </div>`;
+            } else {
+              // 중간 날짜: 제목 없이 연속 라인만 관통
+              html += `<div class="${barClass}" style="background:${color.bg}; border-top:1px dashed ${color.border}; border-bottom:1px dashed ${color.border};" data-action="edit" data-id="${t.id}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+                <div class="period-line-inner" style="background:${color.line};"></div>
+              </div>`;
+            }
+            renderedCount++;
+          });
+
+          // 2. 단일 일정 칩 렌더링 (기간 일정 아래)
+          singleList.forEach(t => {
+            if (renderedCount >= maxCellItems) return;
             const isHol = !isWork(t);
             const priClass = isHol ? 'pri-holiday' : `pri-${t.priority || 'normal'}`;
             const checkPrefix = t.completed ? '✓ ' : '';
             const prefixTags = renderTaskPrefixTags(t);
-            return `<div class="chip ${priClass} ${t.completed ? 'done' : ''}" data-action="edit" data-id="${t.id}" title="${esc(t.title)}">${checkPrefix}${prefixTags}${esc(t.title)}</div>`;
-          }).join('');
-          if (tasks.length > 4) html += `<div class="more" data-action="openDayMore" data-date="${s}">+${tasks.length - 4}개 더보기</div>`;
+            html += `<div class="chip ${priClass} ${t.completed ? 'done' : ''}" data-action="edit" data-id="${t.id}" title="${esc(t.title)}">${checkPrefix}${prefixTags}${esc(t.title)}</div>`;
+            renderedCount++;
+          });
+
+          if (tasks.length > maxCellItems) {
+            html += `<div class="more" data-action="openDayMore" data-date="${s}">+${tasks.length - maxCellItems}개 더보기</div>`;
+          }
           html += `</div>`;
         }
         $('calendar').innerHTML = html;
@@ -4670,8 +4927,18 @@
 
               <!-- 2. 내용 -->
               <div class="field" id="fieldMemo">
-                <label>내용</label>
-                <textarea id="modalMemo" class="control" style="min-height:48px; height:48px;" placeholder="상세 내용을 입력하세요">${esc(editTarget.memo)}</textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="margin-bottom:0;">내용</label>
+                  <button type="button" id="openSpecialCharsBtn" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; color:#475569; font-size:11px; font-weight:600; cursor:pointer; padding:2px 8px; line-height:16px;">특수문자</button>
+                </div>
+                <div class="memo-resize-container">
+                  <textarea id="modalMemo" class="control" style="min-height:48px; width:100%; box-sizing:border-box; resize:none;" placeholder="상세 내용을 입력하세요">${esc(editTarget.memo)}</textarea>
+                  <div class="memo-resize-handle" id="memoResizeHandle" title="하단 라인을 잡고 상하로 드래그하여 크기 조절">
+                    <svg viewBox="0 0 16 16" width="10" height="10" style="opacity:0.4; pointer-events:none;">
+                      <path d="M14 14L14 10L10 14ZM14 7L7 14M14 4L4 14" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <!-- 3. 태그 -->
@@ -4701,7 +4968,10 @@
 
               <!-- 6. 기간 (시작일 ~ 마감일) -->
               <div class="field" id="fieldDateRange">
-                <label>기간 <span class="req">*</span></label>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
+                  <button type="button" id="modalResetPeriodBtn" style="background:none; border:none; color:#4f46e5; font-size:11.5px; font-weight:600; cursor:pointer; padding:0; text-decoration:underline;">기간리셋</button>
+                </div>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <input type="date" id="modalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.startDate || editTarget.dueDate}" required style="flex:1;">
                   <span style="color:var(--text-sub); font-weight:700;">~</span>
@@ -5067,6 +5337,39 @@
           }
         };
 
+        // [V1.1.0] 내용 입력창 자동 높이 확장 (입력된 내용 전체 노출)
+        const memoEl = $('modalMemo');
+        if (memoEl) {
+          lastActiveTextarea = memoEl;
+          memoEl.onfocus = () => { lastActiveTextarea = memoEl; };
+          memoEl.style.height = 'auto';
+          const sH = memoEl.scrollHeight;
+          memoEl.style.height = Math.max(50, sH + 4) + 'px';
+        }
+
+        // [V1.1.0] 내용 하단 라인 전체 리사이즈 핸들 연결
+        setupTextareaDragResizer($('memoResizeHandle'), memoEl);
+
+        // [V1.1.0] 기간리셋 버튼 바인딩
+        const resetBtn = $('modalResetPeriodBtn');
+        if (resetBtn) {
+          resetBtn.onclick = () => {
+            const td = today();
+            $('modalStartDate').value = td;
+            $('modalDueDate').value = td;
+            $('modalStartDate').dispatchEvent(new Event('change'));
+            toast('기간이 오늘 날짜로 리셋되었습니다.');
+          };
+        }
+
+        // [V1.1.0] 특수문자 버튼 바인딩
+        const specBtn = $('openSpecialCharsBtn');
+        if (specBtn) {
+          specBtn.onclick = () => {
+            $('specialCharModal').showModal();
+          };
+        }
+
         $('editor').showModal();
         if (!editing) {
           setTimeout(() => $('modalTitle').focus(), 50);
@@ -5098,8 +5401,18 @@
 
               <!-- 2. 내용 -->
               <div class="field">
-                <label>내용</label>
-                <textarea id="recModalMemo" class="control" style="min-height:48px; height:48px;" placeholder="상세 내용을 입력하세요">${esc(editingRule.memo)}</textarea>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="margin-bottom:0;">내용</label>
+                  <button type="button" id="recOpenSpecialCharsBtn" style="background:#f1f5f9; border:1px solid #cbd5e1; border-radius:4px; color:#475569; font-size:11px; font-weight:600; cursor:pointer; padding:2px 8px; line-height:16px;">특수문자</button>
+                </div>
+                <div class="memo-resize-container">
+                  <textarea id="recModalMemo" class="control" style="min-height:48px; width:100%; box-sizing:border-box; resize:none;" placeholder="상세 내용을 입력하세요">${esc(editingRule.memo)}</textarea>
+                  <div class="memo-resize-handle" id="recMemoResizeHandle" title="하단 라인을 잡고 상하로 드래그하여 크기 조절">
+                    <svg viewBox="0 0 16 16" width="10" height="10" style="opacity:0.4; pointer-events:none;">
+                      <path d="M14 14L14 10L10 14ZM14 7L7 14M14 4L4 14" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <!-- 3. 태그 -->
@@ -5129,7 +5442,10 @@
 
               <!-- 6. 기간 (시작일 ~ 종료일) -->
               <div class="field">
-                <label>기간 <span class="req">*</span></label>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
+                  <button type="button" id="recModalResetPeriodBtn" style="background:none; border:none; color:#4f46e5; font-size:11.5px; font-weight:600; cursor:pointer; padding:0; text-decoration:underline;">기간리셋</button>
+                </div>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <input type="date" id="recModalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editingRule.startDate || editingRule.dueDate}" required style="flex:1;">
                   <span style="color:var(--text-sub); font-weight:700;">~</span>
@@ -5284,6 +5600,35 @@
           }
         };
 
+        
+        // [V1.1.0] rec 내용 입력창 자동 높이 확장
+        const recMemoEl = $('recModalMemo');
+        if (recMemoEl) {
+          lastActiveTextarea = recMemoEl;
+          recMemoEl.onfocus = () => { lastActiveTextarea = recMemoEl; };
+          recMemoEl.style.height = 'auto';
+          const sH = recMemoEl.scrollHeight;
+          recMemoEl.style.height = Math.max(50, sH + 4) + 'px';
+        }
+        setupTextareaDragResizer($('recMemoResizeHandle'), recMemoEl);
+
+        const recResetBtn = $('recModalResetPeriodBtn');
+        if (recResetBtn) {
+          recResetBtn.onclick = () => {
+            const td = today();
+            $('recModalStartDate').value = td;
+            $('recModalEndDate').value = td;
+            $('recModalStartDate').dispatchEvent(new Event('change'));
+            toast('기간이 오늘 날짜로 리셋되었습니다.');
+          };
+        }
+
+        const recSpecBtn = $('recOpenSpecialCharsBtn');
+        if (recSpecBtn) {
+          recSpecBtn.onclick = () => {
+            $('specialCharModal').showModal();
+          };
+        }
         $('editor').showModal();
       }
 
