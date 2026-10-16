@@ -2119,9 +2119,9 @@
         }
       }
 
-      /* [V1.1.3] 특수문자 팔레트 탭 및 버튼 호버/클릭 효과 */
+      /* [V1.1.4] 특수문자 팔레트 탭, 버튼, 최근입력 칩 호버/클릭 효과 */
       .spec-tab-btn {
-        padding: 3px 8px;
+        padding: 3px 7px;
         font-size: 11.5px;
         font-weight: 700;
         border-radius: var(--radius-xs);
@@ -2151,7 +2151,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
+        font-size: 15px;
         background: #ffffff;
         border: 1px solid var(--border);
         border-radius: var(--radius-xs);
@@ -2170,6 +2170,33 @@
         background: #4f46e5;
         color: #ffffff;
         border-color: #4f46e5;
+        transform: scale(0.92);
+      }
+      .recent-char-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        height: 24px;
+        padding: 0 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #4f46e5;
+        background: #ffffff;
+        border: 1px solid #c7d2fe;
+        border-radius: 4px;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.12s ease;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
+      .recent-char-chip:hover {
+        background: #4f46e5 !important;
+        color: #ffffff !important;
+        border-color: #4f46e5 !important;
+        transform: translateY(-1px);
+      }
+      .recent-char-chip:active {
         transform: scale(0.92);
       }
 
@@ -2431,20 +2458,22 @@
   <dialog id="settings"></dialog>
 
   
-  <!-- 특수문자 팔레트 팝업 모달 [V1.1.3 2-Tab & 미리보기] -->
-  <dialog id="specialCharModal" style="border:1px solid #cbd5e1; border-radius:8px; padding:0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.18); width:320px; max-width:92vw; background:#ffffff;">
+  <!-- 특수문자 팔레트 팝업 모달 [V1.1.4 3-Tab: 특수문자1, 특수문자2, 이모티콘 & 최근입력 재입력 버튼] -->
+  <dialog id="specialCharModal" style="border:1px solid #cbd5e1; border-radius:8px; padding:0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.18); width:340px; max-width:94vw; background:#ffffff;">
     <div style="padding:6px 12px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top-left-radius:7px; border-top-right-radius:7px;">
-      <div style="display:flex; gap:6px; align-items:center;">
+      <div style="display:flex; gap:4px; align-items:center;">
         <button type="button" id="tabSpecialChar1" class="spec-tab-btn active">특수문자1</button>
         <button type="button" id="tabSpecialChar2" class="spec-tab-btn">특수문자2</button>
+        <button type="button" id="tabSpecialChar3" class="spec-tab-btn">이모티콘</button>
       </div>
       <button type="button" id="closeSpecialCharBtn" style="background:none; border:none; font-size:15px; cursor:pointer; color:#64748b; line-height:1; padding:2px;">✕</button>
     </div>
     <div id="specialCharGrid" style="padding:8px; display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; max-height:200px; overflow-y:auto;">
     </div>
-    <div id="specialCharPreview" style="padding:6px 12px; border-top:1px solid #f1f5f9; background:#f8fafc; font-size:11.5px; color:#64748b; display:flex; align-items:center; justify-content:space-between; min-height:30px; box-sizing:border-box; border-bottom-left-radius:7px; border-bottom-right-radius:7px;">
-      <span>입력된 문자: <strong id="specialCharPreviewChar" style="color:#4f46e5; font-size:13px; margin-left:4px;">(선택 대기)</strong></span>
-      <span id="specialCharPreviewStatus" style="font-size:11px; color:#4f46e5; font-weight:700; opacity:0; transition:opacity 0.2s ease;">✓ 본문에 삽입됨</span>
+    <div id="specialCharPreview" style="padding:5px 12px; border-top:1px solid #f1f5f9; background:#f8fafc; font-size:11.5px; color:#64748b; display:flex; align-items:center; gap:8px; min-height:32px; box-sizing:border-box; border-bottom-left-radius:7px; border-bottom-right-radius:7px;">
+      <span style="font-weight:600; color:#475569; flex:none;">최근 입력:</span>
+      <button type="button" id="recentCharBtn" class="recent-char-chip" title="클릭 시 본문에 다시 입력">(선택 대기)</button>
+      <span style="font-size:10.5px; color:#94a3b8;">(클릭 시 재입력)</span>
     </div>
   </dialog>
 
@@ -2463,7 +2492,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.1.3';
+      window.APP_VERSION = 'v1.1.4';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4437,7 +4466,7 @@
         { name: 'sky', line: '#0284c7', bg: '#e0f2fe', text: '#0369a1', border: '#bae6fd' }
       ];
 
-            const SPECIAL_CHARS_1 = [
+                  const SPECIAL_CHARS_1 = [
         '·', '•', '□', '■', '○', '●', '※',
         '▶', '▷', '▲', '▼', '◆', '◇', '★',
         '☆', '✓', '✔', '✕', '→', '←', '↑',
@@ -4453,27 +4482,64 @@
         '」', '【', '】', '《', '》', '§', '¶'
       ];
 
+      // [V1.1.4] 알록달록 귀여운 이모티콘 35선 (7열 x 5행 완벽 대칭)
+      const SPECIAL_CHARS_3 = [
+        '😀', '😊', '🥰', '😎', '🥳', '🤔', '👍',
+        '👏', '🙌', '💪', '❤️', '🧡', '💛', '💚',
+        '🐶', '🐱', '🐰', '🍀', '🌸', '⭐', '✨',
+        '🎉', '🎁', '🎈', '☕', '🍰', '🍔', '🍕',
+        '🔥', '💡', '📌', '🚀', '🎯', '⏰', '🏆'
+      ];
+
       let lastActiveTextarea = null;
       let currentSpecTab = 1;
-      let previewTimeout = null;
+      let lastUsedSpecialChar = localStorage.getItem('dday_last_special_char') || '';
 
       function setupSpecialChars() {
         const tab1 = $('tabSpecialChar1');
         const tab2 = $('tabSpecialChar2');
+        const tab3 = $('tabSpecialChar3');
         const grid = $('specialCharGrid');
+        const recentBtn = $('recentCharBtn');
         if (!grid) return;
 
+        // 최근 입력 문자 버튼 초기 갱신
+        if (recentBtn) {
+          if (lastUsedSpecialChar) {
+            recentBtn.textContent = lastUsedSpecialChar;
+            recentBtn.style.color = '#4f46e5';
+          } else {
+            recentBtn.textContent = '(선택 대기)';
+            recentBtn.style.color = '#94a3b8';
+          }
+          recentBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!lastUsedSpecialChar) return;
+            const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
+            if (target) {
+              insertCharIntoTextarea(target, lastUsedSpecialChar);
+            }
+          };
+        }
+
         const renderGrid = () => {
-          const list = (currentSpecTab === 1) ? SPECIAL_CHARS_1 : SPECIAL_CHARS_2;
+          let list = SPECIAL_CHARS_1;
+          if (currentSpecTab === 2) list = SPECIAL_CHARS_2;
+          else if (currentSpecTab === 3) list = SPECIAL_CHARS_3;
+
           grid.innerHTML = list.map(ch => 
             `<button type="button" class="special-char-btn" data-char="${ch}" title="${ch}">${ch}</button>`
           ).join('');
+
           if (tab1) tab1.classList.toggle('active', currentSpecTab === 1);
           if (tab2) tab2.classList.toggle('active', currentSpecTab === 2);
+          if (tab3) tab3.classList.toggle('active', currentSpecTab === 3);
         };
 
         if (tab1) tab1.onclick = () => { currentSpecTab = 1; renderGrid(); };
         if (tab2) tab2.onclick = () => { currentSpecTab = 2; renderGrid(); };
+        if (tab3) tab3.onclick = () => { currentSpecTab = 3; renderGrid(); };
 
         renderGrid();
 
@@ -4485,15 +4551,11 @@
           if (target) {
             insertCharIntoTextarea(target, ch);
           }
-          const charEl = $('specialCharPreviewChar');
-          const statEl = $('specialCharPreviewStatus');
-          if (charEl) charEl.textContent = `[ ${ch} ]`;
-          if (statEl) {
-            statEl.style.opacity = '1';
-            if (previewTimeout) clearTimeout(previewTimeout);
-            previewTimeout = setTimeout(() => {
-              statEl.style.opacity = '0';
-            }, 1500);
+          lastUsedSpecialChar = ch;
+          try { localStorage.setItem('dday_last_special_char', ch); } catch(err) {}
+          if (recentBtn) {
+            recentBtn.textContent = ch;
+            recentBtn.style.color = '#4f46e5';
           }
         };
 
@@ -5479,24 +5541,17 @@
           }
         };
 
-        // [V1.1.2] 내용 입력창 자동 높이 확장 (줄바꿈 수 기반 최소 높이 보장 + 3단계 다이얼로그 렌더링 갱신)
+        // [V1.1.4] 내용 입력창 자동 높이 확장 (엔터/줄바꿈 시 하단 빈공간 없이 글자 높이에 딱 맞춤)
         const memoEl = $('modalMemo');
         if (memoEl) {
           lastActiveTextarea = memoEl;
           memoEl.onfocus = () => { lastActiveTextarea = memoEl; };
           const autoExpand = () => {
             memoEl.style.height = 'auto';
-            const lineCount = (memoEl.value || '').split('\n').length;
-            const minHByLines = Math.max(48, lineCount * 22 + 16);
-            const finalH = Math.max(minHByLines, memoEl.scrollHeight + 4);
-            memoEl.style.height = finalH + 'px';
+            // box-sizing: border-box 에 맞춰 scrollHeight 로 콘텐츠 높이 정확히 밀착
+            memoEl.style.height = Math.max(48, memoEl.scrollHeight + 2) + 'px';
           };
-          autoExpand();
           memoEl.addEventListener('input', autoExpand);
-          // showModal 후 렌더링 타이밍 2차 갱신
-          requestAnimationFrame(autoExpand);
-          setTimeout(autoExpand, 50);
-          setTimeout(autoExpand, 150);
         }
 
         // [V1.1.0] 내용 하단 라인 전체 리사이즈 핸들 연결
@@ -5524,6 +5579,15 @@
         }
 
         $('editor').showModal();
+        // 다이얼로그 노출 즉시 scrollHeight 측정하여 내용 전체 표시 (하단 잉여 빈공간 완전 제거)
+        if (memoEl) {
+          memoEl.style.height = 'auto';
+          memoEl.style.height = Math.max(48, memoEl.scrollHeight + 2) + 'px';
+          requestAnimationFrame(() => {
+            memoEl.style.height = 'auto';
+            memoEl.style.height = Math.max(48, memoEl.scrollHeight + 2) + 'px';
+          });
+        }
         if (!editing) {
           setTimeout(() => $('modalTitle').focus(), 50);
         }
@@ -5750,22 +5814,16 @@
         };
 
         
-        // [V1.1.2] rec 내용 입력창 자동 높이 확장
+        // [V1.1.4] rec 내용 입력창 자동 높이 확장
         const recMemoEl = $('recModalMemo');
         if (recMemoEl) {
           lastActiveTextarea = recMemoEl;
           recMemoEl.onfocus = () => { lastActiveTextarea = recMemoEl; };
           const autoExpandRec = () => {
             recMemoEl.style.height = 'auto';
-            const lineCount = (recMemoEl.value || '').split('\n').length;
-            const minHByLines = Math.max(48, lineCount * 22 + 16);
-            const finalH = Math.max(minHByLines, recMemoEl.scrollHeight + 4);
-            recMemoEl.style.height = finalH + 'px';
+            recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
           };
-          autoExpandRec();
           recMemoEl.addEventListener('input', autoExpandRec);
-          requestAnimationFrame(autoExpandRec);
-          setTimeout(autoExpandRec, 50);
         }
         setupTextareaDragResizer($('recMemoResizeHandle'), recMemoEl);
 
@@ -5788,6 +5846,14 @@
           };
         }
         $('editor').showModal();
+        if (recMemoEl) {
+          recMemoEl.style.height = 'auto';
+          recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
+          requestAnimationFrame(() => {
+            recMemoEl.style.height = 'auto';
+            recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
+          });
+        }
       }
 
       function openSettings() {
