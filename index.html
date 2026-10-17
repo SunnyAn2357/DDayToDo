@@ -278,6 +278,17 @@
       flex-shrink: 1;
     }
 
+    .clock-lunar {
+      color: #94a3b8;
+      margin-left: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      flex-shrink: 1;
+      font-weight: 500;
+    }
+
     .clock::before {
       content: '';
       display: inline-block;
@@ -1922,7 +1933,8 @@
         white-space: nowrap;
       }
 
-      .clock-holiday {
+      .clock-holiday,
+      .clock-lunar {
         flex-shrink: 1;
         min-width: 0;
         overflow: hidden;
@@ -2054,7 +2066,7 @@
         accent-color: #4f46e5;
       }
 
-      /* [V1.1.3 / V1.2.0] 기간 일정 슬림 2px 연속 실선 스타일 (셀 오클릭 방지: pointer-events: none 및 cursor: default) */
+      /* [V1.1.3 / V1.2.0 / V1.2.1] 기간 일정 슬림 2px 연속 실선 스타일 (셀 오클릭 방지: pointer-events: none 및 cursor: default) */
       .period-track-row {
         height: 18px;
         min-height: 18px;
@@ -2502,7 +2514,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.0';
+      window.APP_VERSION = 'v1.2.1';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4341,12 +4353,12 @@
         return true;
       }
 
-      function getHolidayOrFestivalName(s) {
-        if (!s) return '';
+      function getHolidayOrFestivalInfo(s) {
+        if (!s) return null;
         let hol = BUILTIN_HOLIDAYS[s];
-        if (hol) return hol.replace(/대체공휴일\(/g, '대체(');
+        if (hol) return { name: hol.replace(/대체공휴일\(/g, '대체('), isHoliday: true };
         const customHol = (data.tasks || []).find(t => t.dueDate === s && t.isHoliday);
-        if (customHol) return (customHol.title || '공휴일').replace(/대체공휴일\(/g, '대체(');
+        if (customHol) return { name: (customHol.title || '공휴일').replace(/대체공휴일\(/g, '대체('), isHoliday: true };
         if (lunarConverter) {
           try {
             const d = parseDate(s);
@@ -4355,33 +4367,39 @@
             if (!lDate.intercalation) {
               const lm = lDate.month;
               const ld = lDate.day;
-              if (lm === 1 && ld === 15) return '정월대보름';
-              if (lm === 3 && ld === 3) return '삼짇날';
-              if (lm === 5 && ld === 5) return '단오';
-              if (lm === 6 && ld === 15) return '유두';
-              if (lm === 7 && ld === 7) return '칠석';
-              if (lm === 7 && ld === 15) return '백중';
-              if (lm === 9 && ld === 9) return '중양절';
+              if (lm === 1 && ld === 15) return { name: '정월대보름', isHoliday: false };
+              if (lm === 3 && ld === 3) return { name: '삼짇날', isHoliday: false };
+              if (lm === 5 && ld === 5) return { name: '단오', isHoliday: false };
+              if (lm === 6 && ld === 15) return { name: '유두', isHoliday: false };
+              if (lm === 7 && ld === 7) return { name: '칠석', isHoliday: false };
+              if (lm === 7 && ld === 15) return { name: '백중', isHoliday: false };
+              if (lm === 9 && ld === 9) return { name: '중양절', isHoliday: false };
             }
           } catch (e) { }
         }
-        return '';
+        return null;
+      }
+
+      function getHolidayOrFestivalName(s) {
+        const info = getHolidayOrFestivalInfo(s);
+        return info ? info.name : '';
       }
 
       function updateClock() {
         const d = new Date();
         const curToday = today();
-        const isSelectedOther = ui && ui.selected && ui.selected !== curToday;
-        const targetStr = isSelectedOther ? ui.selected : curToday;
-        const targetD = isSelectedOther ? parseDate(ui.selected) : d;
-        const datePart = `${targetD.getFullYear()}.${pad(targetD.getMonth() + 1)}.${pad(targetD.getDate())}.(${WEEK[targetD.getDay()]})`;
+        const datePart = `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}.(${WEEK[d.getDay()]})`;
         const timePart = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        let holName = getHolidayOrFestivalName(targetStr);
+        const info = getHolidayOrFestivalInfo(curToday);
 
         const el = $('clockText');
         if (el) {
-          const holSpan = holName ? ` <span class="clock-holiday">${esc(holName)}</span>` : '';
-          el.innerHTML = `<span class="clock-date">${datePart}</span> <span class="clock-time">${timePart}</span>${holSpan}`;
+          let tagSpan = '';
+          if (info) {
+            const cls = info.isHoliday ? 'clock-holiday' : 'clock-lunar';
+            tagSpan = ` <span class="${cls}">${esc(info.name)}</span>`;
+          }
+          el.innerHTML = `<span class="clock-date">${datePart}</span> <span class="clock-time">${timePart}</span>${tagSpan}`;
         }
       }
 
