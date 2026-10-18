@@ -1,8 +1,8 @@
 /* =====================================================================
  * PWA Service Worker for D-Day 일정관리
  * ===================================================================== */
-const APP_VERSION = 'v1.2.3';
-const CACHE_NAME = 'todo-calendar-pwa-v1.2.3';
+const APP_VERSION = 'v1.3.1';
+const CACHE_NAME = 'todo-calendar-pwa-v1.3.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

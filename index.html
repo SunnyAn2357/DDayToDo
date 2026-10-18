@@ -628,108 +628,99 @@
       flex: none;
     }
 
-    /* D-DAY FILTER BUTTONS IN LIST TOOLBAR */
+    /* D-DAY FILTER BUTTONS IN LIST TOOLBAR (MATCHED TO CALENDAR STYLE) */
     .dday-filter-group {
       display: flex;
-      gap: 4px;
+      gap: 5px;
       border-left: 1px solid var(--border);
       padding-left: 10px;
       flex: none;
     }
 
     .dday-btn {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      height: 36px;
-      padding: 0 11px;
-      color: #64748b;
+      border-radius: var(--radius-md);
+      font-size: 11.5px;
       font-weight: 700;
-      transition: all 0.12s;
+      height: 34px;
+      padding: 0 10px;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       user-select: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       box-shadow: var(--shadow-xs);
+      border: 1px solid transparent;
+      box-sizing: border-box;
     }
 
     .dday-btn:hover {
-      background: var(--surface-subtle);
-      border-color: #cbd5e1;
-      color: #0f172a;
-    }
-
-    .dday-btn.active {
-      background: #0f172a;
-      color: #ffffff;
-      border-color: #0f172a;
-      box-shadow: 0 2px 5px rgba(15, 23, 42, 0.15);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
     }
 
     .dday-btn.d3 {
-      color: var(--d3-ink);
-    }
-
-    .dday-btn.d3:hover {
       background: var(--d3-bg);
       border-color: var(--d3-border);
+      color: var(--d3-ink);
     }
-
+    .dday-btn.d3:hover {
+      background: #ffe4e6;
+      border-color: #fda4af;
+    }
     .dday-btn.d3.active {
       background: var(--d3);
-      color: white;
+      color: #ffffff;
       border-color: var(--d3);
-      box-shadow: 0 2px 6px rgba(225, 29, 72, 0.3);
+      box-shadow: 0 2px 6px rgba(225, 29, 72, 0.25);
     }
 
     .dday-btn.d5 {
-      color: var(--d5-ink);
-    }
-
-    .dday-btn.d5:hover {
       background: var(--d5-bg);
       border-color: var(--d5-border);
+      color: var(--d5-ink);
     }
-
+    .dday-btn.d5:hover {
+      background: #f3e8ff;
+      border-color: #d8b4fe;
+    }
     .dday-btn.d5.active {
       background: var(--d5);
-      color: white;
+      color: #ffffff;
       border-color: var(--d5);
-      box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+      box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
     }
 
     .dday-btn.d10 {
-      color: var(--d10-ink);
-    }
-
-    .dday-btn.d10:hover {
       background: var(--d10-bg);
       border-color: var(--d10-border);
+      color: var(--d10-ink);
     }
-
+    .dday-btn.d10:hover {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
     .dday-btn.d10.active {
       background: var(--d10);
-      color: white;
+      color: #ffffff;
       border-color: var(--d10);
-      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
     }
 
     .dday-btn.rest {
-      color: var(--rest-ink);
-    }
-
-    .dday-btn.rest:hover {
       background: var(--rest-bg);
       border-color: var(--rest-border);
+      color: var(--rest-ink);
     }
-
+    .dday-btn.rest:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
     .dday-btn.rest.active {
       background: var(--rest);
-      color: white;
+      color: #ffffff;
       border-color: var(--rest);
-      box-shadow: 0 2px 6px rgba(71, 85, 105, 0.3);
+      box-shadow: 0 2px 6px rgba(71, 85, 105, 0.25);
     }
 
     /* CALENDAR WRAP & GRID */
@@ -1128,6 +1119,41 @@
       letter-spacing: -0.02em;
     }
 
+    .side-head .btn.primary,
+    .side-head [data-action="add"] {
+      height: 28px;
+      padding: 0 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      border-radius: 7px;
+      background: #4f46e5;
+      border: none;
+      color: #ffffff;
+      gap: 4px;
+      box-shadow: 0 1px 2px rgba(79, 70, 229, 0.2);
+      transition: all 0.15s ease;
+    }
+
+    .side-head .btn.primary:hover,
+    .side-head [data-action="add"]:hover {
+      background: #4338ca;
+      box-shadow: 0 2px 5px rgba(79, 70, 229, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .side-head .btn.primary:active,
+    .side-head [data-action="add"]:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .side-head .btn.primary svg,
+    .side-head [data-action="add"] svg {
+      width: 13px;
+      height: 13px;
+      stroke-width: 2.2;
+    }
+
     .day-list-wrap {
       flex: 1;
       overflow-y: auto;
@@ -1471,7 +1497,7 @@
       border-top: 1px solid var(--border-subtle);
     }
 
-    /* MODAL DIALOGS (FLOATING BLUR DESIGN) */
+    /* MODAL DIALOGS (ELEGANT FLOATING SQUIRCLE) */
     dialog::backdrop {
       background: rgba(15, 23, 42, 0.45);
       backdrop-filter: blur(8px);
@@ -1479,14 +1505,14 @@
     }
 
     dialog {
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      border-radius: var(--radius-lg);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+      border-radius: 14px;
       background: #ffffff;
-      box-shadow: var(--shadow-modal);
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
       padding: 0;
       width: 480px;
-      max-width: calc(100% - 32px);
-      max-height: 78vh;
+      max-width: calc(100% - 24px);
+      max-height: 82vh;
       overflow: hidden;
       animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -1506,7 +1532,7 @@
     .modal-frame {
       display: flex;
       flex-direction: column;
-      max-height: 78vh;
+      max-height: 82vh;
       height: 100%;
       min-height: 0;
       overflow: hidden;
@@ -1516,7 +1542,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 18px;
+      padding: 13px 18px;
       border-bottom: 1px solid var(--border-subtle);
       background: #ffffff;
       flex: none;
@@ -1525,16 +1551,39 @@
     .modal-head h2 {
       margin: 0;
       font-size: 16px;
-      font-weight: 800;
+      font-weight: 700;
       color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+
+    .modal-head .btn.icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #64748b;
+      box-shadow: none;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .modal-head .btn.icon:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #e2e8f0;
+      transform: none;
     }
 
     .modal-body {
-      padding: 13px 18px;
+      padding: 14px 18px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 10px;
       flex: 1 1 auto;
       min-height: 0;
       -webkit-overflow-scrolling: touch;
@@ -1543,7 +1592,8 @@
     .modal-foot {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
+      gap: 8px;
       padding: 10px 18px;
       border-top: 1px solid var(--border-subtle);
       background: #f8fafc;
@@ -1552,11 +1602,11 @@
 
     .modal-foot .btn,
     .modal-foot .actions .btn {
-      height: 36px;
-      padding: 6px 16px;
-      font-size: 13px;
-      font-weight: 700;
-      min-width: 68px;
+      height: 34px;
+      padding: 0 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      border-radius: var(--radius-md);
       box-sizing: border-box;
     }
 
@@ -1569,33 +1619,121 @@
     .field label {
       font-size: 12px;
       font-weight: 700;
-      color: #1d4ed8;
+      color: #334155;
       letter-spacing: -0.01em;
     }
 
     .req {
-      color: #e11d48;
+      color: #ef4444;
     }
 
     .control {
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      padding: 6.5px 10px;
-      font-size: 13px;
+      border-radius: var(--radius-md);
+      padding: 7px 11px;
+      font-size: 12.5px;
       background: #ffffff;
       color: #0f172a;
       transition: all 0.15s ease;
       box-shadow: var(--shadow-xs);
+      box-sizing: border-box;
+      height: 36px;
     }
 
     .control:focus {
-      border-color: var(--border-focus);
+      border-color: #6366f1;
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+      outline: none;
     }
 
     textarea.control {
       min-height: 52px;
+      height: auto;
       resize: vertical;
+      line-height: 1.45;
+    }
+
+    /* SETTINGS GROUP CARDS */
+    .settings-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 11px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .settings-card-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .settings-desc {
+      font-size: 11px;
+      color: #64748b;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    /* NOTIFICATION CARDS */
+    .noti-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.15s ease;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .noti-card:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .noti-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .noti-card-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .noti-card-time {
+      font-size: 10.5px;
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .noti-card-msg {
+      font-size: 12px;
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .noti-badge-overdue {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      color: #e11d48;
+      background: #ffe4e6;
+      border-radius: 4px;
+      padding: 1px 5px;
     }
 
     #importFile::file-selector-button {
@@ -1939,17 +2077,15 @@
       }
 
       .dday-btn {
-        height: 34px;
-        min-height: 34px;
-        padding: 0 8px;
-        font-size: 11.5px;
+        height: 30px;
+        min-height: 30px;
+        padding: 0 6px;
+        font-size: 11px;
         flex: 1 1 auto;
-        min-width: 44px;
+        min-width: 40px;
         text-align: center;
         white-space: nowrap;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        background: #ffffff;
+        border-radius: var(--radius-md);
         box-shadow: var(--shadow-xs);
         box-sizing: border-box;
       }
@@ -2156,14 +2292,14 @@
         gap: 5px;
         background: #f8fafc;
         border: 1px solid var(--border);
-        border-radius: var(--radius-xs);
-        padding: 2px 8px;
-        height: 24px;
+        border-radius: 7px;
+        padding: 0 9px;
+        height: 26px;
         box-sizing: border-box;
-        font-size: 12px;
-        font-weight: 700;
+        font-size: 11.5px;
+        font-weight: 600;
         font-family: inherit;
-        color: #4f46e5 !important;
+        color: #475569 !important;
         cursor: pointer;
         user-select: none;
         line-height: 1;
@@ -2171,8 +2307,9 @@
         transition: all 0.12s ease;
       }
       .label-addon-btn:hover {
-        background: #f1f5f9;
-        border-color: #a5b4fc;
+        background: #eef2ff;
+        border-color: #c7d2fe;
+        color: #4338ca !important;
       }
       .label-addon-btn input[type="checkbox"] {
         margin: 0;
@@ -2582,7 +2719,19 @@
         <!-- LIST DETAIL IN RIGHT PANEL (TOP ALIGNED) -->
         <div id="sideList" class="side-panel-view" hidden>
           <div id="listDetailContent" style="display:flex; flex-direction:column; min-height:100%;">
-            <div class="empty" style="margin:auto 0;">목록에서 일정을 선택하면 상세 내용이 표시됩니다</div>
+            <div class="empty-state" style="padding: 32px 16px 24px;">
+              <div class="empty-icon-wrap">
+                <svg viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10 9 9 9 8 9" />
+                </svg>
+              </div>
+              <div class="empty-title">선택된 일정이 없습니다</div>
+              <div class="empty-sub">목록에서 일정을 클릭하면 상세 내용이 표시됩니다</div>
+            </div>
           </div>
         </div>
       </aside>
@@ -2628,7 +2777,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.3';
+      window.APP_VERSION = 'v1.3.1';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4988,7 +5137,7 @@
         } else {
           if (!ui.listSelectedTask) {
             $('listDetailContent').innerHTML = `
-              <div class="empty-state" style="margin: auto 0;">
+              <div class="empty-state" style="padding: 32px 16px 24px;">
                 <div class="empty-icon-wrap">
                   <svg viewBox="0 0 24 24">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -5319,7 +5468,7 @@
                 <label>제목 <span class="req">*</span></label>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <input id="modalTitle" class="control" style="flex:1; min-width:0;" value="${esc(editTarget.title)}" required placeholder="일정 제목 또는 공휴일 명칭" autocomplete="off">
-                  <label class="label-addon-btn" style="height:38px; padding:0 10px;">
+                  <label class="label-addon-btn" style="height:36px; padding:0 10px; border-radius:8px;">
                     <input type="checkbox" id="modalHoliday" ${editTarget.isHoliday ? 'checked' : ''}> 공휴일
                   </label>
                   <button type="button" id="modalHolidayWorkBtn" class="btn" style="height:38px; width:80px; min-width:80px; padding:0; justify-content:center; align-items:center; font-size:11.5px; display:none; white-space:nowrap; box-sizing:border-box; flex:none;">+ 일정추가</button>
@@ -5354,10 +5503,10 @@
               <div class="field" id="fieldDdayMode">
                 <label>D-Day 기준</label>
                 <div style="display:flex; gap:16px; align-items:center; padding:2px 0;">
-                  <label class="inline-check" style="cursor:pointer;">
+                  <label class="options-chip" style="cursor:pointer;">
                     <input type="radio" name="modalDdayMode" value="workday" ${editTarget.ddayMode !== 'calendar' ? 'checked' : ''}> 근무일 기준(주말·공휴일 제외)
                   </label>
-                  <label class="inline-check" style="cursor:pointer;">
+                  <label class="options-chip" style="cursor:pointer;">
                     <input type="radio" name="modalDdayMode" value="calendar" ${editTarget.ddayMode === 'calendar' ? 'checked' : ''}> 달력일 기준(실제 날짜)
                   </label>
                 </div>
@@ -5379,9 +5528,9 @@
               <!-- 7. 알림 주기 -->
               <div class="field" id="fieldReminders">
                 <label>알림 주기</label>
-                <div class="reminder-options">
-                  <label class="inline-check"><input type="checkbox" class="rem-check" value="3" ${(editTarget.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
-                  <label class="inline-check"><input type="checkbox" class="rem-check" value="5" ${(editTarget.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
+                <div class="options-card">
+                  <label class="options-chip"><input type="checkbox" class="rem-check" value="3" ${(editTarget.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
+                  <label class="options-chip"><input type="checkbox" class="rem-check" value="5" ${(editTarget.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
                   <input type="text" id="modalCustomRem" class="control inline-input" placeholder="추가 알림(예: 10, 20)" value="${esc(customRemVal)}">
                 </div>
               </div>
@@ -5397,10 +5546,10 @@
                     </label>
                   </div>
                 </div>
-                <div class="reminder-options">
-                  <label class="inline-check"><input type="checkbox" class="rec-check" value="weekly" ${isWeekly ? 'checked' : ''}> 매주</label>
-                  <label class="inline-check"><input type="checkbox" class="rec-check" value="monthly" ${isMonthly ? 'checked' : ''}> 매월</label>
-                  <label class="inline-check"><input type="checkbox" class="rec-check" value="yearly" ${isYearly ? 'checked' : ''}> 매년</label>
+                <div class="options-card">
+                  <label class="options-chip"><input type="checkbox" class="rec-check" value="weekly" ${isWeekly ? 'checked' : ''}> 매주</label>
+                  <label class="options-chip"><input type="checkbox" class="rec-check" value="monthly" ${isMonthly ? 'checked' : ''}> 매월</label>
+                  <label class="options-chip"><input type="checkbox" class="rec-check" value="yearly" ${isYearly ? 'checked' : ''}> 매년</label>
                   <input type="text" id="modalCustomRec" class="control inline-input" placeholder="추가 반복(일 수: 숫자 입력)" value="${esc(customRecVal)}">
                 </div>
                 <div id="periodRecNotice" style="display:none; font-size:11.5px; color:#64748b; margin-top:4px;">※ 기간 일정(2일 이상)은 반복 주기를 설정할 수 없습니다.</div>
@@ -5409,7 +5558,7 @@
               <!-- 9. 완료 처리 (수정 모드 전용) -->
               ${editing ? `
               <div class="completion-box" id="fieldCompletion">
-                <label class="inline-check"><input type="checkbox" id="modalCompleted" ${editTarget.completed ? 'checked' : ''}> 완료 처리</label>
+                <label class="options-chip"><input type="checkbox" id="modalCompleted" ${editTarget.completed ? 'checked' : ''}> 완료 처리</label>
                 <input type="date" id="modalCompletedDate" class="control" min="1900-01-01" max="2099-12-31" style="width:130px; margin-left:auto;" value="${editTarget.completedDate || today()}">
               </div>` : ''}
             </div>
@@ -5837,10 +5986,10 @@
               <div class="field" id="recFieldDdayMode">
                 <label>D-Day 기준</label>
                 <div style="display:flex; gap:16px; align-items:center; padding:2px 0;">
-                  <label class="inline-check" style="cursor:pointer;">
+                  <label class="options-chip" style="cursor:pointer;">
                     <input type="radio" name="recModalDdayMode" value="workday" ${editingRule.ddayMode !== 'calendar' ? 'checked' : ''}> 근무일 기준(주말·공휴일 제외)
                   </label>
-                  <label class="inline-check" style="cursor:pointer;">
+                  <label class="options-chip" style="cursor:pointer;">
                     <input type="radio" name="recModalDdayMode" value="calendar" ${editingRule.ddayMode === 'calendar' ? 'checked' : ''}> 달력일 기준(실제 날짜)
                   </label>
                 </div>
@@ -5862,9 +6011,9 @@
               <!-- 7. 알림 주기 -->
               <div class="field">
                 <label>알림 주기</label>
-                <div class="reminder-options">
-                  <label class="inline-check"><input type="checkbox" class="rem-check" value="3" ${(editingRule.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
-                  <label class="inline-check"><input type="checkbox" class="rem-check" value="5" ${(editingRule.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
+                <div class="options-card">
+                  <label class="options-chip"><input type="checkbox" class="rem-check" value="3" ${(editingRule.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
+                  <label class="options-chip"><input type="checkbox" class="rem-check" value="5" ${(editingRule.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
                   <input type="text" id="recModalCustomRem" class="control inline-input" placeholder="추가 알림(숫자 쉼표 구분: 예 10, 20)" value="${esc(customRemVal)}">
                 </div>
               </div>
@@ -5880,10 +6029,10 @@
                     </label>
                   </div>
                 </div>
-                <div class="reminder-options">
-                  <label class="inline-check"><input type="checkbox" class="rec-check" value="weekly" ${isWeekly ? 'checked' : ''}> 매주</label>
-                  <label class="inline-check"><input type="checkbox" class="rec-check" value="monthly" ${isMonthly ? 'checked' : ''}> 매월</label>
-                  <label class="inline-check"><input type="checkbox" class="rec-check" value="yearly" ${isYearly ? 'checked' : ''}> 매년</label>
+                <div class="options-card">
+                  <label class="options-chip"><input type="checkbox" class="rec-check" value="weekly" ${isWeekly ? 'checked' : ''}> 매주</label>
+                  <label class="options-chip"><input type="checkbox" class="rec-check" value="monthly" ${isMonthly ? 'checked' : ''}> 매월</label>
+                  <label class="options-chip"><input type="checkbox" class="rec-check" value="yearly" ${isYearly ? 'checked' : ''}> 매년</label>
                   <input type="text" id="recModalCustomRec" class="control inline-input" placeholder="추가 반복(일 수: 숫자 입력)" value="${esc(customRecVal)}">
                 </div>
               </div>
@@ -6060,70 +6209,68 @@
               <h2>설정 / 동기화</h2>
               <button class="btn icon" data-action="closeSettings" aria-label="닫기">${icon('close')}</button>
             </div>
-            <div class="modal-body" style="padding: 12px 16px; gap: 6px;">
-              <div class="field">
-                <label style="margin-bottom:4px;">클라우드 동기화 (Google / Firestore)</label>
+            <div class="modal-body" style="padding: 14px 18px; gap: 10px;">
+              <!-- 1. 클라우드 동기화 -->
+              <div class="settings-card">
+                <div class="settings-card-title">
+                  <span>클라우드 동기화 (Google / Firestore)</span>
+                  ${currentUser ? '<span style="font-size:11px; font-weight:600; color:#10b981; display:inline-flex; align-items:center; gap:4px;"><span style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block;"></span>연결됨</span>' : ''}
+                </div>
                 ${currentUser ? `
-                  <div style="display:flex; gap:8px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:4px;">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                      <span class="sync-dot synced"></span>
-                      <span style="font-size:12px; font-weight:600; color:var(--text-main);">${esc(currentUser.email || '구글 계정')}</span>
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <div style="font-size:12.5px; font-weight:600; color:#334155; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                      ${esc(currentUser.email || '구글 계정')}
                     </div>
-                    <div style="display:flex; gap:6px;">
-                      <button type="button" class="btn" data-action="cloudSyncNow" style="padding:4px 8px; font-size:11.5px; height:28px; flex:none; white-space:nowrap;">지금 동기화</button>
-                      <button type="button" class="btn danger" data-action="logoutGoogle" style="padding:4px 8px; font-size:11.5px; height:28px; flex:none; white-space:nowrap;">로그아웃</button>
+                    <div style="display:flex; gap:6px; flex-shrink:0;">
+                      <button type="button" class="btn" data-action="cloudSyncNow" style="height:30px; font-size:11.5px; padding:0 10px;">지금 동기화</button>
+                      <button type="button" class="btn danger" data-action="logoutGoogle" style="height:30px; font-size:11.5px; padding:0 10px;">로그아웃</button>
                     </div>
                   </div>
-                  <p class="micro" style="margin-top:2px; color:var(--text-sub);">
-                    ※ 동일한 구글 계정으로 로그인한 모든 기기(모바일/PC)와 실시간 자동 동기화됩니다.
-                    ${lastCloudSyncTime ? `<br>마지막 동기화: ${formatSyncTime(lastCloudSyncTime)}` : ''}
-                  </p>
+                  <p class="settings-desc">동일 구글 계정으로 로그인한 모든 기기와 실시간 동기화됩니다.${lastCloudSyncTime ? `<br>마지막 동기화: ${formatSyncTime(lastCloudSyncTime)}` : ''}</p>
                 ` : `
-                  <div style="display:flex; gap:8px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin-bottom:4px;">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                      <span class="sync-dot"></span>
-                      <span style="font-size:12px; color:var(--text-muted);">오프라인 (로그인 필요)</span>
-                    </div>
-                    <button type="button" class="btn primary" data-action="loginGoogle" style="padding:4px 10px; font-size:11.5px; height:28px; flex:none; white-space:nowrap;">
-                      Google 계정으로 로그인
-                    </button>
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <div style="font-size:12px; color:#64748b;">로그인하지 않음 (로컬 브라우저에만 저장됨)</div>
+                    <button type="button" class="btn primary" data-action="loginGoogle" style="height:30px; font-size:11.5px; padding:0 12px;">Google 로그인</button>
                   </div>
-                  <p class="micro" style="margin-top:2px; color:var(--text-sub);">
-                    ※ Google 계정으로 로그인하면 모바일과 데스크톱 간에 일정이 실시간 동기화됩니다.
-                  </p>
+                  <p class="settings-desc">Google 계정으로 로그인하면 모바일과 PC 간 실시간 자동 동기화됩니다.</p>
                 `}
               </div>
-              <hr style="border:0; border-top:1px solid var(--line); margin: 8px 0;">
-              <div class="field">
-                <label style="margin-bottom:4px;">데이터 백업 및 복원</label>
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px;">
-                  <button class="btn primary" data-action="exportBackup" style="padding:4px 12px; font-size:12px; height:28px; flex:none; white-space:nowrap;">JSON 내보내기</button>
-                  ${isBackupNudge ? '<span id="backupNudgeText" style="font-size:11.5px; color:#7c3aed; font-weight:600;">JSON으로 저장해서 데이터를 백업해 주세요.</span>' : ''}
+
+              <!-- 2. 데이터 백업 및 복원 -->
+              <div class="settings-card">
+                <div class="settings-card-title">
+                  <span>데이터 백업 및 복원</span>
+                  <button class="btn primary" data-action="exportBackup" style="height:28px; font-size:11.5px; padding:0 10px;">JSON 내보내기</button>
                 </div>
-                <input type="file" id="importFile" accept=".json" style="display:none;">
-                <div style="display:flex; gap:5px; align-items:center; flex-wrap:nowrap; width:100%;">
-                  <button type="button" class="btn" id="customFilePickBtn" style="padding:4px 8px; font-size:11.5px; height:28px; flex:none; white-space:nowrap;">파일 선택</button>
-                  <span id="importFileNameDisplay" style="font-size:11px; color:var(--text-muted); min-width:0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#f8fafc; border:1px solid var(--border); border-radius:var(--radius-xs); padding:4px 6px; height:28px; line-height:18px; box-sizing:border-box;">파일명: </span>
-                  <button class="btn" data-action="importMerge" style="padding:4px 8px; font-size:11.5px; height:28px; flex:none; white-space:nowrap;">일정 병합</button>
-                  <button class="btn" data-action="importOverwrite" style="padding:4px 8px; font-size:11.5px; height:28px; flex:none; white-space:nowrap;">덮어 쓰기</button>
+                <div style="display:flex; gap:6px; align-items:center; width:100%;">
+                  <input type="file" id="importFile" accept=".json" style="display:none;">
+                  <button type="button" class="btn" id="customFilePickBtn" style="height:30px; font-size:11.5px; padding:0 9px; flex-shrink:0;">파일 선택</button>
+                  <span id="importFileNameDisplay" style="font-size:11px; color:#64748b; min-width:0; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#f8fafc; border:1px solid var(--border); border-radius:6px; padding:0 8px; height:30px; line-height:28px; box-sizing:border-box;">선택된 파일 없음</span>
+                  <button class="btn" data-action="importMerge" style="height:30px; font-size:11.5px; padding:0 9px; flex-shrink:0;">일정 병합</button>
+                  <button class="btn" data-action="importOverwrite" style="height:30px; font-size:11.5px; padding:0 9px; flex-shrink:0;">덮어 쓰기</button>
                 </div>
-                <p class="micro" style="margin-top:5px; color:var(--text-sub);">※ 병합은 기존 일정에 추가하고, 덮어 쓰기는 기존 일정을 삭제합니다.</p>
+                <p class="settings-desc">※ 병합은 기존 일정에 추가하고, 덮어 쓰기는 기존 일정을 대체합니다.</p>
+                ${isBackupNudge ? '<div style="font-size:11.5px; color:#7c3aed; font-weight:600; padding:4px 8px; background:#f5f3ff; border-radius:6px;">💡 주기적으로 JSON 백업을 받아두시면 데이터가 안전하게 보호됩니다.</div>' : ''}
               </div>
-              <hr style="border:0; border-top:1px solid var(--line); margin: 8px 0;">
-              <div class="field">
-                <label style="margin-bottom:4px;">시스템 알림</label>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <button type="button" class="btn" data-action="toggleDesktop" style="padding:4px 10px; font-size:11.5px; height:28px; flex:none; white-space:nowrap;">
-                    ${data.settings.desktopNotifications ? '시스템 알림 끄기' : '시스템 알림 켜기'}
+
+              <!-- 3. 시스템 알림 -->
+              <div class="settings-card">
+                <div class="settings-card-title">
+                  <span>시스템 팝업 알림</span>
+                  <button type="button" class="btn" data-action="toggleDesktop" style="height:28px; font-size:11.5px; padding:0 10px;">
+                    ${data.settings.desktopNotifications ? '알림 끄기' : '알림 켜기'}
                   </button>
-                  <span class="micro">${permText}</span>
                 </div>
-                <p class="micro" style="margin-top:5px;">※ 시스템 알림을 켜면 브라우저가 열려 있을 때 팝업으로 알림을 수신합니다.</p>
+                <p class="settings-desc">상태: ${permText} (브라우저가 열려 있을 때 화면 팝업 알림 수신)</p>
               </div>
-              <hr style="border:0; border-top:1px solid var(--line); margin: 8px 0;">
-              <div class="field">
-                <label style="margin-bottom:4px;">데이터 초기화</label>
-                <div><button class="btn danger" data-action="resetData" style="padding:4px 10px; font-size:11.5px; height:28px; flex:none; white-space:nowrap;">전체 데이터 삭제</button></div>
+
+              <!-- 4. 데이터 초기화 -->
+              <div class="settings-card" style="border-color:#fee2e2;">
+                <div class="settings-card-title">
+                  <span style="color:#e11d48;">데이터 초기화</span>
+                  <button class="btn danger" data-action="resetData" style="height:28px; font-size:11.5px; padding:0 10px;">전체 데이터 삭제</button>
+                </div>
+                <p class="settings-desc" style="color:#f43f5e;">등록된 모든 일정과 설정을 초기화합니다.</p>
               </div>
             </div>
           </div>`;
@@ -6201,17 +6348,35 @@
               <h2>알림 센터</h2>
               <button type="button" class="btn icon" data-action="closeDetail" aria-label="닫기">${icon('close')}</button>
             </div>
-            <div class="modal-body" style="padding: 14px 20px;">
-              ${logs.length ? logs.map(n => `
-                <div style="padding: 10px 0; border-bottom: 1px solid var(--line);">
-                  <div style="font-weight: 700; color: #0f172a; font-size: 13px;">${esc(n.title)}</div>
-                  <div style="font-size: 12px; color: var(--muted); margin: 4px 0;">${esc(n.message)}</div>
-                  <div style="font-size: 11px; color: #94a3b8;">${n.createdAt ? new Date(n.createdAt).toLocaleString('ko-KR') : ''}</div>
+            <div class="modal-body" style="padding: 14px 18px; gap: 8px;">
+              ${logs.length ? logs.map(n => {
+                const isOverdue = n.message && n.message.includes('(기한 지남)');
+                const cleanMsg = isOverdue ? n.message.replace(/\(기한 지남\)/g, '').trim() : n.message;
+                const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                return `
+                  <div class="noti-card">
+                    <div class="noti-card-head">
+                      <div class="noti-card-title">${esc(n.title)}</div>
+                      <div class="noti-card-time">${timeStr}</div>
+                    </div>
+                    <div class="noti-card-msg">
+                      <span>${esc(cleanMsg)}</span>
+                      ${isOverdue ? '<span class="noti-badge-overdue">기한 지남</span>' : ''}
+                    </div>
+                  </div>
+                `;
+              }).join('') : `
+                <div class="empty-state" style="padding: 24px 0;">
+                  <div class="empty-icon-wrap" style="width:40px; height:40px; margin-bottom:8px;">
+                    <svg viewBox="0 0 24 24" style="width:20px; height:20px;"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+                  </div>
+                  <div class="empty-title" style="font-size:13px;">새로운 알림이 없습니다</div>
+                  <div class="empty-sub" style="font-size:11px; margin-bottom:0;">다가오는 일정 알림이 여기에 기록됩니다</div>
                 </div>
-              `).join('') : '<div class="empty">새로운 알림이 없습니다</div>'}
+              `}
             </div>
             <div class="modal-foot">
-              ${logs.length ? `<button type="button" class="btn danger" data-action="clearNotifications">알림 기록 삭제</button>` : '<div></div>'}
+              ${logs.length ? `<button type="button" class="btn danger" data-action="clearNotifications" style="margin-right:auto; height:32px; font-size:12px; padding:0 10px;">알림 기록 삭제</button>` : ''}
               <button type="button" class="btn" data-action="closeDetail">닫기</button>
             </div>
           </div>
