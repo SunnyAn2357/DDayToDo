@@ -235,25 +235,36 @@
     .clock {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 7px;
+      height: 34px;
+      padding: 0 13px;
       background: #ffffff;
       border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 4px 14px;
-      font-size: 12px;
+      border-radius: var(--radius-md);
+      font-size: 12.5px;
       font-weight: 600;
-      color: #475569;
+      color: #334155;
       font-feature-settings: "tnum";
       font-variant-numeric: tabular-nums;
       box-shadow: var(--shadow-xs);
+      box-sizing: border-box;
       cursor: pointer;
       user-select: none;
-      transition: all 0.15s ease;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .clock:hover {
       background: #f8fafc;
       border-color: #cbd5e1;
+      color: #0f172a;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .clock:active {
+      transform: translateY(0);
+      box-shadow: none;
     }
 
     .clock-full {
@@ -332,7 +343,7 @@
       justify-content: center;
       gap: 6px;
       padding: 6px 13px;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       border: 1px solid var(--border);
       background: #ffffff;
       color: #334155;
@@ -1304,6 +1315,106 @@
       font-weight: 500;
     }
 
+    /* EMPTY STATE ENHANCEMENT */
+    .empty-state {
+      padding: 36px 16px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      color: #64748b;
+    }
+
+    .empty-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+    }
+
+    .empty-icon-wrap svg {
+      width: 24px;
+      height: 24px;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      fill: none;
+    }
+
+    .empty-state:hover .empty-icon-wrap {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+      color: #4f46e5;
+      transform: scale(1.05);
+    }
+
+    .empty-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .empty-sub {
+      font-size: 11.5px;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .empty-add-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1.5px dashed #cbd5e1;
+      background: #ffffff;
+      color: #4f46e5;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .empty-add-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      fill: none;
+    }
+
+    .empty-add-btn:hover {
+      background: #f5f3ff;
+      border-color: #818cf8;
+      border-style: solid;
+      color: #4338ca;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.12);
+    }
+
+    .empty-add-btn:active {
+      transform: translateY(0);
+      box-shadow: none;
+    }
+
+    .deadline-pill.is-zero {
+      opacity: 0.55;
+      filter: grayscale(0.35);
+    }
+
+    .deadline-pill.is-zero:hover {
+      opacity: 0.9;
+      filter: none;
+    }
+
     /* DETAIL CARD IN LIST VIEW */
     .detail-card {
       background: #ffffff;
@@ -1914,7 +2025,9 @@
       .clock {
         flex: 1;
         min-width: 0;
-        padding: 4px 8px;
+        padding: 0 8px;
+        height: 30px;
+        border-radius: 7px;
         font-size: 11px;
         white-space: nowrap;
         overflow: hidden;
@@ -1952,9 +2065,10 @@
       }
 
       .header-right .actions .btn {
-        padding: 4px 8px;
+        padding: 0 8px;
         font-size: 11px;
         height: 30px;
+        border-radius: 7px;
         white-space: nowrap;
         flex-shrink: 0;
       }
@@ -2514,7 +2628,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.1';
+      window.APP_VERSION = 'v1.2.2';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4839,7 +4953,7 @@
             ['ddayfive', 'D-5', ddayCounts.ddayfive],
             ['ddayten', 'D-10', ddayCounts.ddayten],
             ['rest', 'D-11~', ddayCounts.rest]
-          ].map(([k, label, n]) => `<div class="deadline-pill ${k}" data-action="ddayGroup" data-value="${k}"><span>${label}</span><strong>${n}건</strong></div>`).join('');
+          ].map(([k, label, n]) => `<div class="deadline-pill ${k} ${n === 0 ? 'is-zero' : 'has-count'}" data-action="ddayGroup" data-value="${k}"><span>${label}</span><strong>${n}건</strong></div>`).join('');
 
           const toggleBtn = $('toggleHideCompletedBtn');
           if (toggleBtn) {
@@ -4853,10 +4967,40 @@
           if (ui.hideCompleted) {
             dayTasks = dayTasks.filter(t => !t.completed);
           }
-          $('dayTasks').innerHTML = dayTasks.length ? dayTasks.map(t => taskRow(t, today())).join('') : `<div class="empty">등록된 일정이 없습니다.</div>`;
+          $('dayTasks').innerHTML = dayTasks.length ? dayTasks.map(t => taskRow(t, today())).join('') : `
+            <div class="empty-state">
+              <div class="empty-icon-wrap">
+                <svg viewBox="0 0 24 24">
+                  <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                  <path d="M9 16l2 2 4-4" />
+                </svg>
+              </div>
+              <div class="empty-title">선택한 날짜에 일정이 없습니다</div>
+              <div class="empty-sub">새로운 업무나 기념일을 등록해보세요</div>
+              <button type="button" class="empty-add-btn" data-action="add">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                이 날짜에 새 일정 추가
+              </button>
+            </div>`;
         } else {
           if (!ui.listSelectedTask) {
-            $('listDetailContent').innerHTML = `<div class="empty" style="margin:auto 0;">목록에서 일정을 선택하면 상세 내용이 표시됩니다</div>`;
+            $('listDetailContent').innerHTML = `
+              <div class="empty-state" style="margin: auto 0;">
+                <div class="empty-icon-wrap">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                  </svg>
+                </div>
+                <div class="empty-title">선택된 일정이 없습니다</div>
+                <div class="empty-sub">목록에서 일정을 클릭하면 상세 내용이 표시됩니다</div>
+              </div>`;
           } else {
             let t = data.tasks.find(x => x.id === ui.listSelectedTask);
             let isRule = false;
@@ -6644,6 +6788,60 @@
         });
 
         document.addEventListener('click', handleAction);
+
+        /* 키보드 단축키 지원 (파워유저 UX: 모달 및 입력창 비활성 시 작동) */
+        document.addEventListener('keydown', e => {
+          const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+          if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+
+          const isEditorOpen = $('editor') && $('editor').open;
+          const isDetailOpen = $('detail') && $('detail').open;
+          const isSettingsOpen = $('settingsModal') && $('settingsModal').open;
+          const isNotiOpen = $('notificationsModal') && $('notificationsModal').open;
+          const anyModalOpen = isEditorOpen || isDetailOpen || isSettingsOpen || isNotiOpen;
+
+          if (anyModalOpen) {
+            if (e.key === 'Escape') {
+              if (isEditorOpen) $('editor').close();
+              if (isDetailOpen) $('detail').close();
+              if (isSettingsOpen) $('settingsModal').close();
+              if (isNotiOpen) $('notificationsModal').close();
+            }
+            return;
+          }
+
+          if (ui.view === 'calendar' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+            e.preventDefault();
+            const curD = parseDate(ui.selected);
+            const delta = (e.key === 'ArrowLeft') ? -1 : (e.key === 'ArrowRight') ? 1 : (e.key === 'ArrowUp') ? -7 : 7;
+            curD.setDate(curD.getDate() + delta);
+            const newDateStr = dateStr(curD);
+            ui.selected = newDateStr;
+            if (curD.getFullYear() !== ui.year || curD.getMonth() !== ui.month) {
+              ui.year = curD.getFullYear();
+              ui.month = curD.getMonth();
+            }
+            render();
+            return;
+          }
+
+          if (e.key === 't' || e.key === 'T') {
+            e.preventDefault();
+            const t = today();
+            const d = parseDate(t);
+            ui.year = d.getFullYear();
+            ui.month = d.getMonth();
+            ui.selected = t;
+            render();
+            return;
+          }
+
+          if (e.key === 'n' || e.key === 'N') {
+            e.preventDefault();
+            openEditor();
+            return;
+          }
+        });
 
         /* 다른 탭/창에서 저장이 일어나면 즉시 반영 (오래된 화면이 최신 데이터를 덮어쓰는 것 방지) */
         window.addEventListener('storage', e => {
