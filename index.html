@@ -2883,7 +2883,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.3.4';
+      window.APP_VERSION = 'v1.3.5';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -5563,6 +5563,16 @@
         });
       }
 
+      /* [V1.3.5] 모달 닫기 시 safeHistoryBack을 IIFE 최상위 스코프로 승격하여 ReferenceError 완전 해결 및 저장 즉시 캘린더 실시간 반영 */
+      let isProgrammaticHistoryBack = false;
+      function safeHistoryBack(expectedModal) {
+        try {
+          if (history.state && history.state.modal === expectedModal) {
+            history.replaceState(null, '');
+          }
+        } catch (e) {}
+      }
+
       let editTarget = null;
       let holidayHasTask = false;
       function openEditor(task = null) {
@@ -7164,15 +7174,6 @@
         document.addEventListener('click', handleAction);
 
         /* [V1.3.3] 모바일 뒤로가기(popstate) 및 히스토리 방어 */
-        /* [V1.3.4] 모달 닫기 시 비동기 history.back() 대신 replaceState 사용하여 DOM 롤백 방지 */
-        function safeHistoryBack(expectedModal) {
-          try {
-            if (history.state && history.state.modal === expectedModal) {
-              history.replaceState(null, '');
-            }
-          } catch (e) {}
-        }
-
         window.addEventListener('popstate', e => {
           if (isProgrammaticHistoryBack) {
             isProgrammaticHistoryBack = false;
