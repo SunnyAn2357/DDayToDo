@@ -559,7 +559,7 @@
     .select-small {
       border: 1px solid var(--border);
       background: #ffffff;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       height: 36px;
       padding: 0 10px;
       font-size: 13px;
@@ -1059,7 +1059,7 @@
     .deadline-pill {
       min-width: 0;
       white-space: nowrap;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       padding: 6px 4px;
       display: flex;
       flex-direction: column;
@@ -2399,7 +2399,7 @@
           <div id="clockText" class="clock-full"></div>
         </div>
         <div class="actions">
-          <button class="btn" data-action="notifications">
+          <button class="btn" data-action="notifications" title="알림 목록 확인">
             <svg viewBox="0 0 24 24">
               <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
             </svg>
@@ -2628,7 +2628,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.2';
+      window.APP_VERSION = 'v1.2.3';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -6794,18 +6794,18 @@
           const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
           if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
 
+          const isSpecialCharOpen = $('specialCharModal') && $('specialCharModal').open;
           const isEditorOpen = $('editor') && $('editor').open;
           const isDetailOpen = $('detail') && $('detail').open;
-          const isSettingsOpen = $('settingsModal') && $('settingsModal').open;
-          const isNotiOpen = $('notificationsModal') && $('notificationsModal').open;
-          const anyModalOpen = isEditorOpen || isDetailOpen || isSettingsOpen || isNotiOpen;
+          const isSettingsOpen = $('settings') && $('settings').open;
+          const anyModalOpen = isSpecialCharOpen || isEditorOpen || isDetailOpen || isSettingsOpen;
 
           if (anyModalOpen) {
             if (e.key === 'Escape') {
-              if (isEditorOpen) $('editor').close();
-              if (isDetailOpen) $('detail').close();
-              if (isSettingsOpen) $('settingsModal').close();
-              if (isNotiOpen) $('notificationsModal').close();
+              if (isSpecialCharOpen) $('specialCharModal').close();
+              else if (isEditorOpen) $('editor').close();
+              else if (isDetailOpen) $('detail').close();
+              else if (isSettingsOpen) $('settings').close();
             }
             return;
           }
