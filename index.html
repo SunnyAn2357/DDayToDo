@@ -1806,12 +1806,52 @@
       border: 1px solid var(--border-subtle);
     }
 
+        /* [V1.3.3] 알림/반복 옵션 카드 및 인라인 칩 수직 정렬 완벽 일치 */
+    .options-card {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      background: #f8fafc;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      min-height: 44px;
+      box-sizing: border-box;
+    }
+
+    .options-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      user-select: none;
+      line-height: 1;
+    }
+
+    .options-chip input[type="checkbox"],
+    .options-chip input[type="radio"] {
+      width: 15px;
+      height: 15px;
+      margin: 0;
+      accent-color: #4f46e5;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+
     .inline-input {
       flex: 1;
-      min-width: 140px;
-      height: 30px;
+      min-width: 110px;
+      height: 28px;
       font-size: 12px;
-      padding: 2px 8px;
+      padding: 0 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      box-sizing: border-box;
     }
 
     .completion-box {
@@ -2422,23 +2462,29 @@
         }
       }
 
-      /* [V1.1.4] 특수문자 팔레트 탭, 버튼, 최근입력 칩 호버/클릭 효과 */
+      /* [V1.3.3] 특수문자 팔레트 탭, 버튼, 최근입력 칩 및 닫기 버튼 통일 스타일 */
       .spec-tab-btn {
-        padding: 3px 7px;
-        font-size: 11.5px;
-        font-weight: 700;
-        border-radius: var(--radius-xs);
+        height: 28px;
+        padding: 0 10px;
+        font-size: 12px;
+        font-weight: 600;
+        border-radius: 7px;
         border: 1px solid var(--border);
         background: #ffffff;
-        color: #64748b;
+        color: #475569;
         cursor: pointer;
         user-select: none;
-        transition: all 0.12s ease;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
       .spec-tab-btn:hover {
         background: #f1f5f9;
         color: #1e293b;
         border-color: #cbd5e1;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
       }
       .spec-tab-btn:active {
         transform: scale(0.95);
@@ -2447,17 +2493,42 @@
         background: #4f46e5;
         color: #ffffff;
         border-color: #4f46e5;
-        box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25);
+        box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
       }
-      .special-char-btn {
-        height: 32px;
+      .spec-close-btn {
+        width: 28px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 15px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 7px;
+        font-size: 13px;
+        cursor: pointer;
+        color: #64748b;
+        line-height: 1;
+        padding: 0;
+        transition: all 0.15s ease;
+      }
+      .spec-close-btn:hover {
+        background: #fee2e2;
+        color: #ef4444;
+        border-color: #fca5a5;
+        transform: scale(1.05);
+      }
+      .spec-close-btn:active {
+        transform: scale(0.95);
+      }
+      .special-char-btn {
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14.5px;
         background: #ffffff;
         border: 1px solid var(--border);
-        border-radius: var(--radius-xs);
+        border-radius: 6px;
         cursor: pointer;
         user-select: none;
         transition: all 0.12s ease;
@@ -2468,6 +2539,7 @@
         border-color: #818cf8;
         color: #4338ca;
         transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(79, 70, 229, 0.15);
       }
       .special-char-btn:active {
         background: #4f46e5;
@@ -2778,19 +2850,19 @@
   <dialog id="settings"></dialog>
 
   
-  <!-- 특수문자 팔레트 팝업 모달 [V1.1.4 3-Tab: 특수문자1, 특수문자2, 이모티콘 & 최근입력 재입력 버튼] -->
-  <dialog id="specialCharModal" style="border:1px solid #cbd5e1; border-radius:8px; padding:0; box-shadow:0 10px 25px -5px rgba(0,0,0,0.18); width:340px; max-width:94vw; background:#ffffff;">
-    <div style="padding:6px 12px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top-left-radius:7px; border-top-right-radius:7px;">
-      <div style="display:flex; gap:4px; align-items:center;">
+  <!-- 특수문자 팔레트 팝업 모달 [V1.3.3: 상하좌우 여백 확대, 28px 컴팩트 버튼 & 스쿼클 12px 프레임] -->
+  <dialog id="specialCharModal" style="border:1px solid #cbd5e1; border-radius:12px; padding:0; box-shadow:0 12px 30px -4px rgba(0,0,0,0.18); width:350px; max-width:92vw; background:#ffffff;">
+    <div style="padding:10px 14px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top-left-radius:11px; border-top-right-radius:11px;">
+      <div style="display:flex; gap:6px; align-items:center;">
         <button type="button" id="tabSpecialChar1" class="spec-tab-btn active">특수문자1</button>
         <button type="button" id="tabSpecialChar2" class="spec-tab-btn">특수문자2</button>
         <button type="button" id="tabSpecialChar3" class="spec-tab-btn">이모티콘</button>
       </div>
-      <button type="button" id="closeSpecialCharBtn" style="background:none; border:none; font-size:15px; cursor:pointer; color:#64748b; line-height:1; padding:2px;">✕</button>
+      <button type="button" id="closeSpecialCharBtn" class="spec-close-btn" title="닫기 (Esc)">✕</button>
     </div>
-    <div id="specialCharGrid" style="padding:8px; display:grid; grid-template-columns:repeat(7, 1fr); gap:4px; max-height:200px; overflow-y:auto;">
+    <div id="specialCharGrid" style="padding:12px 14px; display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; max-height:210px; overflow-y:auto;">
     </div>
-    <div id="specialCharRecentBar" style="padding:6px 12px; border-top:1px solid #f1f5f9; background:#f8fafc; font-size:11.5px; display:flex; align-items:center; gap:6px; min-height:38px; box-sizing:border-box; border-bottom-left-radius:7px; border-bottom-right-radius:7px; overflow:hidden;">
+    <div id="specialCharRecentBar" style="padding:8px 14px; border-top:1px solid #f1f5f9; background:#f8fafc; font-size:11.5px; display:flex; align-items:center; gap:6px; min-height:42px; box-sizing:border-box; border-bottom-left-radius:11px; border-bottom-right-radius:11px; overflow:hidden;">
       <span style="font-weight:700; color:#475569; flex:none; font-size:11.5px;">최근 입력:</span>
       <div id="recentCharList" style="display:flex; gap:4px; align-items:center; flex:1; overflow-x:auto; -webkit-overflow-scrolling:touch;"></div>
     </div>
@@ -2811,7 +2883,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.3.2';
+      window.APP_VERSION = 'v1.3.3';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4911,13 +4983,21 @@
             e.preventDefault();
             e.stopPropagation();
             $('specialCharModal').close();
+            safeHistoryBack('specialCharModal');
+            const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
+            if (target) target.focus();
           };
         }
 
         const modal = $('specialCharModal');
         if (modal) {
           modal.onclick = (e) => {
-            if (e.target === modal) modal.close();
+            if (e.target === modal) {
+              modal.close();
+              safeHistoryBack('specialCharModal');
+              const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
+              if (target) target.focus();
+            }
           };
         }
       }
@@ -5500,22 +5580,21 @@
 
         $('editor').innerHTML = `
           <form id="taskForm" class="modal-frame">
-            <div class="modal-head">
+            <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center;">
               <h2>${editing ? '일정 수정' : '새 일정'}</h2>
-              <button type="button" class="btn icon" data-action="closeEditor" aria-label="닫기">${icon('close')}</button>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button type="button" id="modalHolidayWorkBtn" class="btn" style="height:26px; padding:0 8px; font-size:11px; border-radius:7px; display:none; white-space:nowrap;">+ 일정추가</button>
+                <label class="label-addon-btn" style="cursor:pointer;">
+                  <input type="checkbox" id="modalHoliday" ${editTarget.isHoliday ? 'checked' : ''} style="margin:0; width:14px; height:14px; accent-color:#4f46e5;"> 공휴일
+                </label>
+              </div>
             </div>
             <div class="modal-body">
 
-              <!-- 1. 제목 + 공휴일 체크 -->
+              <!-- 1. 제목 -->
               <div class="field">
                 <label>제목 <span class="req">*</span></label>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <input id="modalTitle" class="control" style="flex:1; min-width:0;" value="${esc(editTarget.title)}" required placeholder="일정 제목 또는 공휴일 명칭" autocomplete="off">
-                  <label class="label-addon-btn" style="height:36px; padding:0 10px; border-radius:8px;">
-                    <input type="checkbox" id="modalHoliday" ${editTarget.isHoliday ? 'checked' : ''}> 공휴일
-                  </label>
-                  <button type="button" id="modalHolidayWorkBtn" class="btn" style="height:38px; width:80px; min-width:80px; padding:0; justify-content:center; align-items:center; font-size:11.5px; display:none; white-space:nowrap; box-sizing:border-box; flex:none;">+ 일정추가</button>
-                </div>
+                <input id="modalTitle" class="control" value="${esc(editTarget.title)}" required placeholder="일정 제목 또는 공휴일 명칭" autocomplete="off">
               </div>
 
               <!-- 2. 내용 -->
@@ -5574,26 +5653,26 @@
                 <div class="options-card">
                   <label class="options-chip"><input type="checkbox" class="rem-check" value="3" ${(editTarget.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
                   <label class="options-chip"><input type="checkbox" class="rem-check" value="5" ${(editTarget.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
-                  <input type="text" id="modalCustomRem" class="control inline-input" placeholder="추가 알림(예: 10, 20)" value="${esc(customRemVal)}">
+                  <label class="options-chip"><input type="checkbox" id="modalCustomRemCheck" ${customRemVal ? 'checked' : ''}> 기타</label>
+                  <input type="text" id="modalCustomRem" class="control inline-input" placeholder="일수 입력(예: 10, 20)" value="${esc(customRemVal)}">
                 </div>
               </div>
 
               <!-- 8. 반복 주기 -->
               <div class="field" id="fieldRecurrence">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <label>반복 주기</label>
-                  <div style="display:inline-flex; align-items:center; gap:6px;">
-                    <span id="modalLunarDateDisplay" style="font-size:12px; color:#2563eb; font-weight:600; display:none;"></span>
-                    <label class="label-addon-btn">
-                      <input type="checkbox" id="modalIsLunar" ${editTarget.isLunar ? 'checked' : ''}> 음력
-                    </label>
-                  </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="margin-bottom:0;">반복 주기</label>
+                  <span id="modalLunarDateDisplay" style="font-size:12px; color:#2563eb; font-weight:600; display:none;"></span>
                 </div>
                 <div class="options-card">
                   <label class="options-chip"><input type="checkbox" class="rec-check" value="weekly" ${isWeekly ? 'checked' : ''}> 매주</label>
                   <label class="options-chip"><input type="checkbox" class="rec-check" value="monthly" ${isMonthly ? 'checked' : ''}> 매월</label>
                   <label class="options-chip"><input type="checkbox" class="rec-check" value="yearly" ${isYearly ? 'checked' : ''}> 매년</label>
-                  <input type="text" id="modalCustomRec" class="control inline-input" placeholder="추가 반복(일 수: 숫자 입력)" value="${esc(customRecVal)}">
+                  <label class="options-chip"><input type="checkbox" class="rec-check" id="modalCustomRecCheck" value="custom" ${isCustomRec ? 'checked' : ''}> 기타</label>
+                  <input type="text" id="modalCustomRec" class="control inline-input" placeholder="일 수(예: 15)" value="${esc(customRecVal)}">
+                  <label class="label-addon-btn" style="cursor:pointer; margin-left:auto;">
+                    <input type="checkbox" id="modalIsLunar" ${editTarget.isLunar ? 'checked' : ''} style="margin:0; width:14px; height:14px; accent-color:#4f46e5;"> 음력
+                  </label>
                 </div>
                 <div id="periodRecNotice" style="display:none; font-size:11.5px; color:#64748b; margin-top:4px;">※ 기간 일정(2일 이상)은 반복 주기를 설정할 수 없습니다.</div>
               </div>
@@ -5703,13 +5782,39 @@
           }
         }
 
+        // [V1.3.3] 알림 기타 체크박스 <-> 입력창 자동 연동
+        const customRem = $('modalCustomRem');
+        const customRemCheck = $('modalCustomRemCheck');
+        if (customRem && customRemCheck) {
+          customRem.addEventListener('input', () => {
+            customRemCheck.checked = customRem.value.trim().length > 0;
+          });
+          customRemCheck.addEventListener('change', () => {
+            if (customRemCheck.checked) {
+              customRem.focus();
+            } else {
+              customRem.value = '';
+            }
+          });
+        }
+
+        // [V1.3.3] 반복 주기 기타 체크박스 <-> 입력창 자동 연동 및 상호배제
         const recChecks = document.querySelectorAll('#editor .rec-check');
         const customRec = $('modalCustomRec');
+        const customRecCheck = $('modalCustomRecCheck');
         recChecks.forEach(cb => {
           cb.addEventListener('change', () => {
             if (cb.checked) {
               recChecks.forEach(other => { if (other !== cb) other.checked = false; });
-              if (customRec) customRec.value = '';
+              if (cb === customRecCheck) {
+                if (customRec) customRec.focus();
+              } else {
+                if (customRec) customRec.value = '';
+              }
+            } else {
+              if (cb === customRecCheck && customRec) {
+                customRec.value = '';
+              }
             }
           });
         });
@@ -5717,7 +5822,10 @@
           customRec.addEventListener('input', () => {
             const v = customRec.value.trim();
             if (v && v !== '0') {
-              recChecks.forEach(cb => cb.checked = false);
+              recChecks.forEach(cb => { if (cb !== customRecCheck) cb.checked = false; });
+              if (customRecCheck) customRecCheck.checked = true;
+            } else {
+              if (customRecCheck) customRecCheck.checked = false;
             }
           });
         }
@@ -5819,7 +5927,7 @@
             let rec = 'none';
             if (!isPeriod) {
               const checkedRec = document.querySelector('#editor .rec-check:checked');
-              if (checkedRec) {
+              if (checkedRec && checkedRec.value !== 'custom') {
                 rec = checkedRec.value;
               } else if (customRec && customRec.value.trim() && !isNaN(Number(customRec.value)) && Number(customRec.value) > 0) {
                 rec = String(Math.floor(Number(customRec.value.trim())));
@@ -5827,9 +5935,11 @@
             }
             editTarget.recurrence = rec;
 
-            // Reminders calculation: always include 0 (day of event)
+            // [V1.3.3] 알림 주기 계산 (기타 체크박스 활성화 시에만 커스텀 일수 반영)
             let rems = [...document.querySelectorAll('#editor .rem-check:checked')].map(x => +x.value);
-            let c = $('modalCustomRem').value.split(',').map(x => x.trim()).filter(Boolean).map(Number);
+            let c = (customRemCheck && customRemCheck.checked && customRem)
+              ? customRem.value.split(',').map(x => x.trim()).filter(Boolean).map(Number)
+              : [];
             editTarget.reminders = [...new Set([0, ...rems, ...c])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b);
 
             if (editing) {
@@ -5920,6 +6030,7 @@
 
           if (commit(next)) {
             $('editor').close();
+            safeHistoryBack('editor');
             if (ui.view === 'list') ui.listSelectedTask = editTarget.id;
             render();
             toast('저장되었습니다.');
@@ -5958,12 +6069,15 @@
         const specBtn = $('openSpecialCharsBtn');
         if (specBtn) {
           specBtn.onclick = () => {
+            lastActiveTextarea = $('modalMemo');
             setupSpecialChars();
             $('specialCharModal').showModal();
+            history.pushState({ modal: 'specialCharModal' }, '');
           };
         }
 
         $('editor').showModal();
+        history.pushState({ modal: 'editor' }, '');
         // 다이얼로그 노출 즉시 scrollHeight 측정하여 내용 전체 표시 (하단 잉여 빈공간 완전 제거)
         if (memoEl) {
           memoEl.style.height = 'auto';
@@ -5990,9 +6104,8 @@
 
         $('editor').innerHTML = `
           <form id="recurringForm" class="modal-frame">
-            <div class="modal-head">
+            <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center;">
               <h2>반복 마스터 수정</h2>
-              <button type="button" class="btn icon" data-action="closeEditor" aria-label="닫기">${icon('close')}</button>
             </div>
             <div class="modal-body">
               <!-- 1. 제목 -->
@@ -6057,26 +6170,26 @@
                 <div class="options-card">
                   <label class="options-chip"><input type="checkbox" class="rem-check" value="3" ${(editingRule.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
                   <label class="options-chip"><input type="checkbox" class="rem-check" value="5" ${(editingRule.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
-                  <input type="text" id="recModalCustomRem" class="control inline-input" placeholder="추가 알림(숫자 쉼표 구분: 예 10, 20)" value="${esc(customRemVal)}">
+                  <label class="options-chip"><input type="checkbox" id="recModalCustomRemCheck" ${customRemVal ? 'checked' : ''}> 기타</label>
+                  <input type="text" id="recModalCustomRem" class="control inline-input" placeholder="일수 입력(예: 10, 20)" value="${esc(customRemVal)}">
                 </div>
               </div>
 
               <!-- 8. 반복 주기 -->
               <div class="field">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <label>반복 주기 <span class="req">*</span></label>
-                  <div style="display:inline-flex; align-items:center; gap:6px;">
-                    <span id="recModalLunarDateDisplay" style="font-size:12px; color:#2563eb; font-weight:600; display:none;"></span>
-                    <label class="label-addon-btn">
-                      <input type="checkbox" id="recModalIsLunar" ${editingRule.isLunar ? 'checked' : ''}> 음력
-                    </label>
-                  </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="margin-bottom:0;">반복 주기 <span class="req">*</span></label>
+                  <span id="recModalLunarDateDisplay" style="font-size:12px; color:#2563eb; font-weight:600; display:none;"></span>
                 </div>
                 <div class="options-card">
                   <label class="options-chip"><input type="checkbox" class="rec-check" value="weekly" ${isWeekly ? 'checked' : ''}> 매주</label>
                   <label class="options-chip"><input type="checkbox" class="rec-check" value="monthly" ${isMonthly ? 'checked' : ''}> 매월</label>
                   <label class="options-chip"><input type="checkbox" class="rec-check" value="yearly" ${isYearly ? 'checked' : ''}> 매년</label>
-                  <input type="text" id="recModalCustomRec" class="control inline-input" placeholder="추가 반복(일 수: 숫자 입력)" value="${esc(customRecVal)}">
+                  <label class="options-chip"><input type="checkbox" class="rec-check" id="recModalCustomRecCheck" value="custom" ${isCustomRec ? 'checked' : ''}> 기타</label>
+                  <input type="text" id="recModalCustomRec" class="control inline-input" placeholder="일 수(예: 15)" value="${esc(customRecVal)}">
+                  <label class="label-addon-btn" style="cursor:pointer; margin-left:auto;">
+                    <input type="checkbox" id="recModalIsLunar" ${editingRule.isLunar ? 'checked' : ''} style="margin:0; width:14px; height:14px; accent-color:#4f46e5;"> 음력
+                  </label>
                 </div>
               </div>
             </div>
@@ -6089,20 +6202,50 @@
             </div>
           </form>`;
 
+        // [V1.3.3] 반복 마스터 알림 기타 연동
+        const recCustomRem = $('recModalCustomRem');
+        const recCustomRemCheck = $('recModalCustomRemCheck');
+        if (recCustomRem && recCustomRemCheck) {
+          recCustomRem.addEventListener('input', () => {
+            recCustomRemCheck.checked = recCustomRem.value.trim().length > 0;
+          });
+          recCustomRemCheck.addEventListener('change', () => {
+            if (recCustomRemCheck.checked) {
+              recCustomRem.focus();
+            } else {
+              recCustomRem.value = '';
+            }
+          });
+        }
+
+        // [V1.3.3] 반복 마스터 주기 기타 연동
         const recChecks = document.querySelectorAll('#editor .rec-check');
         const customRec = $('recModalCustomRec');
+        const customRecCheck = $('recModalCustomRecCheck');
         recChecks.forEach(cb => {
           cb.addEventListener('change', () => {
             if (cb.checked) {
               recChecks.forEach(other => { if (other !== cb) other.checked = false; });
-              if (customRec) customRec.value = '';
+              if (cb === customRecCheck) {
+                if (customRec) customRec.focus();
+              } else {
+                if (customRec) customRec.value = '';
+              }
+            } else {
+              if (cb === customRecCheck && customRec) {
+                customRec.value = '';
+              }
             }
           });
         });
         if (customRec) {
           customRec.addEventListener('input', () => {
-            if (customRec.value.trim()) {
-              recChecks.forEach(cb => cb.checked = false);
+            const v = customRec.value.trim();
+            if (v && v !== '0') {
+              recChecks.forEach(cb => { if (cb !== customRecCheck) cb.checked = false; });
+              if (customRecCheck) customRecCheck.checked = true;
+            } else {
+              if (customRecCheck) customRecCheck.checked = false;
             }
           });
         }
@@ -6146,7 +6289,7 @@
 
           const checkedRec = document.querySelector('#editor .rec-check:checked');
           let rec = 'none';
-          if (checkedRec) {
+          if (checkedRec && checkedRec.value !== 'custom') {
             rec = checkedRec.value;
           } else if (customRec && customRec.value.trim() && !isNaN(Number(customRec.value)) && Number(customRec.value) > 0) {
             rec = String(Math.floor(Number(customRec.value.trim())));
@@ -6186,13 +6329,16 @@
             r.recurrence = rec;
             r.isLunar = $('recModalIsLunar').checked;
             let rems = [...document.querySelectorAll('#editor .rem-check:checked')].map(x => +x.value);
-            let c = $('recModalCustomRem').value.split(',').map(x => x.trim()).filter(Boolean).map(Number);
+            let c = (recCustomRemCheck && recCustomRemCheck.checked && recCustomRem)
+              ? recCustomRem.value.split(',').map(x => x.trim()).filter(Boolean).map(Number)
+              : [];
             r.reminders = [...new Set([0, ...rems, ...c])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b);
             r.updatedAt = iso();
           }
 
           if (commit(next)) {
             $('editor').close();
+            safeHistoryBack('editor');
             render();
             toast('반복 일정이 수정되었습니다.');
           }
@@ -6226,11 +6372,14 @@
         const recSpecBtn = $('recOpenSpecialCharsBtn');
         if (recSpecBtn) {
           recSpecBtn.onclick = () => {
+            lastActiveTextarea = $('recModalMemo');
             setupSpecialChars();
             $('specialCharModal').showModal();
+            history.pushState({ modal: 'specialCharModal' }, '');
           };
         }
         $('editor').showModal();
+        history.pushState({ modal: 'editor' }, '');
         if (recMemoEl) {
           recMemoEl.style.height = 'auto';
           recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
@@ -6333,6 +6482,7 @@
         }
 
         $('settings').showModal();
+        history.pushState({ modal: 'settings' }, '');
       }
 
       async function toggleDesktop() {
@@ -6425,6 +6575,7 @@
           </div>
         `;
         $('detail').showModal();
+        history.pushState({ modal: 'detail' }, '');
       }
 
       function handleAction(e) {
@@ -6500,9 +6651,11 @@
         }
         else if (a === 'closeEditor') {
           $('editor').close();
+          safeHistoryBack('editor');
         }
         else if (a === 'closeDetail') {
           $('detail').close();
+          safeHistoryBack('detail');
         }
         else if (a === 'deleteTask') {
           if (confirm('일정을 삭제하시겠습니까?')) {
@@ -6579,6 +6732,7 @@
             </div>
           `;
           $('detail').showModal();
+        history.pushState({ modal: 'detail' }, '');
         }
         else if (a === 'prevMonthList') {
           let y = ui.filterYear === 'all' ? new Date().getFullYear() : parseInt(ui.filterYear, 10);
@@ -6742,6 +6896,7 @@
             </div>
           `;
           $('detail').showModal();
+        history.pushState({ modal: 'detail' }, '');
         }
       }
 
@@ -6997,26 +7152,140 @@
 
         document.addEventListener('click', handleAction);
 
-        /* 키보드 단축키 지원 (파워유저 UX: 모달 및 입력창 비활성 시 작동) */
+        /* [V1.3.3] 모바일 뒤로가기(popstate) 및 히스토리 방어 */
+        let isProgrammaticHistoryBack = false;
+        function safeHistoryBack(expectedModal) {
+          if (history.state && history.state.modal === expectedModal) {
+            isProgrammaticHistoryBack = true;
+            history.back();
+            setTimeout(() => { isProgrammaticHistoryBack = false; }, 100);
+          }
+        }
+
+        window.addEventListener('popstate', e => {
+          if (isProgrammaticHistoryBack) {
+            isProgrammaticHistoryBack = false;
+            return;
+          }
+          if ($('specialCharModal') && $('specialCharModal').open) {
+            $('specialCharModal').close();
+            const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
+            if (target) target.focus();
+            return;
+          }
+          if ($('editor') && $('editor').open) {
+            const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
+            const memoVal = ($('modalMemo') ? $('modalMemo').value.trim() : '') || ($('recModalMemo') ? $('recModalMemo').value.trim() : '');
+            if (titleVal || memoVal) {
+              if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
+                history.pushState({ modal: 'editor' }, '');
+                return;
+              }
+            }
+            $('editor').close();
+            return;
+          }
+          if ($('detail') && $('detail').open) {
+            $('detail').close();
+            return;
+          }
+          if ($('settings') && $('settings').open) {
+            $('settings').close();
+            return;
+          }
+        });
+
+        // [V1.3.3] HTML5 dialog native cancel (ESC) 이벤트 방어
+        $('specialCharModal')?.addEventListener('cancel', e => {
+          e.stopPropagation();
+          safeHistoryBack('specialCharModal');
+          const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
+          if (target) {
+            setTimeout(() => target.focus(), 10);
+          }
+        });
+
+        $('editor')?.addEventListener('cancel', e => {
+          if ($('specialCharModal') && $('specialCharModal').open) {
+            e.preventDefault();
+            $('specialCharModal').close();
+            safeHistoryBack('specialCharModal');
+            return;
+          }
+          const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
+          const memoVal = ($('modalMemo') ? $('modalMemo').value.trim() : '') || ($('recModalMemo') ? $('recModalMemo').value.trim() : '');
+          if (titleVal || memoVal) {
+            if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
+              e.preventDefault();
+              return;
+            }
+          }
+          safeHistoryBack('editor');
+        });
+
+        $('detail')?.addEventListener('cancel', () => { safeHistoryBack('detail'); });
+        $('settings')?.addEventListener('cancel', () => { safeHistoryBack('settings'); });
+
+        /* [V1.3.3] 키보드 단축키 지원 및 계층형 ESC 방어 */
         document.addEventListener('keydown', e => {
-          const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
-          if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+          if (e.key === 'Escape') {
+            const isSpecialCharOpen = $('specialCharModal') && $('specialCharModal').open;
+            const isEditorOpen = $('editor') && $('editor').open;
+            const isDetailOpen = $('detail') && $('detail').open;
+            const isSettingsOpen = $('settings') && $('settings').open;
 
-          const isSpecialCharOpen = $('specialCharModal') && $('specialCharModal').open;
-          const isEditorOpen = $('editor') && $('editor').open;
-          const isDetailOpen = $('detail') && $('detail').open;
-          const isSettingsOpen = $('settings') && $('settings').open;
-          const anyModalOpen = isSpecialCharOpen || isEditorOpen || isDetailOpen || isSettingsOpen;
+            // 1순위: 특수문자 팝업 닫기 (입력 중인 일정 창 절대 닫히지 않음)
+            if (isSpecialCharOpen) {
+              e.preventDefault();
+              e.stopPropagation();
+              $('specialCharModal').close();
+              safeHistoryBack('specialCharModal');
+              const target = lastActiveTextarea || $('modalMemo') || $('recModalMemo');
+              if (target) target.focus();
+              return;
+            }
 
-          if (anyModalOpen) {
-            if (e.key === 'Escape') {
-              if (isSpecialCharOpen) $('specialCharModal').close();
-              else if (isEditorOpen) $('editor').close();
-              else if (isDetailOpen) $('detail').close();
-              else if (isSettingsOpen) $('settings').close();
+            // 2순위: 일정 입력/수정 창 닫기 (내용 작성 중이면 사용자 확인)
+            if (isEditorOpen) {
+              e.preventDefault();
+              const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
+              const memoVal = ($('modalMemo') ? $('modalMemo').value.trim() : '') || ($('recModalMemo') ? $('recModalMemo').value.trim() : '');
+              if (titleVal || memoVal) {
+                if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
+                  return;
+                }
+              }
+              $('editor').close();
+              safeHistoryBack('editor');
+              return;
+            }
+
+            // 3순위: 알림 센터 모달 닫기
+            if (isDetailOpen) {
+              e.preventDefault();
+              $('detail').close();
+              safeHistoryBack('detail');
+              return;
+            }
+
+            // 4순위: 설정 모달 닫기
+            if (isSettingsOpen) {
+              e.preventDefault();
+              $('settings').close();
+              safeHistoryBack('settings');
+              return;
             }
             return;
           }
+
+          const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+          if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+
+          const anyModalOpen = ($('specialCharModal') && $('specialCharModal').open) ||
+                               ($('editor') && $('editor').open) ||
+                               ($('detail') && $('detail').open) ||
+                               ($('settings') && $('settings').open);
+          if (anyModalOpen) return;
 
           if (ui.view === 'calendar' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
             e.preventDefault();
