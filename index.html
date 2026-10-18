@@ -559,8 +559,8 @@
     .select-small {
       border: 1px solid var(--border);
       background: #ffffff;
-      border-radius: var(--radius-md);
-      height: 36px;
+      border-radius: 7px;
+      height: 34px;
       padding: 0 10px;
       font-size: 13px;
       font-weight: 600;
@@ -579,16 +579,36 @@
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
     }
 
-    .navgroup {
+    .navgroup,
+    .list-navgroup {
       display: flex;
       gap: 4px;
+      align-items: center;
     }
 
-    .navgroup .btn.icon {
-      width: 45px; /* [V1.1.8] 기존 정사각형(36px)의 1.25배 가로폭 확장 (높이 36px 유지) */
-      height: 36px;
-      min-height: 36px;
-      border-radius: var(--radius-sm);
+    .navgroup .btn.icon,
+    .list-navgroup .btn.icon {
+      width: 45px; /* 가로폭 45px 와이드 */
+      height: 34px;
+      min-height: 34px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      box-shadow: var(--shadow-xs);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      box-sizing: border-box;
+      transition: all 0.15s ease;
+    }
+
+    .navgroup .btn.icon:hover,
+    .list-navgroup .btn.icon:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
     }
 
     /* LIST VIEW TOOLBAR */
@@ -603,9 +623,9 @@
     .list-toolbar-top-row input[type="search"] {
       flex: 1;
       min-width: 140px;
-      height: 36px;
+      height: 34px;
       font-size: 13px;
-      border-radius: var(--radius-sm);
+      border-radius: 7px;
       border: 1px solid var(--border);
       background: #ffffff;
       padding: 0 12px;
@@ -638,7 +658,7 @@
     }
 
     .dday-btn {
-      border-radius: var(--radius-md);
+      border-radius: 7px;
       font-size: 11.5px;
       font-weight: 700;
       height: 34px;
@@ -652,6 +672,21 @@
       box-shadow: var(--shadow-xs);
       border: 1px solid transparent;
       box-sizing: border-box;
+    }
+
+    .dday-btn.is-zero {
+      opacity: 0.55;
+      filter: grayscale(0.35);
+    }
+
+    .dday-btn.is-zero:hover {
+      opacity: 0.9;
+      filter: none;
+    }
+
+    .dday-btn.is-zero.active {
+      opacity: 1;
+      filter: none;
     }
 
     .dday-btn:hover {
@@ -2032,12 +2067,12 @@
       .list-controls-row select.select-small {
         flex: none;
         width: auto;
-        height: 34px;
-        min-height: 34px;
+        height: 30px;
+        min-height: 30px;
         padding: 0 6px;
         font-size: 12px;
         border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
+        border-radius: 7px;
         background: #ffffff;
         box-shadow: var(--shadow-xs);
         box-sizing: border-box;
@@ -2047,16 +2082,17 @@
         display: flex;
         gap: 2px;
         flex: none;
-        height: 34px;
+        height: 30px;
       }
 
+      .navgroup .btn.icon,
       .list-navgroup .btn.icon {
-        width: 40px; /* [V1.1.8] 모바일 목록 네비게이션 가로폭 1.25배 확장 */
-        height: 34px;
-        min-height: 34px;
+        width: 40px; /* 모바일 가로폭 40px 와이드 */
+        height: 30px;
+        min-height: 30px;
         padding: 0;
         border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
+        border-radius: 7px;
         background: #ffffff;
         box-shadow: var(--shadow-xs);
         box-sizing: border-box;
@@ -2069,7 +2105,7 @@
         -webkit-overflow-scrolling: touch;
         width: 100%;
         flex: 1 1 100%;
-        height: 34px;
+        height: 30px;
         padding-bottom: 0;
         gap: 4px;
         display: flex;
@@ -2085,7 +2121,7 @@
         min-width: 40px;
         text-align: center;
         white-space: nowrap;
-        border-radius: var(--radius-md);
+        border-radius: 7px;
         box-shadow: var(--shadow-xs);
         box-sizing: border-box;
       }
@@ -2640,14 +2676,12 @@
                 <option value="11">12월</option>
               </select>
               <div class="list-navgroup">
-                <button type="button" class="btn icon" data-action="prevMonthList" title="이전 달" aria-label="이전 달"
-                  style="height:32px; width:30px; min-width:30px; padding:0; display:inline-flex; align-items:center; justify-content:center;">
+                <button type="button" class="btn icon" data-action="prevMonthList" title="이전 달" aria-label="이전 달">
                   <svg viewBox="0 0 24 24">
                     <path d="M15 18l-6-6 6-6" />
                   </svg>
                 </button>
-                <button type="button" class="btn icon" data-action="nextMonthList" title="다음 달" aria-label="다음 달"
-                  style="height:32px; width:30px; min-width:30px; padding:0; display:inline-flex; align-items:center; justify-content:center;">
+                <button type="button" class="btn icon" data-action="nextMonthList" title="다음 달" aria-label="다음 달">
                   <svg viewBox="0 0 24 24">
                     <path d="M9 18l6-6-6-6" />
                   </svg>
@@ -2722,11 +2756,11 @@
             <div class="empty-state" style="padding: 32px 16px 24px;">
               <div class="empty-icon-wrap">
                 <svg viewBox="0 0 24 24">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                  <polyline points="10 9 9 9 8 9" />
+                  <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                  <path d="M9 16l2 2 4-4" />
                 </svg>
               </div>
               <div class="empty-title">선택된 일정이 없습니다</div>
@@ -2777,7 +2811,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.3.1';
+      window.APP_VERSION = 'v1.3.2';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -5140,11 +5174,11 @@
               <div class="empty-state" style="padding: 32px 16px 24px;">
                 <div class="empty-icon-wrap">
                   <svg viewBox="0 0 24 24">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
+                    <rect x="3" y="4" width="18" height="18" rx="3" ry="3" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                    <path d="M9 16l2 2 4-4" />
                   </svg>
                 </div>
                 <div class="empty-title">선택된 일정이 없습니다</div>
@@ -5324,8 +5358,17 @@
         $('listMonthFilter').value = ui.filterMonth;
         $('priorityFilter').value = ui.priority;
 
+        const ddayCounts = { ddaythree: 0, ddayfive: 0, ddayten: 0, rest: 0 };
+        (data.tasks || []).forEach(t => {
+          if (t.completed || !isWork(t)) return;
+          const g = group(t);
+          if (ddayCounts[g] !== undefined) ddayCounts[g]++;
+        });
+
         document.querySelectorAll('.dday-btn').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.value === ui.ddayFilter);
+          const val = btn.dataset.value;
+          btn.classList.toggle('active', val === ui.ddayFilter);
+          btn.classList.toggle('is-zero', !ddayCounts[val]);
         });
 
         const query = ui.search.trim().toLowerCase();
