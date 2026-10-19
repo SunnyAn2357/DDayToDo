@@ -213,7 +213,7 @@
       fill: none;
     }
 
-    h1 {
+    .topbar .identity h1 {
       margin: 0;
       font-size: 20px;
       font-weight: 900;
@@ -1026,11 +1026,12 @@
       font-weight: 700;
     }
 
-    /* 완료된 일정 */
+    /* 완료된 일정 (캘린더 셀 칩) */
     .chip.done {
-      color: #94a3b8 !important;
+      color: #64748b !important;
       text-decoration: line-through;
-      opacity: 0.6;
+      text-decoration-color: #94a3b8;
+      opacity: 0.85;
     }
 
     .more {
@@ -1217,10 +1218,23 @@
       box-shadow: var(--shadow-sm);
     }
 
+    .task-row.done {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      opacity: 0.9;
+    }
+
+    .task-row.done:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
     .check-small {
       width: 20px;
       height: 20px;
       min-width: 20px;
+      padding: 0;
+      margin: 0;
       border-radius: 5px;
       border: 1.5px solid #cbd5e1;
       display: inline-flex;
@@ -1228,29 +1242,36 @@
       justify-content: center;
       cursor: pointer;
       background: #ffffff;
-      transition: all 0.12s;
+      transition: all 0.15s ease;
     }
 
     .check-small:hover {
       border-color: #4f46e5;
+      background: #f8fafc;
     }
 
     .check-small.checked {
-      background: #94a3b8;
-      border-color: #94a3b8;
+      background: #64748b;
+      border-color: #64748b;
       color: #ffffff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     .check-small.checked:hover {
-      background: #64748b;
-      border-color: #64748b;
+      background: #475569;
+      border-color: #475569;
+      color: #ffffff;
     }
 
     .check-small svg {
-      width: 13px;
-      height: 13px;
-      stroke: currentColor;
-      stroke-width: 2.5;
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      display: block;
+      stroke: #ffffff;
+      stroke-width: 3.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
       fill: none;
     }
 
@@ -1290,9 +1311,11 @@
     }
 
     .task-name.done {
-      color: #94a3b8 !important;
+      color: #64748b !important;
       text-decoration: line-through;
-      opacity: 0.6;
+      text-decoration-color: #94a3b8;
+      opacity: 0.85;
+      font-weight: 500;
     }
 
     .task-meta {
@@ -1354,11 +1377,12 @@
       border: 1px solid #fed7d7;
     }
 
-    /* 완료된 일정: 그레이 */
+    /* 완료된 일정: 차분하고 또렷한 소프트 그레이 */
     .dday-badge.done {
       background: #f1f5f9;
-      color: #94a3b8;
+      color: #64748b;
       border: 1px solid #e2e8f0;
+      font-weight: 600;
     }
 
     /* 공휴일: 소프트 핑크 */
@@ -1540,6 +1564,20 @@
       padding-left: 12px;
     }
 
+    .detail-memo-full {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px 0 10px 0;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
+      line-height: 1.55;
+      color: #0f172a;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      white-space: normal;
+    }
+
     .detail-actions {
       display: flex;
       justify-content: flex-end;
@@ -1558,6 +1596,185 @@
     .detail-actions .btn svg {
       width: 13.5px;
       height: 13.5px;
+    }
+
+    /* ZENNOTES STYLE MARKDOWN TOOLBAR */
+    .memo-md-toolbar {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 1px 4px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+
+    .memo-tool-select {
+      height: 22px;
+      padding: 0 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .memo-tool-select:hover {
+      background: #e2e8f0;
+    }
+
+    .memo-tool-divider {
+      width: 1px;
+      height: 14px;
+      background: #cbd5e1;
+      margin: 0 2px;
+      flex-shrink: 0;
+    }
+
+    .memo-tool-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 20px;
+      height: 22px;
+      padding: 0 4px;
+      font-size: 11.5px;
+      color: #475569;
+      background: transparent;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      font-family: inherit;
+    }
+
+    .memo-tool-btn:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .memo-tool-btn:active {
+      background: #cbd5e1;
+    }
+
+    .memo-mark-icon {
+      background: #fef08a;
+      color: #854d0e;
+      padding: 0 2px;
+      border-radius: 2px;
+      font-weight: 800;
+      font-size: 10px;
+      line-height: 1.1;
+    }
+
+    .memo-color-wrapper {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .memo-color-popover {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+      padding: 5px;
+      gap: 5px;
+      z-index: 100;
+      white-space: nowrap;
+    }
+
+    .memo-color-popover.open {
+      display: flex;
+    }
+
+    .color-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      transition: transform 0.1s ease;
+      flex-shrink: 0;
+    }
+
+    .color-dot:hover {
+      transform: scale(1.2);
+    }
+
+    /* [V1.3.9] 위지윅 메모 에디터 스타일 */
+    .memo-editor {
+      min-height: 48px;
+      max-height: 840px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 7px 10px;
+      font-size: 13px;
+      line-height: 1.6;
+      outline: none;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #ffffff;
+      color: #0f172a;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .memo-editor:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+    .memo-editor:empty:before {
+      content: attr(placeholder);
+      color: #94a3b8;
+      pointer-events: none;
+    }
+    .memo-editor h1, .memo-editor .md-h1,
+    .detail-memo h1, .detail-memo .md-h1 {
+      font-size: 16px;
+      font-weight: 800;
+      margin: 4px 0 2px 0;
+      color: inherit;
+      -webkit-text-fill-color: initial;
+      background: none;
+      line-height: 1.35;
+    }
+    .memo-editor h2, .memo-editor .md-h2,
+    .detail-memo h2, .detail-memo .md-h2 {
+      font-size: 14.5px;
+      font-weight: 800;
+      margin: 4px 0 2px 0;
+      color: inherit;
+      -webkit-text-fill-color: initial;
+      background: none;
+      line-height: 1.35;
+    }
+    .memo-editor h3, .memo-editor .md-h3,
+    .detail-memo h3, .detail-memo .md-h3 {
+      font-size: 13.5px;
+      font-weight: 800;
+      margin: 4px 0 2px 0;
+      color: inherit;
+      -webkit-text-fill-color: initial;
+      background: none;
+      line-height: 1.35;
+    }
+    .memo-editor mark {
+      background: #fef08a;
+      color: #854d0e;
+      padding: 1px 3px;
+      border-radius: 3px;
+    }
+    .memo-editor a {
+      color: #2563eb;
+      text-decoration: underline;
+      font-weight: 600;
     }
 
     /* MODAL DIALOGS (ELEGANT FLOATING SQUIRCLE) */
@@ -2911,7 +3128,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.3.7';
+      window.APP_VERSION = 'v1.3.9';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4347,6 +4564,825 @@
       const icon = n => `<svg viewBox="0 0 24 24"><path d="${PATHS[n] || PATHS.calendar}"/></svg>`;
       const pad = n => String(n).padStart(2, '0');
 
+      /* =====================================================================
+       * [ZenNotes 호환] 마크다운 서식 파서 및 툴바 헬퍼
+       * ===================================================================== */
+      function parseMemoMarkdown(raw) {
+        if (!raw) return '';
+        const lines = String(raw).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        const parsedLines = lines.map(line => {
+          const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
+          if (hMatch) {
+            const lvl = hMatch[1].length;
+            const inner = parseInline(hMatch[2]);
+            const fontSizes = { 1: '16px', 2: '14.5px', 3: '13.5px' };
+            return `<div class="md-h${lvl}" style="font-size:${fontSizes[lvl]}; font-weight:800; color:inherit; margin:4px 0 2px 0; line-height:1.35;">${inner || '&nbsp;'}</div>`;
+          }
+          const inner = parseInline(line);
+          return `<div style="min-height:1.25em;">${inner || '&nbsp;'}</div>`;
+        });
+        return parsedLines.join('');
+      }
+
+      function parseMemoForEditor(raw) {
+        if (!raw || !raw.trim()) return '<div><br></div>';
+        const lines = String(raw).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        const parsedLines = lines.map(line => {
+          const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
+          if (hMatch) {
+            const lvl = hMatch[1].length;
+            const inner = parseInline(hMatch[2]) || '<br>';
+            return `<h${lvl}>${inner}</h${lvl}>`;
+          }
+          const inner = parseInline(line) || '<br>';
+          return `<div>${inner}</div>`;
+        });
+        return parsedLines.join('') || '<div><br></div>';
+      }
+
+      function parseInline(str) {
+        if (!str) return '';
+        let s = String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+
+        // 0. 링크: [text](url)
+        s = s.replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+|[^\s\)]+)\)/g, (m, txt, url) => {
+          const cleanUrl = (/^https?:\/\//i.test(url) || /^mailto:/i.test(url)) ? url : 'https://' + url;
+          return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:underline; font-weight:600;">${txt || url}</a>`;
+        });
+        // Raw url (if not preceded by href=" or >)
+        s = s.replace(/(^|[\s(])(https?:\/\/[^\s)<>]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:underline; font-weight:600;">$2</a>');
+
+        // 1. 굵게: **text**
+        s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong style="font-weight:700;"><em>$1</em></strong>');
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:700;">$1</strong>');
+        // 2. 기울임: *text* (단일 별표)
+        s = s.replace(/(?<!\*)\*([^*]+?)\*(?!\*)/g, '<em>$1</em>');
+        // 3. 취소선: ~~text~~
+        s = s.replace(/~~(.+?)~~/g, '<del style="text-decoration:line-through; opacity:0.8;">$1</del>');
+        // 4. 밑줄: __text__
+        s = s.replace(/__(.+?)__/g, '<u style="text-decoration:underline;">$1</u>');
+        // 5. 형광펜: ==text==
+        s = s.replace(/==(.+?)==/g, '<mark style="background:#fef08a; color:#854d0e; padding:1px 3px; border-radius:3px;">$1</mark>');
+
+        // 6. 저장된 인라인 HTML 태그(글자색/배경색 span, 레거시 font/strike/u 등)를
+        //    "여는 태그 / 닫는 태그" 단위로 개별 복원 → 여러 서식이 중첩되어도 짝이 어긋나지 않음
+        s = s.replace(/&lt;span\s+style=(?:&quot;|&#39;)(.*?)(?:&quot;|&#39;)\s*&gt;/gi, (m, st) => {
+          const f = sanitizeMemoStyle(st);
+          return f ? `<span style="${f}; padding:1px 2px; border-radius:2px;">` : '<span>';
+        });
+        s = s.replace(/&lt;font\b(.*?)&gt;/gi, (m, attrs) => {
+          const cm = attrs.match(/color=(?:&quot;|&#39;)?([#\w(),.\s%]+?)(?:&quot;|&#39;|\s|$)/i);
+          const f = cm ? sanitizeMemoStyle('color:' + cm[1].trim()) : '';
+          return f ? `<span style="${f}">` : '<span>';
+        });
+        s = s.replace(/&lt;span\s*&gt;/gi, '<span>')
+             .replace(/&lt;\/(?:span|font)\s*&gt;/gi, '</span>')
+             .replace(/&lt;(?:strike|s|del)(?:\s(?:(?!&gt;).)*)?&gt;/gi, '<del style="text-decoration:line-through; opacity:0.8;">')
+             .replace(/&lt;\/(?:strike|s|del)\s*&gt;/gi, '</del>')
+             .replace(/&lt;u&gt;/gi, '<u style="text-decoration:underline;">')
+             .replace(/&lt;\/u&gt;/gi, '</u>');
+
+        return s;
+      }
+
+      // 허용 스타일(글자색/배경색)만 남기는 필터
+      function sanitizeMemoStyle(styleStr) {
+        const out = [];
+        String(styleStr || '').split(';').forEach(p => {
+          const m = p.trim().match(/^(color|background-color|background)\s*:\s*(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|[a-zA-Z]+)$/i);
+          if (!m) return;
+          const val = m[2].trim();
+          if (/^(initial|inherit|unset|transparent|none|currentcolor)$/i.test(val)) return;
+          if (/^rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)$/i.test(val)) return;
+          const prop = m[1].toLowerCase() === 'background' ? 'background-color' : m[1].toLowerCase();
+          out.push(`${prop}:${val}`);
+        });
+        return out.join('; ');
+      }
+
+      // [V1.3.9] 위지윅 HTML → 마크다운 변환 (DOM 트리 순회 방식)
+      // 정규식 짝맞춤 방식은 <b>/<br>, <s>/<span>, <u>/<ul> 을 혼동하고 중첩 span 을 깨뜨리므로 DOM 기반으로 교체
+      function convertHTMLToMarkdown(html) {
+        if (!html) return '';
+        const root = document.createElement('div');
+        root.innerHTML = html;
+        const BOUND = '\u0001';
+        const BLOCK = /^(DIV|P|LI|UL|OL|BLOCKQUOTE|PRE|SECTION|ARTICLE)$/;
+        const hasText = (str) => str.replace(/[\s\u00a0\u0001]/g, '') !== '';
+        const wrap = (inner, pre, post) => hasText(inner) ? pre + inner + post : inner;
+        const HILITE = /^rgb\(254,\s*240,\s*138\)$|^#fef08a$/i;
+
+        const walk = (node) => {
+          if (node.nodeType === 3) return node.nodeValue.replace(/\u200B/g, '').replace(/\u00a0/g, ' ');
+          if (node.nodeType !== 1) return '';
+          const tag = node.tagName;
+          if (tag === 'BR') return '\n';
+          let inner = '';
+          node.childNodes.forEach(c => { inner += walk(c); });
+
+          const css = node.style || {};
+          const deco = String(css.textDecorationLine || css.textDecoration || '');
+          let isBold = tag === 'B' || tag === 'STRONG' || /^(bold|bolder|[6-9]00)$/.test(String(css.fontWeight || ''));
+          let isItalic = tag === 'I' || tag === 'EM' || css.fontStyle === 'italic';
+          let isUnder = tag === 'U' || (tag !== 'A' && /underline/.test(deco));
+          let isStrike = tag === 'S' || tag === 'STRIKE' || tag === 'DEL' || /line-through/.test(deco);
+          let isMark = tag === 'MARK';
+          const parts = [];
+          if (tag !== 'MARK' && tag !== 'A') {
+            if (tag === 'FONT' && node.getAttribute('color')) parts.push('color:' + node.getAttribute('color'));
+            if (css.color) parts.push('color:' + css.color);
+            const bg = css.backgroundColor;
+            if (bg) {
+              if (HILITE.test(bg.trim())) isMark = true;
+              else parts.push('background-color:' + bg);
+            }
+          }
+          const colorStyle = sanitizeMemoStyle(parts.join(';'));
+
+          if (colorStyle) inner = wrap(inner, `<span style="${colorStyle}">`, '</span>');
+          if (isMark) inner = wrap(inner, '==', '==');
+          if (isStrike) inner = wrap(inner, '~~', '~~');
+          if (isUnder) inner = wrap(inner, '<u>', '</u>');
+          if (isItalic) inner = wrap(inner, '*', '*');
+          if (isBold) inner = wrap(inner, '**', '**');
+          if (tag === 'A') {
+            const href = node.getAttribute('href') || '';
+            if (href && hasText(inner)) inner = `[${inner}](${href})`;
+          }
+
+          const hm = tag.match(/^H([1-6])$/);
+          if (hm) {
+            const lvl = Math.min(3, +hm[1]);
+            return BOUND + '#'.repeat(lvl) + ' ' + inner.replace(/\n+$/, '') + BOUND;
+          }
+          if (BLOCK.test(tag)) return BOUND + inner + BOUND;
+          return inner;
+        };
+
+        let raw = '';
+        root.childNodes.forEach(c => { raw += walk(c); });
+        // 블록 경계 → 줄바꿈 (이미 줄 시작이면 추가하지 않음)
+        let out = '';
+        for (const ch of raw) {
+          if (ch === BOUND) {
+            if (out && !out.endsWith('\n')) out += '\n';
+          } else {
+            out += ch;
+          }
+        }
+        return out.replace(/^\n+|\s+$/g, '');
+      }
+
+      function applyMarkdownWrap(textarea, before, after) {
+        if (!textarea) return;
+        textarea.focus();
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const val = textarea.value;
+        const sel = val.slice(start, end);
+        if (sel.length > 0) {
+          const replaceText = `${before}${sel}${after}`;
+          if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+            document.execCommand('insertText', false, replaceText);
+          } else {
+            textarea.setRangeText(replaceText, start, end, 'end');
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        } else {
+          const placeholder = '텍스트';
+          const replaceText = `${before}${placeholder}${after}`;
+          if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+            document.execCommand('insertText', false, replaceText);
+            textarea.setSelectionRange(start + before.length, start + before.length + placeholder.length);
+          } else {
+            textarea.setRangeText(replaceText, start, end, 'end');
+            textarea.setSelectionRange(start + before.length, start + before.length + placeholder.length);
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+      }
+
+      function applyHeadingPrefix(textarea, prefix) {
+        if (!textarea) return;
+        textarea.focus();
+        const start = textarea.selectionStart;
+        const val = textarea.value;
+        const lastNewline = val.lastIndexOf('\n', start - 1);
+        const lineStart = lastNewline === -1 ? 0 : lastNewline + 1;
+        const currentLine = val.slice(lineStart);
+        const existingHMatch = currentLine.match(/^(#{1,3}\s*)/);
+        if (existingHMatch) {
+          textarea.setRangeText(prefix, lineStart, lineStart + existingHMatch[0].length, 'end');
+        } else {
+          textarea.setRangeText(prefix, lineStart, lineStart, 'end');
+        }
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+
+      function renderMarkdownToolbar(prefix = '') {
+        const specId = prefix ? prefix + 'OpenSpecialCharsBtn' : 'openSpecialCharsBtn';
+        return `
+          <div class="memo-md-toolbar" id="${prefix}memoMdToolbar">
+            <select class="memo-tool-select" id="${prefix}memoToolHeading" title="글자크기">
+              <option value="" selected>본문</option>
+              <option value="h1">제목1(#)</option>
+              <option value="h2">제목2(##)</option>
+              <option value="h3">제목3(###)</option>
+            </select>
+            <div class="memo-tool-divider"></div>
+            <button type="button" class="memo-tool-btn" data-md="bold" title="굵게(**텍스트**)"><b>B</b></button>
+            <button type="button" class="memo-tool-btn" data-md="italic" title="기울임(*텍스트*)"><i>I</i></button>
+            <button type="button" class="memo-tool-btn" data-md="underline" title="밑줄(<u>텍스트</u>)"><u>U</u></button>
+            <button type="button" class="memo-tool-btn" data-md="strike" title="취소선(~~텍스트~~)"><s>S</s></button>
+            <button type="button" class="memo-tool-btn" data-md="highlight" title="형광펜(==텍스트==)"><mark class="memo-mark-icon">H</mark></button>
+            <div class="memo-tool-divider"></div>
+            <div class="memo-color-wrapper">
+              <button type="button" class="memo-tool-btn color-btn" id="${prefix}memoTextColorBtn" title="글자색">
+                <span style="font-weight:800; border-bottom:2.5px solid #ef4444; line-height:1.1;">A</span>
+              </button>
+              <div class="memo-color-popover" id="${prefix}memoTextColorPop">
+                <span class="color-dot" data-color="#0f172a" style="background:#0f172a;" title="검정"></span>
+                <span class="color-dot" data-color="#ef4444" style="background:#ef4444;" title="빨강"></span>
+                <span class="color-dot" data-color="#f97316" style="background:#f97316;" title="주황"></span>
+                <span class="color-dot" data-color="#10b981" style="background:#10b981;" title="초록"></span>
+                <span class="color-dot" data-color="#3b82f6" style="background:#3b82f6;" title="파랑"></span>
+                <span class="color-dot" data-color="#8b5cf6" style="background:#8b5cf6;" title="보라"></span>
+                <span class="color-dot" data-color="#64748b" style="background:#64748b;" title="회색"></span>
+              </div>
+            </div>
+            <div class="memo-color-wrapper">
+              <button type="button" class="memo-tool-btn color-btn" id="${prefix}memoBgColorBtn" title="배경색">
+                <span style="background:#fee2e2; padding:0 3px; border-radius:3px; font-size:10px; font-weight:700; color:#ef4444;">BG</span>
+              </button>
+              <div class="memo-color-popover" id="${prefix}memoBgColorPop">
+                <span class="color-dot" data-bg="#fef08a" style="background:#fef08a;" title="연노랑"></span>
+                <span class="color-dot" data-bg="#fee2e2" style="background:#fee2e2;" title="연빨강"></span>
+                <span class="color-dot" data-bg="#ffedd5" style="background:#ffedd5;" title="연주황"></span>
+                <span class="color-dot" data-bg="#dcfce7" style="background:#dcfce7;" title="연초록"></span>
+                <span class="color-dot" data-bg="#e0f2fe" style="background:#e0f2fe;" title="연파랑"></span>
+                <span class="color-dot" data-bg="#f3e8ff" style="background:#f3e8ff;" title="연보라"></span>
+                <span class="color-dot" data-bg="#f1f5f9" style="background:#f1f5f9;" title="연회색"></span>
+              </div>
+            </div>
+            <div class="memo-tool-divider"></div>
+            <button type="button" class="memo-tool-btn" id="${specId}" title="특수문자/이모티콘" style="color:#4f46e5;">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="link" title="링크([텍스트](링크))">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="clear" title="서식지우기">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+            </button>
+          </div>
+        `;
+      }
+
+      let lastActiveEditorRange = null;
+
+      function applyLiveMarkdown(editorEl) {
+        if (!editorEl || !editorEl.isContentEditable) return;
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) return;
+        const range = sel.getRangeAt(0);
+        const node = range.startContainer;
+        if (node.nodeType !== Node.TEXT_NODE) return;
+
+        const text = node.textContent;
+        const offset = range.startOffset;
+        const textBefore = text.slice(0, offset);
+
+        // 1. Heading (# , ## , ### )
+        const hMatch = textBefore.match(/^(#{1,3})\s$/);
+        if (hMatch) {
+          const lvl = hMatch[1].length;
+          node.textContent = text.slice(offset);
+          let block = node;
+          while (block && block.parentNode !== editorEl) {
+            block = block.parentNode;
+          }
+          const h = document.createElement('h' + lvl);
+          h.innerHTML = (node.textContent || '').trim() ? node.textContent : '<br>';
+          if (block && block.parentNode === editorEl) {
+            editorEl.replaceChild(h, block);
+          } else {
+            editorEl.appendChild(h);
+          }
+          const r = document.createRange();
+          r.selectNodeContents(h);
+          r.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(r);
+          lastActiveEditorRange = r.cloneRange();
+          return;
+        }
+
+        // 2. Inline Markdown
+        const patterns = [
+          { regex: /\*\*([^*]+)\*\*\s$/, tag: 'strong' },
+          { regex: /(?<!\*)\*([^*]+)\*\s$/, tag: 'em' },
+          { regex: /~~([^~]+)~~\s$/, tag: 'del' },
+          { regex: /==([^=]+)==\s$/, tag: 'mark' },
+          { regex: /<u>(.*?)<\/u>\s$/, tag: 'u' },
+          { regex: /__([^_]+)__\s$/, tag: 'u' }
+        ];
+
+        for (const p of patterns) {
+          const m = textBefore.match(p.regex);
+          if (m) {
+            const matchStr = m[0];
+            const innerText = m[1];
+            const startIdx = offset - matchStr.length;
+            const before = text.slice(0, startIdx);
+            const after = text.slice(offset);
+
+            const frag = document.createDocumentFragment();
+            if (before) frag.appendChild(document.createTextNode(before));
+            const styledEl = document.createElement(p.tag);
+            styledEl.textContent = innerText;
+            frag.appendChild(styledEl);
+            const spaceNode = document.createTextNode('\u00A0');
+            frag.appendChild(spaceNode);
+            if (after) frag.appendChild(document.createTextNode(after));
+
+            node.parentNode.replaceChild(frag, node);
+
+            const newRange = document.createRange();
+            newRange.setStart(spaceNode, 1);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+            lastActiveEditorRange = newRange.cloneRange();
+            return;
+          }
+        }
+
+        // 3. Link: [text](url)
+        const linkMatch = textBefore.match(/\[([^\]]+)\]\(([^)]+)\)\s$/);
+        if (linkMatch) {
+          const matchStr = linkMatch[0];
+          const linkText = linkMatch[1];
+          const linkUrl = linkMatch[2];
+          const startIdx = offset - matchStr.length;
+          const before = text.slice(0, startIdx);
+          const after = text.slice(offset);
+
+          const frag = document.createDocumentFragment();
+          if (before) frag.appendChild(document.createTextNode(before));
+          const a = document.createElement('a');
+          a.href = /^https?:\/\//i.test(linkUrl) ? linkUrl : 'https://' + linkUrl;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.textContent = linkText;
+          frag.appendChild(a);
+          const spaceNode = document.createTextNode('\u00A0');
+          frag.appendChild(spaceNode);
+          if (after) frag.appendChild(document.createTextNode(after));
+
+          node.parentNode.replaceChild(frag, node);
+
+          const newRange = document.createRange();
+          newRange.setStart(spaceNode, 1);
+          newRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+          lastActiveEditorRange = newRange.cloneRange();
+          return;
+        }
+      }
+
+      function setupMemoMarkdownToolbar(prefix, editorEl) {
+        if (!editorEl) return;
+        const toolbar = $(`${prefix}memoMdToolbar`);
+        if (!toolbar) return;
+
+        const saveRange = () => {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0 && editorEl.contains(sel.anchorNode)) {
+            lastActiveEditorRange = sel.getRangeAt(0).cloneRange();
+          }
+        };
+
+        const restoreRange = () => {
+          if (lastActiveEditorRange) {
+            try {
+              const sel = window.getSelection();
+              sel.removeAllRanges();
+              sel.addRange(lastActiveEditorRange);
+            } catch (err) {}
+          }
+        };
+
+        // selectionchange 이벤트를 통해 블록 지정, 커서 이동 시 실시간으로 range를 백업
+        const onSelChange = () => {
+          const sel = window.getSelection();
+          if (sel && sel.rangeCount > 0 && editorEl.contains(sel.anchorNode)) {
+            lastActiveEditorRange = sel.getRangeAt(0).cloneRange();
+          }
+        };
+        document.addEventListener('selectionchange', onSelChange);
+
+        editorEl.onfocus = () => {
+          lastActiveTextarea = editorEl;
+          if (!lastActiveEditorRange || !editorEl.contains(lastActiveEditorRange.commonAncestorContainer)) {
+            saveRange();
+          }
+        };
+        editorEl.onmouseup = () => saveRange();
+        editorEl.onkeyup = (e) => {
+          saveRange();
+          if (e.isComposing) return;
+          if (e.key === ' ' || e.key === 'Spacebar') {
+            applyLiveMarkdown(editorEl);
+          }
+        };
+
+        // 글자를 모두 지웠을 때 잔여 H1, span style, strong 태그를 완전히 제거하고 깨끗한 <div><br></div>로 초기화
+        editorEl.addEventListener('input', () => {
+          const text = (editorEl.textContent || '').replace(/\u200B/g, '').trim();
+          if (text === '' && !editorEl.querySelector('img, a')) {
+            if (editorEl.children.length !== 1 || editorEl.firstElementChild?.tagName !== 'DIV' || editorEl.firstElementChild?.innerHTML !== '<br>') {
+              editorEl.innerHTML = '<div><br></div>';
+              const r = document.createRange();
+              r.setStart(editorEl.firstElementChild, 0);
+              r.collapse(true);
+              const sel = window.getSelection();
+              if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(r);
+              }
+              saveRange();
+            }
+          } else {
+            saveRange();
+          }
+        });
+
+        lastActiveTextarea = editorEl;
+
+        // 커서 또는 선택 영역이 속한 줄(블록)을 안전하게 Heading / Div로 전환하는 함수
+        const applyHeadingToCurrentLine = (level) => {
+          restoreRange();
+          const sel = window.getSelection();
+          if (!sel || !sel.rangeCount) return;
+          const range = sel.getRangeAt(0);
+
+          let block = range.startContainer;
+          if (block === editorEl) {
+            block = editorEl.childNodes[Math.min(range.startOffset, editorEl.childNodes.length - 1)] || editorEl.firstChild;
+          } else {
+            while (block && block.parentNode !== editorEl) {
+              block = block.parentNode;
+            }
+          }
+
+          const targetTag = level ? level.toLowerCase() : 'div';
+          if (!block) {
+            const newEl = document.createElement(targetTag);
+            newEl.innerHTML = '<br>';
+            editorEl.appendChild(newEl);
+            const r = document.createRange();
+            r.setStart(newEl, 0);
+            r.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(r);
+            saveRange();
+            return;
+          }
+
+          if (block.tagName?.toLowerCase() !== targetTag) {
+            const newEl = document.createElement(targetTag);
+            newEl.innerHTML = (block.nodeType === Node.TEXT_NODE ? block.textContent : block.innerHTML) || '<br>';
+            editorEl.replaceChild(newEl, block);
+            const r = document.createRange();
+            r.selectNodeContents(newEl);
+            r.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(r);
+            saveRange();
+          }
+        };
+
+        const hSelect = $(`${prefix}memoToolHeading`);
+        if (hSelect) {
+          hSelect.onmousedown = () => saveRange();
+          hSelect.onfocus = () => saveRange();
+          hSelect.onchange = () => {
+            const val = hSelect.value;
+            if (editorEl.isContentEditable) {
+              applyHeadingToCurrentLine(val);
+            } else {
+              applyHeadingPrefix(editorEl, val ? (val === 'h1' ? '# ' : val === 'h2' ? '## ' : '### ') : '');
+            }
+            hSelect.value = '';
+            editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+          };
+        }
+
+        // 모든 툴바 버튼 mousedown e.preventDefault() & saveRange() -> 블록 선택(Selection) 해제 방지!
+        toolbar.querySelectorAll('.memo-tool-btn').forEach(btn => {
+          btn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            saveRange();
+          });
+        });
+
+        toolbar.querySelectorAll('[data-md]').forEach(btn => {
+          btn.onclick = (e) => {
+            e.preventDefault();
+            restoreRange();
+            const type = btn.dataset.md;
+            if (editorEl.isContentEditable) {
+              if (type === 'bold') document.execCommand('bold', false, null);
+              else if (type === 'italic') document.execCommand('italic', false, null);
+              else if (type === 'underline') document.execCommand('underline', false, null);
+              else if (type === 'strike') document.execCommand('strikeThrough', false, null);
+              else if (type === 'highlight') document.execCommand('hiliteColor', false, '#fef08a');
+              else if (type === 'link') {
+                const sel = window.getSelection();
+                const selText = sel ? sel.toString().trim() : '';
+                const linkRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
+                // 블록 잡은 글자를 주소 기본값으로 채움 (https:// 없으면 자동 추가) → 프롬프트에서 전체 선택된 상태로 표시되어 바로 수정 / Enter 로 확정
+                const defUrl = selText ? (/^(https?:\/\/|mailto:)/i.test(selText) ? selText : 'https://' + selText.replace(/\s+/g, '')) : 'https://';
+                const url = prompt('링크 주소 (수정할 내용이 없으면 Enter):', defUrl);
+                if (url && url.trim() && url.trim() !== 'https://') {
+                  const u = url.trim();
+                  const cleanUrl = /^(https?:\/\/|mailto:)/i.test(u) ? u : 'https://' + u;
+                  editorEl.focus();
+                  if (linkRange && sel) { sel.removeAllRanges(); sel.addRange(linkRange); }
+                  if (selText) {
+                    document.execCommand('createLink', false, cleanUrl);
+                  } else {
+                    const linkName = prompt('링크에 표시할 텍스트를 입력하세요:', cleanUrl);
+                    if (linkName) {
+                      document.execCommand('insertHTML', false, `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${esc(linkName)}</a>&nbsp;`);
+                    }
+                  }
+                }
+              } else if (type === 'clear') {
+                // [서식지우기] 블록 선택 여부에 관계없이 모든 마크다운/인라인 스타일 제거 및 본문 복귀
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount) {
+                  if (!sel.isCollapsed) {
+                    // 1. 선택된 블록이 있는 경우
+                    document.execCommand('removeFormat', false, null);
+                    document.execCommand('unlink', false, null);
+                    const range = sel.getRangeAt(0);
+                    const container = range.commonAncestorContainer;
+                    const parentEl = container.nodeType === Node.ELEMENT_NODE ? container : container.parentElement;
+                    if (parentEl && editorEl.contains(parentEl)) {
+                      parentEl.querySelectorAll('mark, u, del, s, span, a').forEach(el => {
+                        if (range.intersectsNode(el)) {
+                          const p = el.parentNode;
+                          while (el.firstChild) p.insertBefore(el.firstChild, el);
+                          p.removeChild(el);
+                        }
+                      });
+                    }
+                  } else {
+                    // 2. 커서만 깜빡이는 경우: 현재 커서를 감싸고 있는 인라인 서식 태그 unwrap
+                    const range = sel.getRangeAt(0);
+                    let curr = range.startContainer;
+                    if (curr.nodeType === Node.TEXT_NODE) curr = curr.parentElement;
+                    while (curr && curr !== editorEl && !/^(DIV|P|H1|H2|H3)$/i.test(curr.tagName)) {
+                      const nextP = curr.parentElement;
+                      if (/^(STRONG|B|EM|I|U|DEL|S|MARK|SPAN|A)$/i.test(curr.tagName)) {
+                        while (curr.firstChild) nextP.insertBefore(curr.firstChild, curr);
+                        nextP.removeChild(curr);
+                      }
+                      curr = nextP;
+                    }
+                  }
+
+                  // 3. 현재 줄이 H1~H3라면 일반 본문 div로 복귀
+                  let lineBlock = sel.anchorNode;
+                  while (lineBlock && lineBlock.parentNode !== editorEl) {
+                    lineBlock = lineBlock.parentNode;
+                  }
+                  if (lineBlock && /^(H1|H2|H3)$/i.test(lineBlock.tagName)) {
+                    const newDiv = document.createElement('div');
+                    newDiv.innerHTML = lineBlock.innerHTML || '<br>';
+                    editorEl.replaceChild(newDiv, lineBlock);
+                    const r = document.createRange();
+                    r.selectNodeContents(newDiv);
+                    r.collapse(false);
+                    sel.removeAllRanges();
+                    sel.addRange(r);
+                  }
+                }
+              }
+              saveRange();
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+              if (type === 'bold') applyMarkdownWrap(editorEl, '**', '**');
+              else if (type === 'italic') applyMarkdownWrap(editorEl, '*', '*');
+              else if (type === 'underline') applyMarkdownWrap(editorEl, '<u>', '</u>');
+              else if (type === 'strike') applyMarkdownWrap(editorEl, '~~', '~~');
+              else if (type === 'highlight') applyMarkdownWrap(editorEl, '==', '==');
+              else if (type === 'link') {
+                const url = prompt('연결할 링크 URL(웹 주소)을 입력하세요:', 'https://');
+                if (url && url.trim()) applyMarkdownWrap(editorEl, '[', `](${url.trim()})`);
+              } else if (type === 'clear') {
+                // textarea 모드: 마크다운 기호 제거
+                const s = editorEl.selectionStart;
+                const eIdx = editorEl.selectionEnd;
+                const val = editorEl.value;
+                if (s !== eIdx) {
+                  const cleaned = val.slice(s, eIdx).replace(/[\*_~=#[\]()]/g, '');
+                  editorEl.setRangeText(cleaned, s, eIdx, 'end');
+                  editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+              }
+            }
+          };
+        });
+
+        const textColorBtn = $(`${prefix}memoTextColorBtn`);
+        const textColorPop = $(`${prefix}memoTextColorPop`);
+        const bgColorBtn = $(`${prefix}memoBgColorBtn`);
+        const bgColorPop = $(`${prefix}memoBgColorPop`);
+
+        if (textColorBtn && textColorPop) {
+          textColorBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            saveRange();
+          });
+          textColorBtn.onclick = (e) => {
+            e.stopPropagation();
+            textColorPop.classList.toggle('open');
+            if (bgColorPop) bgColorPop.classList.remove('open');
+          };
+          textColorPop.querySelectorAll('[data-color]').forEach(dot => {
+            dot.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+            });
+            dot.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              restoreRange();
+              const color = dot.dataset.color;
+              if (editorEl.isContentEditable) {
+                document.execCommand('foreColor', false, color);
+                saveRange();
+                editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              } else {
+                applyMarkdownWrap(editorEl, `<span style="color:${color}">`, `</span>`);
+              }
+              textColorPop.classList.remove('open');
+            };
+          });
+        }
+
+        if (bgColorBtn && bgColorPop) {
+          bgColorBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            saveRange();
+          });
+          bgColorBtn.onclick = (e) => {
+            e.stopPropagation();
+            bgColorPop.classList.toggle('open');
+            if (textColorPop) textColorPop.classList.remove('open');
+          };
+          bgColorPop.querySelectorAll('[data-bg]').forEach(dot => {
+            dot.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+            });
+            dot.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              restoreRange();
+              const bg = dot.dataset.bg;
+              if (editorEl.isContentEditable) {
+                document.execCommand('hiliteColor', false, bg);
+                saveRange();
+                editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              } else {
+                applyMarkdownWrap(editorEl, `<span style="background-color:${bg}">`, `</span>`);
+              }
+              bgColorPop.classList.remove('open');
+            };
+          });
+        }
+
+        const specId = prefix ? prefix + 'OpenSpecialCharsBtn' : 'openSpecialCharsBtn';
+        const specBtn = $(specId);
+        if (specBtn) {
+          specBtn.onclick = () => {
+            lastActiveTextarea = editorEl;
+            saveRange();
+            setupSpecialChars();
+            $('specialCharModal').showModal();
+            history.pushState({ modal: 'specialCharModal' }, '');
+          };
+        }
+
+        editorEl.onkeydown = (e) => {
+          if (e.key === 'Tab') {
+            e.preventDefault();
+            if (editorEl.isContentEditable) {
+              document.execCommand('insertHTML', false, '&emsp;');
+            } else {
+              const start = editorEl.selectionStart;
+              const end = editorEl.selectionEnd;
+              editorEl.setRangeText('\t', start, end, 'end');
+            }
+            saveRange();
+            editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+          }
+
+          // [핵심] 엔터 줄바꿈 시 이전 줄의 스타일(span, strong, h태그) 상속을 원천 차단하고 깨끗한 새 div 생성!
+          if (e.key === 'Enter' && editorEl.isContentEditable) {
+            e.preventDefault();
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+
+            // 현재 커서가 속한 직계 블록 찾기
+            let block = range.startContainer;
+            while (block && block.parentNode !== editorEl) {
+              block = block.parentNode;
+            }
+
+            // 1. 현재 줄이 '# 제목'으로 작성된 상태에서 엔터를 칠 때: 즉시 H 태그로 변환 후 다음 줄은 본문(div)
+            if (block && (block.tagName === 'DIV' || block.nodeType === Node.TEXT_NODE)) {
+              const lineText = block.textContent || '';
+              const hLeadMatch = lineText.match(/^(#{1,3})\s+(.*)$/);
+              if (hLeadMatch) {
+                const lvl = hLeadMatch[1].length;
+                const titleText = hLeadMatch[2];
+                const h = document.createElement('h' + lvl);
+                h.textContent = titleText || '\u00A0';
+                editorEl.replaceChild(h, block);
+
+                const nextDiv = document.createElement('div');
+                nextDiv.innerHTML = '<br>';
+                h.after(nextDiv);
+
+                const r = document.createRange();
+                r.setStart(nextDiv, 0);
+                r.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(r);
+                saveRange();
+                editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+                return;
+              }
+            }
+
+            // 2. 일반 엔터 처리: 이전 줄의 서식을 절대 상속하지 않고 깨끗한 새 div 생성
+            if (!block || block === editorEl) {
+              const newDiv = document.createElement('div');
+              newDiv.innerHTML = '<br>';
+              editorEl.appendChild(newDiv);
+              const r = document.createRange();
+              r.setStart(newDiv, 0);
+              r.collapse(true);
+              sel.removeAllRanges();
+              sel.addRange(r);
+              saveRange();
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              return;
+            }
+
+            // 커서 뒷부분 내용 분리
+            const afterRange = document.createRange();
+            afterRange.setStart(range.endContainer, range.endOffset);
+            afterRange.setEnd(block, block.childNodes.length);
+            const afterContent = afterRange.extractContents();
+
+            // 만약 현재 블록 앞부분이 비었으면 <br> 넣어주기
+            if (!block.textContent && !block.querySelector('img, a, br')) {
+              block.innerHTML = '<br>';
+            }
+
+            // 새 줄 생성 (H 태그였든, 스타일 span이 있었든 다음 줄은 무조건 일반 div!)
+            const nextDiv = document.createElement('div');
+            if (afterContent.textContent || afterContent.querySelector('img, a')) {
+              nextDiv.appendChild(afterContent);
+            } else {
+              nextDiv.innerHTML = '<br>';
+            }
+
+            block.after(nextDiv);
+
+            const newRange = document.createRange();
+            newRange.setStart(nextDiv, 0);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+            saveRange();
+            editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+            return;
+          }
+        };
+      }
+
       function dateStr(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
       function parseDate(s) { const p = String(s).split('-').map(Number); return new Date(p[0], p[1] - 1, p[2], 12); }
       function validDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && +s.slice(0, 4) >= 1900 && dateStr(parseDate(s)) === s; }
@@ -5031,7 +6067,39 @@
       }
 
       function insertCharIntoTextarea(textarea, ch) {
+        if (!textarea) return;
         textarea.focus();
+        if (textarea.isContentEditable) {
+          const sel = window.getSelection();
+          if (lastActiveEditorRange) {
+            try {
+              sel.removeAllRanges();
+              sel.addRange(lastActiveEditorRange);
+            } catch (err) {}
+          }
+          if (sel && sel.rangeCount > 0 && textarea.contains(sel.anchorNode)) {
+            const range = sel.getRangeAt(0);
+            range.deleteContents();
+            const tn = document.createTextNode(ch);
+            range.insertNode(tn);
+            range.setStartAfter(tn);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+            lastActiveEditorRange = range.cloneRange();
+          } else {
+            const tn = document.createTextNode(ch);
+            textarea.appendChild(tn);
+            const r = document.createRange();
+            r.setStartAfter(tn);
+            r.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(r);
+            lastActiveEditorRange = r.cloneRange();
+          }
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          return;
+        }
         const start = textarea.selectionStart || 0;
         const end = textarea.selectionEnd || 0;
         const val = textarea.value;
@@ -5308,7 +6376,7 @@
                       <h3 class="detail-title">${esc(t.title)}</h3>
                     </div>
                     <div class="detail-body">
-                      <div class="detail-row"><span class="detail-label">내용</span><div class="detail-value ${t.memo && t.memo.trim() ? 'detail-memo' : ''}">${t.memo && t.memo.trim() ? esc(t.memo) : '-'}</div></div>
+                      ${t.memo && t.memo.trim() ? `<div class="detail-memo-full detail-memo">${parseMemoMarkdown(t.memo)}</div>` : ''}
                       <div class="detail-row"><span class="detail-label">태그</span><div class="detail-value">${t.tags && t.tags.length ? esc(t.tags.join(', ')) : '-'}</div></div>
                       <div class="detail-row"><span class="detail-label">중요도</span><div class="detail-value">${PRIORITY[t.priority] || 'Normal'}</div></div>
                       <div class="detail-row"><span class="detail-label">D-Day 기준</span><div class="detail-value">${t.ddayMode === 'calendar' ? '달력일 기준' : '근무일 기준'}</div></div>
@@ -5339,7 +6407,7 @@
                       <h3 class="detail-title">${esc(t.title)}</h3>
                     </div>
                     <div class="detail-body">
-                      <div class="detail-row"><span class="detail-label">내용</span><div class="detail-value ${t.memo && t.memo.trim() ? 'detail-memo' : ''}">${t.memo && t.memo.trim() ? esc(t.memo) : '-'}</div></div>
+                      ${t.memo && t.memo.trim() ? `<div class="detail-memo-full detail-memo">${parseMemoMarkdown(t.memo)}</div>` : ''}
                       <div class="detail-row"><span class="detail-label">태그</span><div class="detail-value">${t.tags.length ? esc(t.tags.join(', ')) : '-'}</div></div>
                       <div class="detail-row"><span class="detail-label">중요도</span><div class="detail-value">${PRIORITY[t.priority] || 'Normal'}</div></div>
                       <div class="detail-row"><span class="detail-label">D-Day 기준</span><div class="detail-value">${t.ddayMode === 'calendar' ? '달력일 기준' : '근무일 기준'}</div></div>
@@ -5637,12 +6705,12 @@
 
               <!-- 2. 내용 -->
               <div class="field" id="fieldMemo">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <label style="margin-bottom:0;">내용</label>
-                  <button type="button" class="label-addon-btn" id="openSpecialCharsBtn">특수문자</button>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:8px;">
+                  <label style="margin-bottom:0; flex-shrink:0;">내용</label>
+                  ${renderMarkdownToolbar('')}
                 </div>
                 <div style="position:relative; width:100%;">
-                  <textarea id="modalMemo" class="control" style="min-height:48px; width:100%; box-sizing:border-box; resize:vertical;" placeholder="상세 내용을 입력하세요">${esc(editTarget.memo)}</textarea>
+                  <div id="modalMemo" class="control memo-editor" contenteditable="true" placeholder="상세 내용을 입력하세요"></div>
                   <div id="memoResizeHandle" style="position:absolute; bottom:0; left:0; width:calc(100% - 18px); height:6px; cursor:ns-resize;" title="하단 라인을 드래그하여 높이 조절"></div>
                 </div>
               </div>
@@ -5756,10 +6824,14 @@
           }
 
           const isPureHoliday = h && !holidayHasTask;
-          ['modalStartDate', 'modalDueDate', 'modalMemo', 'modalTags', 'modalPriority', 'modalCustomRem', 'modalCustomRec', 'modalCompleted', 'modalCompletedDate', 'modalIsLunar'].forEach(id => {
+          ['modalStartDate', 'modalDueDate', 'modalTags', 'modalPriority', 'modalCustomRem', 'modalCustomRec', 'modalCompleted', 'modalCompletedDate', 'modalIsLunar'].forEach(id => {
             const el = $(id);
             if (el) el.disabled = isPureHoliday;
           });
+          const memoDiv = $('modalMemo');
+          if (memoDiv) {
+            memoDiv.contentEditable = !isPureHoliday;
+          }
           document.querySelectorAll('#editor input[name="modalDdayMode"]').forEach(el => el.disabled = isPureHoliday);
           document.querySelectorAll('#editor .rem-check').forEach(el => el.disabled = isPureHoliday);
           document.querySelectorAll('#editor .rec-check').forEach(el => el.disabled = isPureHoliday);
@@ -5955,7 +7027,7 @@
             editTarget.completed = false;
             editTarget.completedDate = '';
           } else {
-            editTarget.memo = $('modalMemo').value;
+            editTarget.memo = convertHTMLToMarkdown($('modalMemo').innerHTML);
             editTarget.tags = $('modalTags').value.split(',').map(s => s.trim()).filter(Boolean);
             editTarget.priority = $('modalPriority').value;
             const checkedDday = document.querySelector('input[name="modalDdayMode"]:checked');
@@ -6086,34 +7158,24 @@
           }
         };
 
-        // [V1.1.4] 내용 입력창 자동 높이 확장 (엔터/줄바꿈 시 하단 빈공간 없이 글자 높이에 딱 맞춤)
+        // [V1.3.9] 위지윅 내용 입력창 초기화 및 자동 높이 확장
         const memoEl = $('modalMemo');
         if (memoEl) {
+          memoEl.innerHTML = parseMemoForEditor(editTarget.memo || '');
           lastActiveTextarea = memoEl;
           memoEl.onfocus = () => { lastActiveTextarea = memoEl; };
           const autoExpand = () => {
             memoEl.style.height = 'auto';
-            // box-sizing: border-box 에 맞춰 scrollHeight 로 콘텐츠 높이 정확히 밀착
             memoEl.style.height = Math.max(48, memoEl.scrollHeight + 2) + 'px';
           };
           memoEl.addEventListener('input', autoExpand);
-          memoEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-              e.preventDefault();
-              const start = memoEl.selectionStart;
-              const end = memoEl.selectionEnd;
-              if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
-                document.execCommand('insertText', false, '\t');
-              } else {
-                memoEl.setRangeText('\t', start, end, 'end');
-                memoEl.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-            }
-          });
         }
 
         // [V1.1.0] 내용 하단 라인 전체 리사이즈 핸들 연결
         setupTextareaDragResizer($('memoResizeHandle'), memoEl);
+
+        // [V1.3.8 / V1.3.9] 위지윅 마크다운 툴바 초기화
+        setupMemoMarkdownToolbar('', memoEl);
 
         // [V1.1.0] 기간리셋 버튼 바인딩
         const resetBtn = $('modalResetPeriodBtn');
@@ -6132,6 +7194,10 @@
         if (specBtn) {
           specBtn.onclick = () => {
             lastActiveTextarea = $('modalMemo');
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0 && $('modalMemo') && $('modalMemo').contains(sel.anchorNode)) {
+              lastActiveEditorRange = sel.getRangeAt(0).cloneRange();
+            }
             setupSpecialChars();
             $('specialCharModal').showModal();
             history.pushState({ modal: 'specialCharModal' }, '');
@@ -6177,13 +7243,13 @@
               </div>
 
               <!-- 2. 내용 -->
-              <div class="field">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <label style="margin-bottom:0;">내용</label>
-                  <button type="button" class="label-addon-btn" id="recOpenSpecialCharsBtn">특수문자</button>
+              <div class="field" id="recFieldMemo">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:8px;">
+                  <label style="margin-bottom:0; flex-shrink:0;">내용</label>
+                  ${renderMarkdownToolbar('rec')}
                 </div>
                 <div style="position:relative; width:100%;">
-                  <textarea id="recModalMemo" class="control" style="min-height:48px; width:100%; box-sizing:border-box; resize:vertical;" placeholder="상세 내용을 입력하세요">${esc(editingRule.memo)}</textarea>
+                  <div id="recModalMemo" class="control memo-editor" contenteditable="true" placeholder="상세 내용을 입력하세요"></div>
                   <div id="recMemoResizeHandle" style="position:absolute; bottom:0; left:0; width:calc(100% - 18px); height:6px; cursor:ns-resize;" title="하단 라인을 드래그하여 높이 조절"></div>
                 </div>
               </div>
@@ -6380,7 +7446,7 @@
           const r = (next.recurrings || []).find(x => x.id === editingRule.id);
           if (r) {
             r.title = title;
-            r.memo = $('recModalMemo').value;
+            r.memo = convertHTMLToMarkdown($('recModalMemo').innerHTML);
             r.tags = $('recModalTags').value.split(',').map(s => s.trim()).filter(Boolean);
             r.startDate = startDate;
             r.endDate = endDate || '';
@@ -6406,10 +7472,10 @@
           }
         };
 
-        
-        // [V1.1.4] rec 내용 입력창 자동 높이 확장
+        // [V1.3.9] rec 위지윅 내용 입력창 초기화 및 자동 높이 확장
         const recMemoEl = $('recModalMemo');
         if (recMemoEl) {
+          recMemoEl.innerHTML = parseMemoForEditor(editingRule.memo || '');
           lastActiveTextarea = recMemoEl;
           recMemoEl.onfocus = () => { lastActiveTextarea = recMemoEl; };
           const autoExpandRec = () => {
@@ -6417,21 +7483,10 @@
             recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
           };
           recMemoEl.addEventListener('input', autoExpandRec);
-          recMemoEl.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') {
-              e.preventDefault();
-              const start = recMemoEl.selectionStart;
-              const end = recMemoEl.selectionEnd;
-              if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
-                document.execCommand('insertText', false, '\t');
-              } else {
-                recMemoEl.setRangeText('\t', start, end, 'end');
-                recMemoEl.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-            }
-          });
         }
         setupTextareaDragResizer($('recMemoResizeHandle'), recMemoEl);
+        // [V1.3.8 / V1.3.9] 반복 마스터 위지윅 마크다운 툴바 초기화
+        setupMemoMarkdownToolbar('rec', recMemoEl);
 
         const recResetBtn = $('recModalResetPeriodBtn');
         if (recResetBtn) {
@@ -6448,6 +7503,10 @@
         if (recSpecBtn) {
           recSpecBtn.onclick = () => {
             lastActiveTextarea = $('recModalMemo');
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount > 0 && $('recModalMemo') && $('recModalMemo').contains(sel.anchorNode)) {
+              lastActiveEditorRange = sel.getRangeAt(0).cloneRange();
+            }
             setupSpecialChars();
             $('specialCharModal').showModal();
             history.pushState({ modal: 'specialCharModal' }, '');
@@ -7225,6 +8284,13 @@
           }
         });
 
+        // [V1.3.8] 마크다운 색상 팝오버 외부 클릭 시 닫기
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('.memo-color-wrapper')) {
+            document.querySelectorAll('.memo-color-popover.open').forEach(p => p.classList.remove('open'));
+          }
+        });
+
         document.addEventListener('click', handleAction);
 
         /* [V1.3.3] 모바일 뒤로가기(popstate) 및 히스토리 방어 */
@@ -7241,7 +8307,8 @@
           }
           if ($('editor') && $('editor').open) {
             const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
-            const memoVal = ($('modalMemo') ? $('modalMemo').value.trim() : '') || ($('recModalMemo') ? $('recModalMemo').value.trim() : '');
+            const memoVal = ($('modalMemo') ? ($('modalMemo').textContent || $('modalMemo').innerText || '').trim() : '') ||
+                            ($('recModalMemo') ? ($('recModalMemo').textContent || $('recModalMemo').innerText || '').trim() : '');
             if (titleVal || memoVal) {
               if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
                 history.pushState({ modal: 'editor' }, '');
@@ -7279,7 +8346,8 @@
             return;
           }
           const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
-          const memoVal = ($('modalMemo') ? $('modalMemo').value.trim() : '') || ($('recModalMemo') ? $('recModalMemo').value.trim() : '');
+          const memoVal = ($('modalMemo') ? ($('modalMemo').textContent || $('modalMemo').innerText || '').trim() : '') ||
+                          ($('recModalMemo') ? ($('recModalMemo').textContent || $('recModalMemo').innerText || '').trim() : '');
           if (titleVal || memoVal) {
             if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
               e.preventDefault();
@@ -7315,7 +8383,8 @@
             if (isEditorOpen) {
               e.preventDefault();
               const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
-              const memoVal = ($('modalMemo') ? $('modalMemo').value.trim() : '') || ($('recModalMemo') ? $('recModalMemo').value.trim() : '');
+              const memoVal = ($('modalMemo') ? ($('modalMemo').textContent || $('modalMemo').innerText || '').trim() : '') ||
+                              ($('recModalMemo') ? ($('recModalMemo').textContent || $('recModalMemo').innerText || '').trim() : '');
               if (titleVal || memoVal) {
                 if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
                   return;
