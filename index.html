@@ -1504,9 +1504,14 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      padding: 6px 0;
+      padding: 3.5px 0;
       border-bottom: 1px solid #f8fafc;
       font-size: 12.5px;
+    }
+
+    .detail-body > .detail-row:first-child {
+      padding-top: 6px;
+      padding-bottom: 8.5px;
     }
 
     .detail-label {
@@ -1523,13 +1528,36 @@
       word-break: break-all;
     }
 
+    .detail-value.detail-memo {
+      flex: 1;
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      tab-size: 4;
+      -moz-tab-size: 4;
+      line-height: 1.5;
+      padding-left: 12px;
+    }
+
     .detail-actions {
       display: flex;
       justify-content: flex-end;
       gap: 8px;
-      margin-top: 16px;
-      padding-top: 12px;
+      margin-top: 12px;
+      padding-top: 10px;
       border-top: 1px solid var(--border-subtle);
+    }
+
+    .detail-actions .btn {
+      height: 30.5px;
+      padding: 0 12px;
+      font-size: 12px;
+    }
+
+    .detail-actions .btn svg {
+      width: 13.5px;
+      height: 13.5px;
     }
 
     /* MODAL DIALOGS (ELEGANT FLOATING SQUIRCLE) */
@@ -1637,8 +1665,8 @@
 
     .modal-foot .btn,
     .modal-foot .actions .btn {
-      height: 34px;
-      padding: 0 14px;
+      height: 30.5px;
+      padding: 0 16px;
       font-size: 12.5px;
       font-weight: 600;
       border-radius: var(--radius-md);
@@ -2287,11 +2315,11 @@
 
       .modal-foot .btn,
       .modal-foot .actions .btn {
-        height: 36px;
-        padding: 6px 16px;
-        font-size: 13px;
+        height: 32.5px;
+        padding: 5px 18px;
+        font-size: 12.5px;
         font-weight: 700;
-        min-width: 68px;
+        min-width: 75px;
         box-sizing: border-box;
       }
 
@@ -2883,7 +2911,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.3.5';
+      window.APP_VERSION = 'v1.3.7';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -5280,7 +5308,7 @@
                       <h3 class="detail-title">${esc(t.title)}</h3>
                     </div>
                     <div class="detail-body">
-                      <div class="detail-row"><span class="detail-label">내용</span><div class="detail-value">${esc(t.memo || '-')}</div></div>
+                      <div class="detail-row"><span class="detail-label">내용</span><div class="detail-value ${t.memo && t.memo.trim() ? 'detail-memo' : ''}">${t.memo && t.memo.trim() ? esc(t.memo) : '-'}</div></div>
                       <div class="detail-row"><span class="detail-label">태그</span><div class="detail-value">${t.tags && t.tags.length ? esc(t.tags.join(', ')) : '-'}</div></div>
                       <div class="detail-row"><span class="detail-label">중요도</span><div class="detail-value">${PRIORITY[t.priority] || 'Normal'}</div></div>
                       <div class="detail-row"><span class="detail-label">D-Day 기준</span><div class="detail-value">${t.ddayMode === 'calendar' ? '달력일 기준' : '근무일 기준'}</div></div>
@@ -5311,7 +5339,7 @@
                       <h3 class="detail-title">${esc(t.title)}</h3>
                     </div>
                     <div class="detail-body">
-                      <div class="detail-row"><span class="detail-label">내용</span><div class="detail-value">${esc(t.memo || '-')}</div></div>
+                      <div class="detail-row"><span class="detail-label">내용</span><div class="detail-value ${t.memo && t.memo.trim() ? 'detail-memo' : ''}">${t.memo && t.memo.trim() ? esc(t.memo) : '-'}</div></div>
                       <div class="detail-row"><span class="detail-label">태그</span><div class="detail-value">${t.tags.length ? esc(t.tags.join(', ')) : '-'}</div></div>
                       <div class="detail-row"><span class="detail-label">중요도</span><div class="detail-value">${PRIORITY[t.priority] || 'Normal'}</div></div>
                       <div class="detail-row"><span class="detail-label">D-Day 기준</span><div class="detail-value">${t.ddayMode === 'calendar' ? '달력일 기준' : '근무일 기준'}</div></div>
@@ -6069,6 +6097,19 @@
             memoEl.style.height = Math.max(48, memoEl.scrollHeight + 2) + 'px';
           };
           memoEl.addEventListener('input', autoExpand);
+          memoEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+              e.preventDefault();
+              const start = memoEl.selectionStart;
+              const end = memoEl.selectionEnd;
+              if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+                document.execCommand('insertText', false, '\t');
+              } else {
+                memoEl.setRangeText('\t', start, end, 'end');
+                memoEl.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+            }
+          });
         }
 
         // [V1.1.0] 내용 하단 라인 전체 리사이즈 핸들 연결
@@ -6376,6 +6417,19 @@
             recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
           };
           recMemoEl.addEventListener('input', autoExpandRec);
+          recMemoEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+              e.preventDefault();
+              const start = recMemoEl.selectionStart;
+              const end = recMemoEl.selectionEnd;
+              if (document.queryCommandSupported && document.queryCommandSupported('insertText')) {
+                document.execCommand('insertText', false, '\t');
+              } else {
+                recMemoEl.setRangeText('\t', start, end, 'end');
+                recMemoEl.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+            }
+          });
         }
         setupTextareaDragResizer($('recMemoResizeHandle'), recMemoEl);
 
