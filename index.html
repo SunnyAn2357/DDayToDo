@@ -3128,7 +3128,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.3.9';
+      window.APP_VERSION = 'v1.4.0';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4867,15 +4867,21 @@
             block = block.parentNode;
           }
           const h = document.createElement('h' + lvl);
-          h.innerHTML = (node.textContent || '').trim() ? node.textContent : '<br>';
+          const remText = (node.textContent || '').trim();
+          h.innerHTML = remText ? remText : '<br>';
           if (block && block.parentNode === editorEl) {
             editorEl.replaceChild(h, block);
           } else {
             editorEl.appendChild(h);
           }
           const r = document.createRange();
-          r.selectNodeContents(h);
-          r.collapse(false);
+          if (remText) {
+            r.selectNodeContents(h);
+            r.collapse(false);
+          } else {
+            r.setStart(h, 0);
+            r.collapse(true);
+          }
           sel.removeAllRanges();
           sel.addRange(r);
           lastActiveEditorRange = r.cloneRange();
@@ -4961,6 +4967,37 @@
         const toolbar = $(`${prefix}memoMdToolbar`);
         if (!toolbar) return;
 
+        lastActiveTextarea = editorEl;
+
+        const hSelect = $(`${prefix}memoToolHeading`);
+        // 현재 커서(또는 포커스 블록)의 태그(H1, H2, H3, DIV)를 감지하여 헤더 드롭다운 표시를 실시간 동기화
+        const syncHeadingSelect = () => {
+          if (!hSelect || document.activeElement === hSelect) return;
+          const sel = window.getSelection();
+          if (!sel || !sel.rangeCount || !editorEl.contains(sel.anchorNode)) return;
+          let block = sel.anchorNode;
+          if (block === editorEl) {
+            block = editorEl.childNodes[Math.min(sel.anchorOffset, editorEl.childNodes.length - 1)] || editorEl.firstChild;
+          } else {
+            while (block && block.parentNode !== editorEl) {
+              block = block.parentNode;
+            }
+          }
+          const tag = (block && block.nodeType === Node.ELEMENT_NODE) ? block.tagName.toLowerCase() : 'div';
+          if (['h1', 'h2', 'h3'].includes(tag)) {
+            hSelect.value = tag;
+          } else {
+            hSelect.value = '';
+          }
+        };
+
+        // 모달 열림 시마다 중복 바인딩되는 것을 방지 (단 1회만 이벤트 등록)
+        if (editorEl._toolbarInitialized) {
+          syncHeadingSelect();
+          return;
+        }
+        editorEl._toolbarInitialized = true;
+
         const saveRange = () => {
           const sel = window.getSelection();
           if (sel && sel.rangeCount > 0 && editorEl.contains(sel.anchorNode)) {
@@ -4978,11 +5015,12 @@
           }
         };
 
-        // selectionchange 이벤트를 통해 블록 지정, 커서 이동 시 실시간으로 range를 백업
+        // selectionchange 이벤트를 통해 블록 지정, 커서 이동 시 실시간으로 range를 백업하고 헤더 선택창 동기화
         const onSelChange = () => {
           const sel = window.getSelection();
           if (sel && sel.rangeCount > 0 && editorEl.contains(sel.anchorNode)) {
             lastActiveEditorRange = sel.getRangeAt(0).cloneRange();
+            syncHeadingSelect();
           }
         };
         document.addEventListener('selectionchange', onSelChange);
@@ -4992,21 +5030,34 @@
           if (!lastActiveEditorRange || !editorEl.contains(lastActiveEditorRange.commonAncestorContainer)) {
             saveRange();
           }
+          syncHeadingSelect();
         };
-        editorEl.onmouseup = () => saveRange();
+        editorEl.onmouseup = () => {
+          saveRange();
+          syncHeadingSelect();
+        };
         editorEl.onkeyup = (e) => {
           saveRange();
           if (e.isComposing) return;
           if (e.key === ' ' || e.key === 'Spacebar') {
             applyLiveMarkdown(editorEl);
           }
+          syncHeadingSelect();
         };
 
         // 글자를 모두 지웠을 때 잔여 H1, span style, strong 태그를 완전히 제거하고 깨끗한 <div><br></div>로 초기화
-        editorEl.addEventListener('input', () => {
+        // 단, 한글 조합(IME) 중이거나, 사용자가 의도적으로 만든 빈 제목(H1/H2/H3) 블록은 강제로 div로 덮어쓰지 않고 유지!
+        editorEl.addEventListener('input', (e) => {
+          if (e.isComposing) return;
           const text = (editorEl.textContent || '').replace(/\u200B/g, '').trim();
           if (text === '' && !editorEl.querySelector('img, a')) {
-            if (editorEl.children.length !== 1 || editorEl.firstElementChild?.tagName !== 'DIV' || editorEl.firstElementChild?.innerHTML !== '<br>') {
+            const first = editorEl.firstElementChild;
+            if (editorEl.children.length === 1 && first && ['DIV', 'H1', 'H2', 'H3'].includes(first.tagName) && (!first.textContent || !first.textContent.trim())) {
+              saveRange();
+              syncHeadingSelect();
+              return;
+            }
+            if (editorEl.children.length !== 1 || first?.tagName !== 'DIV' || first?.innerHTML !== '<br>') {
               editorEl.innerHTML = '<div><br></div>';
               const r = document.createRange();
               r.setStart(editorEl.firstElementChild, 0);
@@ -5021,9 +5072,8 @@
           } else {
             saveRange();
           }
+          syncHeadingSelect();
         });
-
-        lastActiveTextarea = editorEl;
 
         // 커서 또는 선택 영역이 속한 줄(블록)을 안전하게 Heading / Div로 전환하는 함수
         const applyHeadingToCurrentLine = (level) => {
@@ -5057,18 +5107,23 @@
 
           if (block.tagName?.toLowerCase() !== targetTag) {
             const newEl = document.createElement(targetTag);
-            newEl.innerHTML = (block.nodeType === Node.TEXT_NODE ? block.textContent : block.innerHTML) || '<br>';
+            const content = (block.nodeType === Node.TEXT_NODE ? block.textContent : block.innerHTML) || '<br>';
+            newEl.innerHTML = content.trim() ? content : '<br>';
             editorEl.replaceChild(newEl, block);
             const r = document.createRange();
-            r.selectNodeContents(newEl);
-            r.collapse(false);
+            if (newEl.innerHTML === '<br>') {
+              r.setStart(newEl, 0);
+              r.collapse(true);
+            } else {
+              r.selectNodeContents(newEl);
+              r.collapse(false);
+            }
             sel.removeAllRanges();
             sel.addRange(r);
             saveRange();
           }
         };
 
-        const hSelect = $(`${prefix}memoToolHeading`);
         if (hSelect) {
           hSelect.onmousedown = () => saveRange();
           hSelect.onfocus = () => saveRange();
@@ -5079,7 +5134,7 @@
             } else {
               applyHeadingPrefix(editorEl, val ? (val === 'h1' ? '# ' : val === 'h2' ? '## ' : '### ') : '');
             }
-            hSelect.value = '';
+            syncHeadingSelect();
             editorEl.dispatchEvent(new Event('input', { bubbles: true }));
           };
         }
@@ -5296,6 +5351,35 @@
             return;
           }
 
+          if (e.key === 'Backspace' && editorEl.isContentEditable) {
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount) {
+              const range = sel.getRangeAt(0);
+              if (range.collapsed) {
+                let block = range.startContainer;
+                while (block && block.parentNode !== editorEl) {
+                  block = block.parentNode;
+                }
+                // 빈 제목 태그(H1, H2, H3)에서 백스페이스를 누르면 본문 div로 안전하게 복귀
+                if (block && /^(H1|H2|H3)$/i.test(block.tagName) && !(block.textContent || '').trim()) {
+                  e.preventDefault();
+                  const div = document.createElement('div');
+                  div.innerHTML = '<br>';
+                  editorEl.replaceChild(div, block);
+                  const r = document.createRange();
+                  r.setStart(div, 0);
+                  r.collapse(true);
+                  sel.removeAllRanges();
+                  sel.addRange(r);
+                  saveRange();
+                  syncHeadingSelect();
+                  editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+                  return;
+                }
+              }
+            }
+          }
+
           // [핵심] 엔터 줄바꿈 시 이전 줄의 스타일(span, strong, h태그) 상속을 원천 차단하고 깨끗한 새 div 생성!
           if (e.key === 'Enter' && editorEl.isContentEditable) {
             e.preventDefault();
@@ -5307,6 +5391,22 @@
             let block = range.startContainer;
             while (block && block.parentNode !== editorEl) {
               block = block.parentNode;
+            }
+
+            // 0. 빈 제목(H1~H3)에서 엔터를 치면 새 줄 추가 대신 일반 본문(div)으로 변환
+            if (block && /^(H1|H2|H3)$/i.test(block.tagName) && !(block.textContent || '').trim()) {
+              const div = document.createElement('div');
+              div.innerHTML = '<br>';
+              editorEl.replaceChild(div, block);
+              const r = document.createRange();
+              r.setStart(div, 0);
+              r.collapse(true);
+              sel.removeAllRanges();
+              sel.addRange(r);
+              saveRange();
+              syncHeadingSelect();
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              return;
             }
 
             // 1. 현재 줄이 '# 제목'으로 작성된 상태에서 엔터를 칠 때: 즉시 H 태그로 변환 후 다음 줄은 본문(div)
@@ -5330,6 +5430,7 @@
                 sel.removeAllRanges();
                 sel.addRange(r);
                 saveRange();
+                syncHeadingSelect();
                 editorEl.dispatchEvent(new Event('input', { bubbles: true }));
                 return;
               }
@@ -6380,10 +6481,9 @@
                       <div class="detail-row"><span class="detail-label">태그</span><div class="detail-value">${t.tags && t.tags.length ? esc(t.tags.join(', ')) : '-'}</div></div>
                       <div class="detail-row"><span class="detail-label">중요도</span><div class="detail-value">${PRIORITY[t.priority] || 'Normal'}</div></div>
                       <div class="detail-row"><span class="detail-label">D-Day 기준</span><div class="detail-value">${t.ddayMode === 'calendar' ? '달력일 기준' : '근무일 기준'}</div></div>
-                      <div class="detail-row"><span class="detail-label">반복</span><div class="detail-value" style="color:#2563eb; font-weight:700;">${t.isLunar ? '[음력] ' : ''}${RECURRENCE[t.recurrence] || (t.recurrence + '일 마다')}</div></div>
-                      <div class="detail-row"><span class="detail-label">시작일</span><div class="detail-value">${t.startDate || t.dueDate || '-'}</div></div>
-                      <div class="detail-row"><span class="detail-label">종료일</span><div class="detail-value">${t.endDate || '-'}</div></div>
+                      <div class="detail-row"><span class="detail-label">기간</span><div class="detail-value">${(t.startDate || t.dueDate || '-') + (t.endDate ? ` ~ ${t.endDate}` : '')}</div></div>
                       <div class="detail-row"><span class="detail-label">알림 주기</span><div class="detail-value">${remText}</div></div>
+                      <div class="detail-row"><span class="detail-label">반복 주기</span><div class="detail-value" style="color:#2563eb; font-weight:700;">${t.isLunar ? '[음력] ' : ''}${RECURRENCE[t.recurrence] || (t.recurrence + '일 마다')}</div></div>
                       <div class="detail-row"><span class="detail-label">관리</span><div class="detail-value">반복 마스터 일정</div></div>
                     </div>
                     <div class="detail-actions">
@@ -6412,9 +6512,9 @@
                       <div class="detail-row"><span class="detail-label">중요도</span><div class="detail-value">${PRIORITY[t.priority] || 'Normal'}</div></div>
                       <div class="detail-row"><span class="detail-label">D-Day 기준</span><div class="detail-value">${t.ddayMode === 'calendar' ? '달력일 기준' : '근무일 기준'}</div></div>
                       <div class="detail-row"><span class="detail-label">기간</span><div class="detail-value">${periodStr}${t.isHoliday ? ' (공휴일)' : ''}</div></div>
-                      <div class="detail-row"><span class="detail-label">반복</span><div class="detail-value">${recLabel}</div></div>
                       <div class="detail-row"><span class="detail-label">알림 주기</span><div class="detail-value">${remText}</div></div>
-                      <div class="detail-row"><span class="detail-label">진행상태</span><div class="detail-value">${t.completed ? `완료 (${t.completedDate || '완료일 기록 없음'})` : '미완료'}</div></div>
+                      <div class="detail-row"><span class="detail-label">반복 주기</span><div class="detail-value">${recLabel}</div></div>
+                      <div class="detail-row"><span class="detail-label">완료 처리</span><div class="detail-value">${t.completed ? `완료 (${t.completedDate || '완료일 기록 없음'})` : '미완료'}</div></div>
                     </div>
                     <div class="detail-actions">
                       <button type="button" class="btn danger" data-action="deleteTask" data-id="${t.id}">
