@@ -1765,13 +1765,25 @@
       background: none;
       line-height: 1.35;
     }
-    .memo-editor mark {
+    .memo-editor mark, .detail-memo mark {
       background: #fef08a;
       color: #854d0e;
       padding: 1px 3px;
       border-radius: 3px;
     }
-    .memo-editor a {
+    .memo-editor code, .detail-memo code,
+    .memo-editor .memo-code, .detail-memo .memo-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.88em;
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 1px 5px;
+      margin: 0 1px;
+      word-break: break-word;
+    }
+    .memo-editor a, .detail-memo a {
       color: #2563eb;
       text-decoration: underline;
       font-weight: 600;
@@ -3128,7 +3140,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.4.0';
+      window.APP_VERSION = 'v1.4.1';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -4617,6 +4629,10 @@
         // Raw url (if not preceded by href=" or >)
         s = s.replace(/(^|[\s(])(https?:\/\/[^\s)<>]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:underline; font-weight:600;">$2</a>');
 
+        // [티커/인라인코드]: `code`
+        s = s.replace(/`([^`\n]+)`/g, '<code class="memo-code">$1</code>');
+        s = s.replace(/&lt;code(?:\s+class=(?:&quot;|&#39;)?memo-code(?:&quot;|&#39;)?)?&gt;(.*?)&lt;\/code&gt;/gi, '<code class="memo-code">$1</code>');
+
         // 1. 굵게: **text**
         s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong style="font-weight:700;"><em>$1</em></strong>');
         s = s.replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:700;">$1</strong>');
@@ -4692,8 +4708,9 @@
           let isUnder = tag === 'U' || (tag !== 'A' && /underline/.test(deco));
           let isStrike = tag === 'S' || tag === 'STRIKE' || tag === 'DEL' || /line-through/.test(deco);
           let isMark = tag === 'MARK';
+          const isCode = tag === 'CODE' || tag === 'KBD' || tag === 'SAMP' || tag === 'TT';
           const parts = [];
-          if (tag !== 'MARK' && tag !== 'A') {
+          if (tag !== 'MARK' && tag !== 'A' && !isCode) {
             if (tag === 'FONT' && node.getAttribute('color')) parts.push('color:' + node.getAttribute('color'));
             if (css.color) parts.push('color:' + css.color);
             const bg = css.backgroundColor;
@@ -4705,6 +4722,7 @@
           const colorStyle = sanitizeMemoStyle(parts.join(';'));
 
           if (colorStyle) inner = wrap(inner, `<span style="${colorStyle}">`, '</span>');
+          if (isCode) inner = wrap(inner, '`', '`');
           if (isMark) inner = wrap(inner, '==', '==');
           if (isStrike) inner = wrap(inner, '~~', '~~');
           if (isUnder) inner = wrap(inner, '<u>', '</u>');
@@ -4890,6 +4908,7 @@
 
         // 2. Inline Markdown
         const patterns = [
+          { regex: /`([^`]+)`\s$/, tag: 'code' },
           { regex: /\*\*([^*]+)\*\*\s$/, tag: 'strong' },
           { regex: /(?<!\*)\*([^*]+)\*\s$/, tag: 'em' },
           { regex: /~~([^~]+)~~\s$/, tag: 'del' },
@@ -6473,8 +6492,15 @@
                 const remText = (t.reminders && t.reminders.length) ? t.reminders.map(n => n === 0 ? '당일' : `${n}일 전`).join(', ') : '없음';
                 $('listDetailContent').innerHTML = `
                   <div class="detail-card">
-                    <div class="detail-head">
-                      <h3 class="detail-title">${esc(t.title)}</h3>
+                    <div class="detail-head" style="display:flex; justify-content:space-between; align-items:center;">
+                      <h3 class="detail-title" style="margin:0;">${esc(t.title)}</h3>
+                      <button type="button" class="memo-tool-btn" data-action="printDetailMemo" data-id="${t.id}" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc;" title="내용 인쇄">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                          <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                      </button>
                     </div>
                     <div class="detail-body">
                       ${t.memo && t.memo.trim() ? `<div class="detail-memo-full detail-memo">${parseMemoMarkdown(t.memo)}</div>` : ''}
@@ -6503,8 +6529,15 @@
                 const periodStr = (t.startDate && t.startDate !== t.dueDate) ? `${t.startDate} ~ ${t.dueDate}` : t.dueDate;
                 $('listDetailContent').innerHTML = `
                   <div class="detail-card">
-                    <div class="detail-head">
-                      <h3 class="detail-title">${esc(t.title)}</h3>
+                    <div class="detail-head" style="display:flex; justify-content:space-between; align-items:center;">
+                      <h3 class="detail-title" style="margin:0;">${esc(t.title)}</h3>
+                      <button type="button" class="memo-tool-btn" data-action="printDetailMemo" data-id="${t.id}" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc;" title="내용 인쇄">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                          <rect x="6" y="14" width="12" height="8"></rect>
+                        </svg>
+                      </button>
                     </div>
                     <div class="detail-body">
                       ${t.memo && t.memo.trim() ? `<div class="detail-memo-full detail-memo">${parseMemoMarkdown(t.memo)}</div>` : ''}
@@ -6771,6 +6804,100 @@
 
       let editTarget = null;
       let holidayHasTask = false;
+      // [V1.4.1] 내용 단독 인쇄 유틸리티 (다른 UI 배제하고 제목 및 서식 내용만 출력)
+      function printMemoContent(title, memoHtml) {
+        const textOnly = (memoHtml || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/\u200B/g, '').trim();
+        if (!textOnly && !memoHtml.includes('<img')) {
+          toast('인쇄할 내용이 없습니다.');
+          return;
+        }
+
+        let iframe = document.getElementById('memoPrintIframe');
+        if (!iframe) {
+          iframe = document.createElement('iframe');
+          iframe.id = 'memoPrintIframe';
+          iframe.style.position = 'fixed';
+          iframe.style.right = '0';
+          iframe.style.bottom = '0';
+          iframe.style.width = '0';
+          iframe.style.height = '0';
+          iframe.style.border = '0';
+          iframe.style.visibility = 'hidden';
+          document.body.appendChild(iframe);
+        }
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${title ? esc(title) : '일정 내용 인쇄'}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 20mm 15mm 20mm 15mm;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.65;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+      word-break: break-word;
+      background: #ffffff;
+    }
+    .print-header {
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #0f172a;
+    }
+    .print-header h1 {
+      font-size: 17pt;
+      font-weight: 800;
+      margin: 0 0 6px 0;
+      color: #0f172a;
+    }
+    .print-content {
+      font-size: 11pt;
+    }
+    .print-content h1 { font-size: 15pt; font-weight: 800; margin: 16px 0 6px 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px; }
+    .print-content h2 { font-size: 13.5pt; font-weight: 800; margin: 14px 0 4px 0; }
+    .print-content h3 { font-size: 12pt; font-weight: 700; margin: 12px 0 4px 0; }
+    .print-content p, .print-content div { margin: 2px 0; }
+    .print-content mark { background: #fef08a; padding: 1px 3px; border-radius: 2px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .print-content code, .print-content .memo-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.9em;
+      background: #f1f5f9;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 1px 4px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .print-content a { color: #2563eb; text-decoration: underline; }
+    .print-content strong { font-weight: 700; }
+  </style>
+</head>
+<body>
+  ${title ? `<div class="print-header"><h1>${esc(title)}</h1></div>` : ''}
+  <div class="print-content">${memoHtml}</div>
+</body>
+</html>`);
+        doc.close();
+
+        setTimeout(() => {
+          try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          } catch (e) {
+            console.error(e);
+          }
+        }, 200);
+      }
       function openEditor(task = null) {
         editTarget = task ? clone(task) : makeTask(ui.selected);
         const editing = !!task;
@@ -6788,7 +6915,14 @@
           <form id="taskForm" class="modal-frame">
             <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center;">
               <h2>${editing ? '일정 수정' : '새 일정'}</h2>
-              <div style="display:flex; align-items:center; gap:6px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <button type="button" id="modalPrintMemoBtn" class="memo-tool-btn" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc;" title="내용 인쇄">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                  </svg>
+                </button>
                 <button type="button" id="modalHolidayWorkBtn" class="btn" style="height:26px; padding:0 8px; font-size:11px; border-radius:7px; display:none; white-space:nowrap;">+ 일정추가</button>
                 <label class="label-addon-btn" style="cursor:pointer;">
                   <input type="checkbox" id="modalHoliday" ${editTarget.isHoliday ? 'checked' : ''} style="margin:0; width:14px; height:14px; accent-color:#4f46e5;"> 공휴일
@@ -7277,6 +7411,17 @@
         // [V1.3.8 / V1.3.9] 위지윅 마크다운 툴바 초기화
         setupMemoMarkdownToolbar('', memoEl);
 
+        // [V1.4.1] 모달 헤더 내용 인쇄 버튼 바인딩
+        const printBtn = $('modalPrintMemoBtn');
+        if (printBtn) {
+          printBtn.onclick = (e) => {
+            e.preventDefault();
+            const title = ($('modalTitle')?.value || '').trim();
+            const memoHtml = ($('modalMemo')?.innerHTML || '').trim();
+            printMemoContent(title, memoHtml);
+          };
+        }
+
         // [V1.1.0] 기간리셋 버튼 바인딩
         const resetBtn = $('modalResetPeriodBtn');
         if (resetBtn) {
@@ -7334,6 +7479,13 @@
           <form id="recurringForm" class="modal-frame">
             <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center;">
               <h2>반복 마스터 수정</h2>
+              <button type="button" id="recModalPrintMemoBtn" class="memo-tool-btn" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc;" title="내용 인쇄">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                  <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+              </button>
             </div>
             <div class="modal-body">
               <!-- 1. 제목 -->
@@ -7587,6 +7739,17 @@
         setupTextareaDragResizer($('recMemoResizeHandle'), recMemoEl);
         // [V1.3.8 / V1.3.9] 반복 마스터 위지윅 마크다운 툴바 초기화
         setupMemoMarkdownToolbar('rec', recMemoEl);
+
+        // [V1.4.1] 반복 모달 헤더 내용 인쇄 버튼 바인딩
+        const recPrintBtn = $('recModalPrintMemoBtn');
+        if (recPrintBtn) {
+          recPrintBtn.onclick = (e) => {
+            e.preventDefault();
+            const title = ($('recModalTitle')?.value || '').trim();
+            const memoHtml = ($('recModalMemo')?.innerHTML || '').trim();
+            printMemoContent(title, memoHtml);
+          };
+        }
 
         const recResetBtn = $('recModalResetPeriodBtn');
         if (recResetBtn) {
@@ -7853,6 +8016,14 @@
           if (t) {
             if ($('detail').open) $('detail').close();
             openEditor(t);
+          }
+        }
+        else if (a === 'printDetailMemo') {
+          const taskId = b.dataset.id;
+          const t = (data.tasks || []).find(x => x.id === taskId) || (data.recurrings || []).find(x => x.id === taskId);
+          if (t) {
+            const memoHtml = parseMemoMarkdown(t.memo || '');
+            printMemoContent(t.title, memoHtml);
           }
         }
         else if (a === 'editRecurringRule') {
