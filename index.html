@@ -2897,7 +2897,7 @@
         <h1>D-Day 일정관리</h1>
       </div>
       <div class="header-right">
-        <div class="clock" data-action="goToday" style="cursor:pointer;" title="오늘 날짜로 이동" aria-label="기기 현재 일시">
+        <div class="clock" data-action="goToday" style="cursor:pointer;" title="오늘 날짜로 이동(단축키: T)" aria-label="기기 현재 일시">
           <div id="clockText" class="clock-full"></div>
         </div>
         <div class="actions">
@@ -3065,7 +3065,7 @@
           <!-- SELECTED DATE & ADD BUTTON -->
           <div class="side-head">
             <div id="selectedDateTitle" class="side-head-title"></div>
-            <button class="btn primary" data-action="add">
+            <button class="btn primary" data-action="add" title="일정을 추가하세요(단축키: N)">
               <svg viewBox="0 0 24 24">
                 <path d="M12 5v14M5 12h14" />
               </svg>
@@ -3140,7 +3140,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.4.1';
+      window.APP_VERSION = 'v1.4.2';
       window.APP_MODE = '온라인 PWA';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -6459,7 +6459,7 @@
               </div>
               <div class="empty-title">선택한 날짜에 일정이 없습니다</div>
               <div class="empty-sub">새로운 업무나 기념일을 등록해보세요</div>
-              <button type="button" class="empty-add-btn" data-action="add">
+              <button type="button" class="empty-add-btn" data-action="add" title="일정을 추가하세요(단축키: N)">
                 <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                 이 날짜에 새 일정 추가
               </button>
