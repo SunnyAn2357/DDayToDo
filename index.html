@@ -4129,6 +4129,262 @@
     [data-theme="dark"] .day.outside { background: rgba(0, 0, 0, 0.15) !important; }
     [data-theme="dark"] .day.today { background: rgba(79, 70, 229, 0.18) !important; }
     [data-theme="dark"] .weekday-grid { background: #1a1e24; }
+
+    /* --- [V2.1.6] 모바일 전용 3행 레이아웃 정리 (데스크톱 화면 100% 보존) --- */
+    @media (max-width: 768px) {
+      .topbar {
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 8px 10px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+      }
+      /* 1행: 좌측 밀양시 BI + 우측 다중 일정표 탭 */
+      .topbar .identity {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        min-width: 0 !important;
+      }
+      #biLogoBtn {
+        margin-right: 0 !important;
+        padding-right: 0 !important;
+        flex-shrink: 0 !important;
+        height: 26px !important;
+      }
+      #biLogoBtn img {
+        height: 24px !important;
+      }
+      .store-tabs-wrap {
+        margin-left: auto !important;
+        max-width: calc(100% - 76px) !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap !important;
+        padding: 2px !important;
+      }
+      .store-tabs-wrap::-webkit-scrollbar {
+        display: none;
+      }
+      .store-tab-btn {
+        height: 26px !important;
+        padding: 0 8px !important;
+        font-size: 11.5px !important;
+        gap: 3px !important;
+      }
+      .store-tab-add {
+        height: 26px !important;
+        width: 26px !important;
+        min-width: 26px !important;
+        min-height: 26px !important;
+      }
+
+      /* 2행: 좌측 날짜·날씨 + 우측 [브리핑] [🔔0] [⚙] 1줄 고정 */
+      .topbar .header-right {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 4px !important;
+        padding-top: 5px !important;
+        border-top: 1px solid var(--border-subtle) !important;
+        flex-wrap: nowrap !important;
+        min-width: 0 !important;
+      }
+      .topbar .clock {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        height: 28px !important;
+        padding: 0 4px !important;
+        font-size: 11.5px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        justify-content: flex-start !important;
+      }
+      .topbar .clock-time {
+        display: none !important;
+      }
+      .topbar .actions {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+        flex-shrink: 0 !important;
+      }
+      .topbar .actions .btn,
+      #headerWeatherBtn {
+        height: 28px !important;
+        padding: 0 6px !important;
+        font-size: 11.5px !important;
+        border-radius: 7px !important;
+        gap: 3px !important;
+      }
+      #headerWeatherText,
+      .briefing-prefix-text,
+      .noti-btn-text,
+      .settings-btn-text {
+        display: none !important;
+      }
+      #headerWeatherBtn #headerWeatherTemp {
+        font-size: 11.5px !important;
+      }
+      .tiny-count {
+        margin-left: 1px !important;
+        min-width: 15px !important;
+        height: 15px !important;
+        font-size: 9.5px !important;
+        padding: 0 3.5px !important;
+      }
+
+      /* 3행: 캘린더 툴바 ([캘린더|목록] + 연·월 + [<][오늘][>]) 1줄 고정 및 가로 스크롤바 제거 */
+      #calendarToolbar.viewbar {
+        height: auto !important;
+        min-height: 44px !important;
+        padding: 6px 10px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 4px !important;
+        flex-wrap: nowrap !important;
+        overflow-x: hidden !important;
+      }
+      #calendarToolbar .segmented,
+      #listToolbar .segmented {
+        height: 30px !important;
+        padding: 2px !important;
+        flex-shrink: 0 !important;
+      }
+      #calendarToolbar .segmented button,
+      #listToolbar .segmented button {
+        height: 24px !important;
+        padding: 0 7px !important;
+        font-size: 11.5px !important;
+        gap: 3px !important;
+      }
+      #calendarToolbar .segmented button svg,
+      #listToolbar .segmented button svg {
+        width: 13px !important;
+        height: 13px !important;
+      }
+      .calendar-toolbar-controls {
+        margin-left: auto !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 2px !important;
+        flex-shrink: 0 !important;
+        padding: 0 !important;
+      }
+      .calendar-toolbar-controls select.select-small,
+      #yearSelect,
+      #monthSelect {
+        height: 28px !important;
+        min-height: 28px !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        padding: 0 1px !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+      #yearSelect {
+        margin-right: 2px !important;
+      }
+      #monthSelect {
+        margin-right: 4px !important;
+      }
+      .navgroup {
+        height: 28px !important;
+        gap: 2px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+      }
+      .navgroup .btn.icon {
+        width: 26px !important;
+        min-width: 26px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+        padding: 0 !important;
+        border-radius: 6px !important;
+      }
+      .navgroup .nav-today-btn {
+        height: 28px !important;
+        min-height: 28px !important;
+        padding: 0 7px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
+      }
+
+      /* 목록 탭 툴바 모바일 최적화 */
+      #listToolbar.viewbar {
+        height: auto !important;
+        padding: 6px 10px !important;
+        gap: 6px !important;
+      }
+      .list-controls-row select.select-small,
+      #priorityFilter,
+      #listYearFilter,
+      #listMonthFilter {
+        height: 28px !important;
+        min-height: 28px !important;
+        padding: 0 7px !important;
+        font-size: 11.5px !important;
+      }
+      .list-navgroup {
+        height: 28px !important;
+        margin-left: auto !important;
+      }
+      .list-navgroup .btn.icon {
+        width: 28px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+      }
+
+      /* 캘린더 셀 내부 날짜 & 일요일 음력 잘림 방지 */
+      .day {
+        padding: 3px 2px !important;
+      }
+      .day-header {
+        height: 20px !important;
+        margin-bottom: 2px !important;
+        justify-content: flex-start !important;
+        gap: 1px !important;
+        overflow: hidden !important;
+      }
+      .day-number {
+        font-size: 12px !important;
+        padding: 0 2px !important;
+      }
+      .day.today .day-number {
+        width: 19px !important;
+        height: 19px !important;
+        font-size: 11px !important;
+      }
+      .lunar-text {
+        font-size: 8.5px !important;
+        margin-left: 2px !important;
+        letter-spacing: -0.04em !important;
+        overflow: hidden !important;
+        text-overflow: clip !important;
+      }
+      .holiday-name-text {
+        font-size: 8.5px !important;
+        margin-left: 2px !important;
+        max-width: 100% !important;
+      }
+
+      /* 하단 바: 모바일에서는 데스크톱 전용 [위젯 모드] 버튼 숨김 */
+      #btnWidgetModeToggle {
+        display: none !important;
+      }
+      .desktop-widget-control-bar {
+        padding: 8px 12px !important;
+      }
+    }
   
   </style>
 </head>
@@ -4158,20 +4414,20 @@
               <rect x="9" y="3" width="6" height="4" rx="1" />
               <path d="m9 14 2 2 4-4" />
             </svg>
-            <span class="briefing-btn-text">오늘 일정 브리핑</span>
+            <span class="briefing-btn-text"><span class="briefing-prefix-text">오늘 일정 </span>브리핑</span>
           </button>
           <button class="btn" data-action="notifications" title="알림 목록 확인">
             <svg viewBox="0 0 24 24">
               <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
             </svg>
-            알림<span id="notificationCount" class="tiny-count">0</span>
+            <span class="noti-btn-text">알림</span><span id="notificationCount" class="tiny-count">0</span>
           </button>
           <button class="btn" data-action="settings" id="settingsBtn" title="설정 및 데이터 관리">
             <span id="backupDot" class="backup-dot" style="display:none;" title="데이터 백업 필요"></span>
             <svg viewBox="0 0 24 24">
               <path d="M4 6h16M4 12h16M4 18h16M8 3v6m8 0v6m-7 0v6" />
             </svg>
-            설정
+            <span class="settings-btn-text">설정</span>
           </button>
         </div>
         <!-- [V2.0.4] 원-보디 프레임: 윈도우 파란 타이틀바 대신 헤더에 통합된 창 조절 버튼 (데스크톱 앱 + 창 모드에서만 표시) -->
@@ -4202,8 +4458,8 @@
             </button>
           </div>
           <div class="calendar-toolbar-controls">
-            <select id="yearSelect" class="select-small" style="-webkit-appearance:none !important; -moz-appearance:none !important; appearance:none !important; background-image:none !important; padding-right:4px !important; margin-right:8px !important;" title="연도 선택 (이전 해: Ctrl+↑, 다음 해: Ctrl+↓)" aria-label="연도 선택"></select>
-            <select id="monthSelect" class="select-small" style="-webkit-appearance:none !important; -moz-appearance:none !important; appearance:none !important; background-image:none !important; padding-right:6px !important; margin-right:14px !important;" title="월 선택 (이전 달: Ctrl+←, 다음 달: Ctrl+→)" aria-label="월 선택"></select>
+            <select id="yearSelect" class="select-small" style="-webkit-appearance:none !important; -moz-appearance:none !important; appearance:none !important; background-image:none !important;" title="연도 선택 (이전 해: Ctrl+↑, 다음 해: Ctrl+↓)" aria-label="연도 선택"></select>
+            <select id="monthSelect" class="select-small" style="-webkit-appearance:none !important; -moz-appearance:none !important; appearance:none !important; background-image:none !important;" title="월 선택 (이전 달: Ctrl+←, 다음 달: Ctrl+→)" aria-label="월 선택"></select>
             <div class="navgroup">
               <button class="btn icon" data-action="prev" title="이전 달 (단축키: Ctrl + ←)" aria-label="이전 달">
                 <svg viewBox="0 0 24 24">
@@ -4431,7 +4687,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v2.1.5';
+      window.APP_VERSION = 'v2.1.6';
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -5986,6 +6242,10 @@
         const yearSel = $('yearSelect');
         const wrap = $('storeTabsWrap');
         if (!wrap) return;
+        if (window.innerWidth <= 768) {
+          wrap.style.marginLeft = '0px';
+          return;
+        }
         const firstTab = wrap.querySelector('.store-tab-btn');
         if (!firstTab) return;
 
