@@ -15120,8 +15120,38 @@ function getRandomAppQuote() {
         // 2. 먼저 디폴트(또는 직전 확인 좌표)로 기상청 즉시 조회
         requestKmaWeatherQuery(currentKmaState.nx, currentKmaState.ny, currentKmaState.locName);
 
-        // 3. 공공기관 보안 규약: 자동 브라우저 위치 권한 팝업 원천 차단 및 밀양시청 고정 안전 모드
-        // (사용자 위치 팝업 차단 & 기상청 밀양시청 공식 초단기예보 단일 통신 유지)
+                // 3. 브라우저/스마트폰/노트북 위치 확인 시도 (순수 로컬 수학 공식으로 nx, ny 변환 -> 기상청만 호출)
+        if (typeof navigator !== 'undefined' && navigator.geolocation && typeof navigator.geolocation.getCurrentPosition === 'function') {
+          try {
+            navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                if (pos && pos.coords && typeof pos.coords.latitude === 'number' && typeof pos.coords.longitude === 'number') {
+                  const gLat = Number(pos.coords.latitude.toFixed(6));
+                  const gLon = Number(pos.coords.longitude.toFixed(6));
+                  const grid = dfs_xy_conv(gLat, gLon);
+                  currentKmaState.lat = gLat;
+                  currentKmaState.lon = gLon;
+                  currentKmaState.nx = grid.nx;
+                  currentKmaState.ny = grid.ny;
+
+                  // 밀양시청 부근(0.02도 이내)이면 '밀양시청', 그 외 타지역이면 '현재 위치'
+                  const dLat = Math.abs(gLat - KMA_CONFIG.defaultLat);
+                  const dLon = Math.abs(gLon - KMA_CONFIG.defaultLon);
+                  const isNearMiryang = (dLat < 0.02 && dLon < 0.02);
+                  currentKmaState.isGeo = !isNearMiryang;
+                  currentKmaState.locName = isNearMiryang ? KMA_CONFIG.defaultName : '현재 위치';
+
+                  // 변경된 지역 격자로 기상청 재조회 (해외 서버 0건!)
+                  requestKmaWeatherQuery(currentKmaState.nx, currentKmaState.ny, currentKmaState.locName);
+                }
+              },
+              () => {
+                // 실패 또는 위치 거부 시 기본값(밀양시청) 유지
+              },
+              { enableHighAccuracy: false, timeout: 4500, maximumAge: 600000 }
+            );
+          } catch(e) {}
+        }
       }
 
       /* =====================================================================
