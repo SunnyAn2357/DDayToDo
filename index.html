@@ -1838,7 +1838,8 @@
       background: #ffffff;
     }
 
-    dialog#urgentAlertModal {
+    dialog#urgentAlertModal,
+    dialog#overtimeAlertModal {
       width: 480px;
       max-width: calc(100vw - 24px);
       height: 440px;
@@ -4652,6 +4653,7 @@
   <dialog id="dailyBriefingModal" class="modal"><div id="dailyBriefingContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="linkInputModal" class="modal" style="width:390px; max-width:calc(100vw - 24px); padding:0; border-radius:12px; border:1px solid #cbd5e1; box-shadow:0 20px 25px -5px rgba(15,23,42,0.18);"></dialog>
   <dialog id="urgentAlertModal" class="modal"><div id="urgentAlertContainer" style="width:100%; height:100%;"></div></dialog>
+  <dialog id="overtimeAlertModal" class="modal"><div id="overtimeAlertContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="ddayAlertModal" class="modal"><div id="ddayAlertContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="storeModal"></dialog>
 
@@ -15118,34 +15120,8 @@ function getRandomAppQuote() {
         // 2. 먼저 디폴트(또는 직전 확인 좌표)로 기상청 즉시 조회
         requestKmaWeatherQuery(currentKmaState.nx, currentKmaState.ny, currentKmaState.locName);
 
-        // 3. 브라우저/스마트폰/노트북 위치 확인 시도 (순수 로컬 수학 공식으로 nx, ny 변환 -> 기상청만 호출)
-        if (typeof navigator !== 'undefined' && navigator.geolocation && typeof navigator.geolocation.getCurrentPosition === 'function') {
-          try {
-            navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                if (pos && pos.coords && typeof pos.coords.latitude === 'number' && typeof pos.coords.longitude === 'number') {
-                  const gLat = Number(pos.coords.latitude.toFixed(6));
-                  const gLon = Number(pos.coords.longitude.toFixed(6));
-                  const grid = dfs_xy_conv(gLat, gLon);
-                  currentKmaState.lat = gLat;
-                  currentKmaState.lon = gLon;
-                  currentKmaState.nx = grid.nx;
-                  currentKmaState.ny = grid.ny;
-
-                  const dLat = Math.abs(gLat - KMA_CONFIG.defaultLat);
-                  const dLon = Math.abs(gLon - KMA_CONFIG.defaultLon);
-                  const isNearMiryang = (dLat < 0.02 && dLon < 0.02);
-                  currentKmaState.isGeo = !isNearMiryang;
-                  currentKmaState.locName = isNearMiryang ? KMA_CONFIG.defaultName : '현재 위치';
-
-                  requestKmaWeatherQuery(currentKmaState.nx, currentKmaState.ny, currentKmaState.locName);
-                }
-              },
-              () => {},
-              { enableHighAccuracy: false, timeout: 4500, maximumAge: 600000 }
-            );
-          } catch(e) {}
-        }
+        // 3. 공공기관 보안 규약: 자동 브라우저 위치 권한 팝업 원천 차단 및 밀양시청 고정 안전 모드
+        // (사용자 위치 팝업 차단 & 기상청 밀양시청 공식 초단기예보 단일 통신 유지)
       }
 
       /* =====================================================================
@@ -15480,7 +15456,7 @@ function getRandomAppQuote() {
       var btn = e.target.closest('[data-action]');
       if (!btn) return;
       var action = btn.getAttribute('data-action');
-      if (action === 'closeDailyBriefingModal' || action === 'closeUrgentAlertModal' || action === 'closeDdayAlertModal' || action === 'closeAlert' || action === 'closeAlertModal') {
+      if (action === 'closeDailyBriefingModal' || action === 'closeUrgentAlertModal' || action === 'closeOvertimeAlertModal' || action === 'closeDdayAlertModal' || action === 'closeAlert' || action === 'closeAlertModal') {
         postAlertAction('closeAlertModal');
       } else if (action === 'openDetailFromBriefing') {
         var taskId = btn.getAttribute('data-id');
@@ -15894,8 +15870,86 @@ function getRandomAppQuote() {
         }
       }
 
+            function openOvertimeAlertModal() {
+        const modal = $('overtimeAlertModal');
+        const container = $('overtimeAlertContainer');
+        if (!modal || !container) return;
+
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const todayStr = today();
+
+        container.innerHTML = `
+          <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; background:#ffffff; border-radius:14px; overflow:hidden;">
+            <!-- 상단 인디고-바이올렛 소프트 그라디언트 배너 -->
+            <div style="background:linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-bottom:1px solid #c7d2fe; padding:18px 22px 14px; flex-shrink:0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="display:inline-flex; align-items:center; gap:5px; background:#4f46e5; color:#ffffff; font-size:11.5px; font-weight:700; padding:2.5px 10px; border-radius:20px; box-shadow:0 2px 4px rgba(79,70,229,0.25);">
+                  ⏰ 인사랑 초과근무기록 안내
+                </span>
+                <span style="font-size:12px; font-weight:700; color:#4338ca;">${todayStr} (${timeStr})</span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:8px;">
+                <span style="font-size:22px; font-weight:900; color:#1e1b4b; letter-spacing:-0.02em;">인사랑 초과근무기록 시간입니다.</span>
+              </div>
+            </div>
+
+            <!-- 안내 본문 카드 -->
+            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:20px 22px; display:flex; flex-direction:column; gap:12px; background:#ffffff; box-sizing:border-box;">
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #4f46e5; padding:14px 16px; border-radius:0 8px 8px 0;">
+                <div style="font-size:13.5px; font-weight:700; color:#1e293b; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                  <span>📋</span> <span>초과근무 확인 및 등록 요청</span>
+                </div>
+                <div style="font-size:12.5px; color:#475569; line-height:1.6;">
+                  현재 초과근무 시간대(18:00~익일 09:00)입니다.<br>
+                  인사랑(e-사람) 시스템에 접속하여 출퇴근 지정 및 초과근무 기록을 정확히 등록·확인해 주시기 바랍니다.
+                </div>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; background:#faf5ff; border:1px solid #f3e8ff; padding:10px 14px; border-radius:8px;">
+                <div style="font-size:12px; color:#6b21a8; font-weight:600;">
+                  💡 당일 일정이 남아있는 경우 오늘 일정 브리핑도 함께 확인하세요.
+                </div>
+              </div>
+            </div>
+
+            <!-- 하단 액션 버튼 -->
+            <div class="modal-foot" style="padding:11px 18px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+              <div>
+                <button type="button" class="btn" data-action="openBriefingFromUrgent" style="height:32px; font-size:11.5px; padding:0 12px; background:#ffffff; border:1px solid #cbd5e1; color:#0f172a; font-weight:700; display:inline-flex; align-items:center; gap:4px; border-radius:10px; cursor:pointer;">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="m9 14 2 2 4-4"></path></svg><span>오늘 일정 브리핑</span>
+                </button>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button type="button" class="btn primary" data-action="closeOvertimeAlertModal" style="height:32px; font-size:12.5px; padding:0 22px; font-weight:700; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(79,70,229,0.28); cursor:pointer;">
+                  확인
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        playChimeSound();
+
+        // 데스크톱 환경에서는 1번 모니터 정중앙 독립 최상단(TopMost) 팝업 창으로 분리 호출
+        if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
+          const fullHtml = buildIndependentAlertHtml('⏰ 인사랑 초과근무기록 안내', container.innerHTML, []);
+          window.chrome.webview.postMessage(JSON.stringify({
+            type: 'openIndependentAlert',
+            alertType: 'overtime',
+            title: '⏰ 인사랑 초과근무기록 안내',
+            html: fullHtml,
+            width: 500,
+            height: 400
+          }));
+        } else {
+          modal.showModal();
+        }
+      }
+
       const triggeredAlertsInSession = new Set();
       const snoozedAlerts = {};
+      let ddayStartupCheckedInSession = false;
 
       function checkSmartAlerts() {
         const now = new Date();
@@ -15904,31 +15958,56 @@ function getRandomAppQuote() {
         const currentMinutes = now.getMinutes();
         const currentTimeMinutes = currentHours * 60 + currentMinutes;
 
-        // 1. 오전 9시 D-Day 사전 예고 체크 (오전 9시 이후 첫 접속 시)
-        if (currentHours >= 9) {
-          const lastDdayDate = localStorage.getItem('lastDdayAlertDate_' + ((typeof currentStoreId !== 'undefined' && currentStoreId) ? currentStoreId : 'default'));
-          if (lastDdayDate !== todayStr) {
-            const ddayAlerts = [];
-            (data.tasks || []).forEach(t => {
-              if (t.completed) return;
-              const due = t.dueDate || t.startDate;
-              if (!due || due <= todayStr) return;
-              const diffDays = daysBetween(todayStr, due);
-              const rems = t.reminders || [0, 3];
-              if (rems.includes(diffDays)) {
-                ddayAlerts.push({ task: t, daysLeft: diffDays });
-              }
-            });
-            if (ddayAlerts.length > 0) {
-              localStorage.setItem('lastDdayAlertDate_' + ((typeof currentStoreId !== 'undefined' && currentStoreId) ? currentStoreId : 'default'), todayStr);
+        // [1] D-Day 3일 남은 일정 체크:
+        // 조건: 1) 앱 켜자마자 (세션 당 1회) 또는 2) 오후 1시 (13:00~13:59 중 당일 1회)
+        const isStartupDdayCheck = !ddayStartupCheckedInSession;
+        const is1pmDdayCheck = (currentHours === 13 && localStorage.getItem('dday1pmAlertDone_' + todayStr) !== 'true');
+
+        if (isStartupDdayCheck || is1pmDdayCheck) {
+          const ddayAlerts = [];
+          (data.tasks || []).forEach(t => {
+            if (t.completed) return;
+            const due = t.dueDate || t.startDate;
+            if (!due || due <= todayStr) return;
+            const diffDays = daysBetween(todayStr, due);
+            // D-Day 3일 남은 일정 (또는 설정된 알림 일수)
+            if (diffDays === 3 || (t.reminders && t.reminders.includes(diffDays))) {
+              ddayAlerts.push({ task: t, daysLeft: diffDays });
+            }
+          });
+
+          if (isStartupDdayCheck) {
+            ddayStartupCheckedInSession = true;
+          }
+          if (is1pmDdayCheck) {
+            localStorage.setItem('dday1pmAlertDone_' + todayStr, 'true');
+          }
+
+          if (ddayAlerts.length > 0) {
+            const dModal = $('ddayAlertModal');
+            if (!dModal || !dModal.open) {
               openDdayAlertModal(ddayAlerts);
-            } else {
-              localStorage.setItem('lastDdayAlertDate_' + ((typeof currentStoreId !== 'undefined' && currentStoreId) ? currentStoreId : 'default'), todayStr);
             }
           }
         }
 
-        // 2. 당일 시간 임박 알림 (2시간 전, 1시간 전 등)
+        // [2] 매 시 정각 브리핑 재표출:
+        // 앱 최초 실행 브리핑 이후, 만약 완료되지 않은 당일 일정이 있으면 매 시 정각(00분)에 계속 띄움
+        if (currentMinutes === 0) {
+          const hourlyBriefingKey = `hourlyBriefingDone_${todayStr}_${currentHours}`;
+          if (localStorage.getItem(hourlyBriefingKey) !== 'true') {
+            localStorage.setItem(hourlyBriefingKey, 'true');
+            const uncompletedTodayTasks = (data.tasks || []).filter(t => !t.completed && (t.startDate === todayStr || t.dueDate === todayStr));
+            if (uncompletedTodayTasks.length > 0) {
+              const bModal = $('dailyBriefingModal');
+              if (!bModal || !bModal.open) {
+                openDailyBriefingModal(true); // 강제 표출
+              }
+            }
+          }
+        }
+
+        // [3] 당일 일정 중 지정 시간 임박 알림 (기존 로직 100% 보존)
         const todayTasks = (data.tasks || []).filter(t => !t.completed && (t.startDate === todayStr || t.dueDate === todayStr) && !!t.time);
         todayTasks.forEach(t => {
           const timeParts = t.time.split(':');
@@ -15954,9 +16033,30 @@ function getRandomAppQuote() {
             }
           });
         });
+
+        // [4] 오후 6시부터 익일 오전 9시까지: 각 시간대별 20분~40분 사이 랜덤 1회 초과근무 팝업
+        const isOvertimeHours = (currentHours >= 18 || currentHours < 9);
+        if (isOvertimeHours) {
+          const overtimeHourKey = `overtimeTargetMin_${todayStr}_${currentHours}`;
+          let targetMin = localStorage.getItem(overtimeHourKey);
+          if (!targetMin) {
+            // 20 ~ 40분 사이 랜덤 결정
+            targetMin = Math.floor(Math.random() * 21) + 20;
+            localStorage.setItem(overtimeHourKey, String(targetMin));
+          } else {
+            targetMin = parseInt(targetMin, 10);
+          }
+
+          const overtimeAlertedKey = `overtimeAlertDone_${todayStr}_${currentHours}`;
+          const alreadyAlerted = localStorage.getItem(overtimeAlertedKey) === 'true';
+
+          if (!alreadyAlerted && currentMinutes >= targetMin) {
+            localStorage.setItem(overtimeAlertedKey, 'true');
+            openOvertimeAlertModal();
+          }
+        }
       }
 
-      
       function processImportFile(file) {
         if (!file) return;
         const reader = new FileReader();
