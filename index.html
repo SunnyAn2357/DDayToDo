@@ -4690,7 +4690,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v2.1.8';
+      window.APP_VERSION = 'v1.0.0';
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -10549,95 +10549,118 @@
         const modal = $('settings');
         modal.innerHTML = `
           <div class="modal-frame" style="width:100%; max-width:100%; box-sizing:border-box; overflow:hidden;">
-            <div class="modal-head" style="padding:12px 16px;">
-              <h2>설정</h2>
-              <button type="button" class="btn icon" data-action="closeSettings" aria-label="닫기">${icon('close')}</button>
+            <div class="modal-head" style="padding:12px 18px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <h2 style="font-size:15px; font-weight:700; color:#0f172a; margin:0;">설정</h2>
+              </div>
+              <button type="button" class="btn icon" data-action="closeSettings" aria-label="닫기" style="border:none; background:transparent; cursor:pointer; color:#64748b; padding:4px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">${icon('close')}</button>
             </div>
-            <div class="modal-body" style="padding:12px 16px; gap:10px; box-sizing:border-box; overflow-y:auto; width:100%;">
+            <div class="modal-body" style="padding:14px 18px; gap:10px; box-sizing:border-box; overflow-y:auto; width:100%;">
               
-              <!-- 1. 일정 저장 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:11px 13px;">
-                <div class="settings-card-title" style="display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; box-sizing:border-box;">
-                  <span style="font-weight:700; color:#0f172a;">일정 저장 ([${esc(activeStore.name)}])</span>
-                  <button type="button" class="btn" data-action="exportAllBackup" style="height:30px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:10px; flex-shrink:0;">전체 백업</button>
-                </div>
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-top:4px; box-sizing:border-box; width:100%;">
-                  <div style="font-size:12px; font-weight:700; color:#334155; margin-bottom:6px;">일정 내보내기 (특정 기간 선택)</div>
-                  <div style="display:grid; grid-template-columns:1fr auto 1fr auto; gap:5px; align-items:center; width:100%; box-sizing:border-box;">
-                    <input type="date" id="exportRangeStart" class="control" value="${startOfMonth}" style="height:30px; font-size:12px; padding:0 6px; width:100%; min-width:0; box-sizing:border-box;">
-                    <span style="color:#64748b; font-weight:700;">~</span>
-                    <input type="date" id="exportRangeEnd" class="control" value="${endOfRange}" style="height:30px; font-size:12px; padding:0 6px; width:100%; min-width:0; box-sizing:border-box;">
-                    <button type="button" class="btn" data-action="exportRangeBackup" style="height:30px; font-size:12px; padding:0 12px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:10px; white-space:nowrap; flex-shrink:0;">일정 내보내기</button>
+              <!-- 1. 일정 보관 및 내보내기 -->
+              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 15px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                    <span style="font-size:13px; font-weight:700; color:#1e293b;">일정 보관 및 내보내기</span>
+                    <span style="font-size:11.5px; color:#64748b; font-weight:500;">([${esc(activeStore.name)}])</span>
                   </div>
-                  <div class="settings-desc" style="margin-top:6px;">※ 지정한 기간의 일정만 파일(.dday)로 내보내어 보고용이나 다른 PC로 전달할 수 있습니다.</div>
+                  <button type="button" class="btn" data-action="exportAllBackup" style="height:28px; font-size:11.5px; padding:0 13px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:8px; flex-shrink:0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">전체 백업</button>
+                </div>
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px 12px; box-sizing:border-box; width:100%;">
+                  <div style="font-size:12px; font-weight:700; color:#334155; margin-bottom:7px;">기간별 일정 내보내기</div>
+                  <div style="display:grid; grid-template-columns:1fr auto 1fr auto; gap:6px; align-items:center; width:100%; box-sizing:border-box;">
+                    <input type="date" id="exportRangeStart" class="control" value="${startOfMonth}" style="height:30px; font-size:12px; padding:0 8px; border-radius:6px; border:1px solid #cbd5e1; width:100%; min-width:0; box-sizing:border-box;">
+                    <span style="color:#64748b; font-weight:700; font-size:12px;">~</span>
+                    <input type="date" id="exportRangeEnd" class="control" value="${endOfRange}" style="height:30px; font-size:12px; padding:0 8px; border-radius:6px; border:1px solid #cbd5e1; width:100%; min-width:0; box-sizing:border-box;">
+                    <button type="button" class="btn" data-action="exportRangeBackup" style="height:30px; font-size:12px; padding:0 13px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:8px; white-space:nowrap; flex-shrink:0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">일정 내보내기</button>
+                  </div>
+                  <div class="settings-desc" style="margin-top:6px; font-size:11.5px; color:#64748b; line-height:1.4;">※ 지정한 기간의 일정만 파일(.dday)로 내보내어 보고용이나 다른 PC로 전달할 수 있습니다.</div>
                 </div>
               </div>
 
-              <!-- 2. 일정 추가 (가져오기) -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:11px 13px;">
-                <div class="settings-card-title">
-                  <span style="font-weight:700; color:#0f172a;">일정 추가 (가져오기)</span>
+              <!-- 2. 일정 가져오기 (병합) -->
+              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 15px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:9px;">
+                  <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                  <span style="font-size:13px; font-weight:700; color:#1e293b;">일정 가져오기 (추가/병합)</span>
                 </div>
-                <div style="display:grid; grid-template-columns:auto 1fr auto; gap:6px; align-items:center; width:100%; box-sizing:border-box; margin-top:2px;">
+                <div style="display:grid; grid-template-columns:auto 1fr auto; gap:6px; align-items:center; width:100%; box-sizing:border-box;">
                   <input type="file" id="importFile" accept=".dday,.json" style="display:none;">
-                  <button type="button" class="btn" id="customFilePickBtn" style="height:30px; font-size:12px; padding:0 12px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:10px; white-space:nowrap;">파일 선택</button>
-                  <span id="importFileNameDisplay" style="font-size:12px; color:#64748b; min-width:0; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:0 8px; height:30px; line-height:28px; box-sizing:border-box; display:block;">선택된 파일 없음 (.dday)</span>
-                  <button type="button" class="btn" data-action="importMerge" style="height:30px; font-size:12px; padding:0 14px; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; font-weight:700; border-radius:10px; box-shadow:0 2px 6px rgba(79,70,229,0.28); white-space:nowrap;">일정 추가</button>
+                  <button type="button" class="btn" id="customFilePickBtn" style="height:30px; font-size:12px; padding:0 12px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:8px; white-space:nowrap; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">파일 선택</button>
+                  <span id="importFileNameDisplay" style="font-size:12px; color:#64748b; min-width:0; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:0 10px; height:30px; line-height:28px; box-sizing:border-box; display:block;">선택된 파일 없음 (.dday)</span>
+                  <button type="button" class="btn" data-action="importMerge" style="height:30px; font-size:12px; padding:0 15px; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; font-weight:700; border-radius:8px; box-shadow:0 2px 6px rgba(79,70,229,0.25); white-space:nowrap; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.background='#4338ca';" onmouseout="this.style.background='#4f46e5';">일정 추가</button>
                 </div>
-                <p class="settings-desc" style="margin-top:4px;">※ 선택한 파일의 일정을 현재 일정표에 안전하게 추가(병합)합니다. 화면에 파일을 직접 끌어다 놓으셔도 됩니다.</p>
+                <p class="settings-desc" style="margin-top:6px; font-size:11.5px; color:#64748b; line-height:1.4;">※ 선택한 파일의 일정을 현재 일정표에 안전하게 추가(병합)합니다. 화면에 파일을 직접 끌어다 놓으셔도 됩니다.</p>
               </div>
 
-              
-              <!-- [V1.7.0] 3. 빠른 연결 설정 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:11px 13px;">
-                <div class="settings-card-title">
-                  <span style="font-weight:700; color:#0f172a;">빠른 연결</span>
+              <!-- 3. 빠른 연결 -->
+              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 15px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:9px;">
+                  <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                  <span style="font-size:13px; font-weight:700; color:#1e293b;">빠른연결 (웹 바로가기)</span>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
-                  <div style="display:flex; gap:16px; align-items:center;">
-                    <label class="options-chip" style="cursor:pointer; font-weight:600;">
-                      <input type="radio" name="quickConnectType" value="miryang" ${(!quickType || quickType === 'miryang') ? 'checked' : ''}> 밀양시 홈페이지
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <div style="display:flex; gap:18px; align-items:center;">
+                    <label style="cursor:pointer; font-size:12.5px; font-weight:600; color:#334155; display:inline-flex; align-items:center; gap:6px;">
+                      <input type="radio" name="quickConnectType" value="miryang" ${(!quickType || quickType === 'miryang') ? 'checked' : ''} style="cursor:pointer; accent-color:#4f46e5; width:15px; height:15px;"> 밀양시 홈페이지
                     </label>
-                    <label class="options-chip" style="cursor:pointer; font-weight:600;">
-                      <input type="radio" name="quickConnectType" value="custom" ${quickType === 'custom' ? 'checked' : ''}> 기타
+                    <label style="cursor:pointer; font-size:12.5px; font-weight:600; color:#334155; display:inline-flex; align-items:center; gap:6px;">
+                      <input type="radio" name="quickConnectType" value="custom" ${quickType === 'custom' ? 'checked' : ''} style="cursor:pointer; accent-color:#4f46e5; width:15px; height:15px;"> 기타
                     </label>
                   </div>
                   <div id="quickConnectCustomRow" style="display:${quickType === 'custom' ? 'flex' : 'none'}; align-items:center; gap:6px; width:100%;">
-                    <input type="url" id="quickConnectCustomUrl" class="control" placeholder="연결할 웹 주소 입력 (예: https://www.google.com)" value="${esc(customUrl)}" style="flex:1; height:30px; font-size:12px; padding:0 8px; box-sizing:border-box;">
+                    <input type="url" id="quickConnectCustomUrl" class="control" placeholder="연결할 웹 주소 입력 (예: https://www.miryang.go.kr)" value="${esc(customUrl)}" style="flex:1; height:30px; font-size:12px; padding:0 10px; border-radius:6px; border:1px solid #cbd5e1; box-sizing:border-box;">
                   </div>
                 </div>
-                <p class="settings-desc" style="margin-top:6px; color:#64748b;">상단 밀양시 로고(BI)를 클릭하거나 단축키(H)를 누르면 지정된 웹사이트로 즉시 연결됩니다.</p>
+                <p class="settings-desc" style="margin-top:6px; font-size:11.5px; color:#64748b; line-height:1.4;">상단 밀양시 로고(BI)를 클릭하거나 단축키(H)를 누르면 지정된 웹사이트로 즉시 연결됩니다.</p>
               </div>
-              <!-- [V1.10.0] 윈도우 시작 시 자동 실행 설정 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:11px 13px;">
-                <div class="settings-card-title" style="display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; box-sizing:border-box;">
-                  <span style="font-weight:700; color:#0f172a;">윈도우 시작 시 자동 실행</span>
+
+              <!-- 4. 윈도우 시작 시 자동 실행 -->
+              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 15px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                    <span style="font-size:13px; font-weight:700; color:#1e293b;">윈도우 시작 시 자동 실행</span>
+                  </div>
                   <label class="toggle-switch" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none;">
-                    <input type="checkbox" id="autoStartupCheckbox" data-action="toggleAutoStartup" ${isAutoStartup ? 'checked' : ''} style="width:17px; height:17px; cursor:pointer; accent-color:#2563eb;">
-                    <span id="autoStartupStatusText" style="font-size:12px; font-weight:600; color:${isAutoStartup ? '#2563eb' : '#64748b'};">${isAutoStartup ? '자동 실행 켜짐' : '자동 실행 꺼짐'}</span>
+                    <input type="checkbox" id="autoStartupCheckbox" data-action="toggleAutoStartup" ${isAutoStartup ? 'checked' : ''} style="width:17px; height:17px; cursor:pointer; accent-color:#4f46e5;">
+                    <span id="autoStartupStatusText" style="font-size:12px; font-weight:600; color:${isAutoStartup ? '#4f46e5' : '#64748b'};">${isAutoStartup ? '자동 실행 켜짐' : '자동 실행 꺼짐'}</span>
                   </label>
                 </div>
-                <p class="settings-desc" style="margin-top:6px; color:#64748b;">PC(윈도우) 부팅 시 일정관리 프로그램을 백그라운드 위젯/알림 상태로 자동 실행합니다.</p>
+                <p class="settings-desc" style="margin-top:6px; font-size:11.5px; color:#64748b; line-height:1.4;">PC(윈도우) 부팅 시 일정관리 프로그램을 백그라운드 위젯/알림 상태로 자동 실행합니다.</p>
               </div>
-  
-              <!-- 4. 데이터 초기화 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:11px 13px; border-color:#e2e8f0;">
-                <div class="settings-card-title" style="display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; box-sizing:border-box;">
-                  <span style="color:#334155; font-weight:700;">데이터 초기화</span>
-                  <button type="button" class="btn" data-action="resetData" style="height:30px; font-size:12px; padding:0 12px; background:#ffffff; border:1px solid #fecdd3; color:#e11d48; font-weight:600; border-radius:10px; flex-shrink:0;">현재 일정표 삭제</button>
+
+              <!-- 5. 데이터 초기화 -->
+              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 15px; border:1px solid #fecdd3; border-radius:10px; background:#ffffff;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="color:#e11d48; font-size:10px; line-height:1;">●</span>
+                    <span style="font-size:13px; font-weight:700; color:#334155;">데이터 관리</span>
+                  </div>
+                  <button type="button" class="btn" data-action="resetData" style="height:28px; font-size:11.5px; padding:0 12px; background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; font-weight:600; border-radius:8px; flex-shrink:0; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.background='#ffe4e6';" onmouseout="this.style.background='#fff1f2';">현재 일정표 삭제</button>
                 </div>
-                <p class="settings-desc" style="color:#64748b;">현재 열려 있는 일정표([${esc(activeStore.name)}])의 모든 일정을 초기화합니다.</p>
+                <p class="settings-desc" style="margin-top:6px; font-size:11.5px; color:#64748b; line-height:1.4;">현재 열려 있는 일정표([${esc(activeStore.name)}])의 모든 일정을 초기화합니다.</p>
               </div>
-            </div>
-            <div class="modal-foot" style="padding:10px 16px; display:flex; justify-content:space-between; align-items:center; box-sizing:border-box;">
-              <div>
-                <button type="button" class="btn" data-action="registerStartupApp" id="btnRegisterStartupApp" title="${isAutoStartup ? '현재 윈도우 시작 시 자동 실행으로 등록되어 있습니다' : '윈도우 부팅 시 일정관리 자동 실행 등록'}" style="height:28px; padding:0 12px; font-size:11.5px; font-weight:600; color:${isAutoStartup ? '#15803d' : '#475569'}; background:${isAutoStartup ? '#f0fdf4' : '#f1f5f9'}; border:1px solid ${isAutoStartup ? '#86efac' : '#cbd5e1'}; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.15s ease;" onmouseover="this.style.background='${isAutoStartup ? '#dcfce7' : '#e2e8f0'}'; this.style.color='${isAutoStartup ? '#14532d' : '#1e293b'}';" onmouseout="this.style.background='${isAutoStartup ? '#f0fdf4' : '#f1f5f9'}'; this.style.color='${isAutoStartup ? '#15803d' : '#475569'}';">
-                  ${isAutoStartup ? '✓ 시작앱 등록됨' : '시작앱에 등록'}
-                </button>
+
+              <!-- 6. 앱 정보 및 [닫기] 버튼 (하단 일체형 카드) -->
+              <div style="padding:10px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:4px; box-sizing:border-box; width:100%;">
+                <div style="display:flex; flex-direction:column; gap:2px;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:13px; font-weight:700; color:#1e293b;">MY 일정관리</span>
+                    <span style="font-size:11.5px; font-weight:500; color:#64748b;">v1.0.0</span>
+                  </div>
+                  <div style="font-size:11px; color:#64748b; line-height:1.35;">
+                    스마트 일정 관리 및 D-Day 업무 도구
+                  </div>
+                </div>
+                <button type="button" class="btn primary" data-action="closeSettings" style="height:32px; padding:0 20px; font-size:12.5px; font-weight:700; background:#4f46e5 !important; border:1px solid #4338ca !important; color:#ffffff !important; border-radius:8px !important; box-shadow:0 2px 6px rgba(79,70,229,0.28) !important; cursor:pointer; flex-shrink:0; transition:all 0.15s ease;" onmouseover="this.style.background='#4338ca !important';" onmouseout="this.style.background='#4f46e5 !important';">닫기</button>
               </div>
-              <div>
-                <button type="button" class="btn primary" data-action="closeSettings" style="height:32px; padding:0 22px; font-size:12.5px; font-weight:700; background:#4f46e5 !important; border:1px solid #4338ca !important; color:#ffffff !important; border-radius:10px !important; box-shadow:0 2px 6px rgba(79,70,229,0.28) !important; cursor:pointer;">닫기</button>
-              </div>
+
             </div>
           </div>`;
 
