@@ -18,9 +18,10 @@
   <meta name="theme-color" content="#4f46e5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <!-- [V2.1.8] 공공기관 폐쇄망/보안 무결성: 외부 통신은 기상청(apis.data.go.kr) 및 Firebase 전용 (시스템 맑은고딕/나눔고딕 100% 로컬 렌더링) -->
+  <!-- <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" as="style" crossorigin
-    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" /> -->
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -4687,7 +4688,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v2.1.6';
+      window.APP_VERSION = 'v2.1.8';
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -14859,9 +14860,70 @@ function getRandomAppQuote() {
       }
 
       
-      function fetchBriefingWeather() {
-        const DEFAULT_LOC = { lat: 35.503828, lon: 128.746608, name: '밀양시청' };
+      /* =====================================================================
+       * [V2.1.8] 대한민국 기상청(KMA) 공식 API & 순수 로컬 격자 변환(LCC) 연동
+       * - 해외 서버(BigDataCloud, Open-Meteo) 0건 완전 제거 유지
+       * - 순수 로컬 수학 공식(기상청 표준 LCC 투영)으로 외부 통신 없이 위경도 -> (nx, ny) 변환
+       * - 이동 중(모바일/노트북) 현재 위치 기반 기상청 날씨 실시간 연동
+       * - 기상청 버튼 클릭 시 해당 위치의 기상청 공식 예보 페이지로 직접 연결
+       * ===================================================================== */
+      const KMA_CONFIG = {
+        defaultName: '밀양시청',
+        defaultNx: 92,
+        defaultNy: 83,
+        defaultLat: 35.503828,
+        defaultLon: 128.746608,
+        defaultUrl: 'https://www.weather.go.kr/w/index.do#dong/4827055000/35.503828/128.746608/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%EB%B0%80%EC%96%91%EC%8B%9C%20%EA%B5%90%EB%8F%99/SEL/%EB%B0%80%EC%96%91%EC%8B%9C%EC%B2%AD'
+      };
 
+      const currentKmaState = {
+        lat: KMA_CONFIG.defaultLat,
+        lon: KMA_CONFIG.defaultLon,
+        nx: KMA_CONFIG.defaultNx,
+        ny: KMA_CONFIG.defaultNy,
+        isGeo: false,
+        locName: KMA_CONFIG.defaultName
+      };
+
+      // 기상청 표준 위경도 -> 격자(nx, ny) 변환 함수 (순수 로컬 수학 연산, 외부 통신 0)
+      function dfs_xy_conv(lat, lon) {
+        const RE = 6371.00877;
+        const GRID = 5.0;
+        const SLAT1 = 30.0;
+        const SLAT2 = 60.0;
+        const OLON = 126.0;
+        const OLAT = 38.0;
+        const XO = 43;
+        const YO = 136;
+
+        const DEGRAD = Math.PI / 180.0;
+        const re = RE / GRID;
+        const slat1 = SLAT1 * DEGRAD;
+        const slat2 = SLAT2 * DEGRAD;
+        const olon = OLON * DEGRAD;
+        const olat = OLAT * DEGRAD;
+
+        let sn = Math.tan(Math.PI * 0.25 + slat2 * 0.5) / Math.tan(Math.PI * 0.25 + slat1 * 0.5);
+        sn = Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(sn);
+        let sf = Math.tan(Math.PI * 0.25 + slat1 * 0.5);
+        sf = Math.pow(sf, sn) * Math.cos(slat1) / sn;
+        let ro = Math.tan(Math.PI * 0.25 + olat * 0.5);
+        ro = re * sf / Math.pow(ro, sn);
+
+        let ra = Math.tan(Math.PI * 0.25 + lat * DEGRAD * 0.5);
+        ra = re * sf / Math.pow(ra, sn);
+        let theta = lon * DEGRAD - olon;
+        if (theta > Math.PI) theta -= 2.0 * Math.PI;
+        if (theta < -Math.PI) theta += 2.0 * Math.PI;
+        theta *= sn;
+
+        const nx = Math.floor(ra * Math.sin(theta) + XO + 0.5);
+        const ny = Math.floor(ro - ra * Math.cos(theta) + YO + 0.5);
+        return { nx, ny };
+      }
+
+      function updateWeatherUI(icon, text, temp, locName) {
+        const placeLabel = locName || currentKmaState.locName || KMA_CONFIG.defaultName;
         const hBtn = $('headerWeatherBtn');
         const hIcon = $('headerWeatherIcon');
         const hText = $('headerWeatherText');
@@ -14872,177 +14934,214 @@ function getRandomAppQuote() {
         const mText = $('briefingWeatherText');
         const mTemp = $('briefingWeatherTemp');
 
-        // [V2.1.2] 온라인 데이터 수신 성공 시 (위치 확인 시 해당 위치, 미확인 시 밀양시청 디폴트)
-        const setOnlineUI = (icon, text, temp, locName) => {
-          const placeLabel = locName || DEFAULT_LOC.name;
-          if (hIcon) { hIcon.textContent = icon; hIcon.style.filter = 'none'; hIcon.style.opacity = '1'; }
-          if (hText) { hText.textContent = text; hText.style.color = '#0369a1'; hText.style.fontWeight = '600'; hText.style.fontFamily = 'var(--font-sans)'; }
-          if (hTemp) { hTemp.textContent = temp ? (' ' + temp) : ''; hTemp.style.color = '#0284c7'; hTemp.style.fontWeight = '600'; hTemp.style.fontFamily = 'var(--font-sans)'; }
-          if (hBtn) {
-            hBtn.title = `${placeLabel} 실시간 날씨: ${text}${temp ? ' ' + temp : ''} (클릭 시 기상청 상세 예보 / 30분 자동 갱신)`;
-            hBtn.style.background = 'transparent';
-            hBtn.style.borderColor = 'transparent';
-          }
+        if (hIcon) { hIcon.textContent = icon; hIcon.style.filter = 'none'; hIcon.style.opacity = '1'; }
+        if (hText) { hText.textContent = text; hText.style.color = '#0369a1'; hText.style.fontWeight = '600'; hText.style.fontFamily = 'var(--font-sans)'; }
+        if (hTemp) { hTemp.textContent = temp ? (' ' + temp) : ''; hTemp.style.color = '#0284c7'; hTemp.style.fontWeight = '600'; hTemp.style.fontFamily = 'var(--font-sans)'; }
+        if (hBtn) {
+          hBtn.title = `${placeLabel} 실시간 날씨: ${text}${temp ? ' ' + temp : ''} (클릭 시 기상청 상세 예보 / 30분 자동 갱신)`;
+          hBtn.style.background = 'transparent';
+          hBtn.style.borderColor = 'transparent';
+        }
 
-          if (mIcon) { mIcon.textContent = icon; mIcon.style.filter = 'none'; mIcon.style.opacity = '1'; }
-          if (mText) { mText.textContent = text; mText.style.color = '#0369a1'; mText.style.fontWeight = '600'; }
-          if (mTemp) { mTemp.textContent = temp ? (' ' + temp) : ''; mTemp.style.color = '#0284c7'; mTemp.style.fontWeight = '600'; }
-          if (mBadge) {
-            mBadge.style.background = '#eff6ff';
-            mBadge.style.borderColor = '#bfdbfe';
-            mBadge.style.color = '#0369a1';
-            mBadge.title = `${placeLabel} 실시간 날씨: ${text}${temp ? ' ' + temp : ''} (클릭 시 기상청 상세 예보)`;
-          }
-        };
+        if (mIcon) { mIcon.textContent = icon; mIcon.style.filter = 'none'; mIcon.style.opacity = '1'; }
+        if (mText) { mText.textContent = text; mText.style.color = '#0369a1'; mText.style.fontWeight = '600'; }
+        if (mTemp) { mTemp.textContent = temp ? (' ' + temp) : ''; mTemp.style.color = '#0284c7'; mTemp.style.fontWeight = '600'; }
+        if (mBadge) {
+          mBadge.style.background = '#eff6ff';
+          mBadge.style.borderColor = '#bfdbfe';
+          mBadge.style.color = '#0369a1';
+          mBadge.title = `${placeLabel} 실시간 날씨: ${text}${temp ? ' ' + temp : ''} (클릭 시 기상청 상세 예보)`;
+        }
+      }
 
-        // [V2.1.2] 오프라인 / 데이터 미수신 시
-        const setOfflineUI = (locName) => {
-          const placeLabel = locName || DEFAULT_LOC.name;
-          if (hIcon) { hIcon.textContent = '☀️'; hIcon.style.filter = 'grayscale(1)'; hIcon.style.opacity = '0.55'; }
-          if (hText) { hText.textContent = '맑음'; hText.style.color = '#94a3b8'; hText.style.fontWeight = '600'; hText.style.fontFamily = 'var(--font-sans)'; }
-          if (hTemp) { hTemp.textContent = ''; }
-          if (hBtn) {
-            hBtn.title = `${placeLabel} 날씨 (오프라인 / 연결 대기 - 클릭 시 기상청 이동)`;
-            hBtn.style.background = 'transparent';
-            hBtn.style.borderColor = 'transparent';
-          }
+      function setWeatherOfflineUI(locName) {
+        const placeLabel = locName || currentKmaState.locName || KMA_CONFIG.defaultName;
+        const hBtn = $('headerWeatherBtn');
+        const hIcon = $('headerWeatherIcon');
+        const hText = $('headerWeatherText');
+        const hTemp = $('headerWeatherTemp');
 
-          if (mIcon) { mIcon.textContent = '☀️'; mIcon.style.filter = 'grayscale(1)'; mIcon.style.opacity = '0.55'; }
-          if (mText) { mText.textContent = '맑음'; mText.style.color = '#94a3b8'; }
-          if (mTemp) { mTemp.textContent = ''; }
-          if (mBadge) {
-            mBadge.style.background = '#f1f5f9';
-            mBadge.style.borderColor = '#cbd5e1';
-            mBadge.style.color = '#94a3b8';
-            mBadge.title = `${placeLabel} 날씨 (오프라인 / 연결 대기 - 클릭 시 기상청 이동)`;
-          }
-        };
+        const mBadge = $('briefingWeatherBadge');
+        const mIcon = $('briefingWeatherIcon');
+        const mText = $('briefingWeatherText');
+        const mTemp = $('briefingWeatherTemp');
 
-        // 위경도 -> 한국어 지역명 변환 (밀양시청 인근이면 '밀양시청', 그 외에는 행정구역명 또는 '현재 위치')
-        const resolveLocationName = async (lat, lon) => {
-          const dLat = Math.abs(lat - DEFAULT_LOC.lat);
-          const dLon = Math.abs(lon - DEFAULT_LOC.lon);
-          if (dLat < 0.018 && dLon < 0.018) {
-            return DEFAULT_LOC.name;
-          }
+        if (hIcon) { hIcon.textContent = '☀️'; hIcon.style.filter = 'grayscale(1)'; hIcon.style.opacity = '0.55'; }
+        if (hText) { hText.textContent = '맑음'; hText.style.color = '#94a3b8'; hText.style.fontWeight = '600'; hText.style.fontFamily = 'var(--font-sans)'; }
+        if (hTemp) { hTemp.textContent = ''; }
+        if (hBtn) {
+          hBtn.title = `${placeLabel} 날씨 (기상청 연결 대기 - 클릭 시 기상청 이동)`;
+          hBtn.style.background = 'transparent';
+          hBtn.style.borderColor = 'transparent';
+        }
+
+        if (mIcon) { mIcon.textContent = '☀️'; mIcon.style.filter = 'grayscale(1)'; mIcon.style.opacity = '0.55'; }
+        if (mText) { mText.textContent = '맑음'; mText.style.color = '#94a3b8'; }
+        if (mTemp) { mTemp.textContent = ''; }
+        if (mBadge) {
+          mBadge.style.background = '#f1f5f9';
+          mBadge.style.borderColor = '#cbd5e1';
+          mBadge.style.color = '#94a3b8';
+          mBadge.title = `${placeLabel} 날씨 (기상청 연결 대기 - 클릭 시 기상청 이동)`;
+        }
+      }
+
+      window._applyKmaWeather = function(icon, text, temp, locName) {
+        updateWeatherUI(icon, text, temp, locName);
+        try {
+          localStorage.setItem('briefing_weather_cache', JSON.stringify({
+            icon,
+            text,
+            temp,
+            locName: locName || currentKmaState.locName,
+            lat: currentKmaState.lat,
+            lon: currentKmaState.lon,
+            nx: currentKmaState.nx,
+            ny: currentKmaState.ny,
+            isGeo: currentKmaState.isGeo,
+            ts: Date.now()
+          }));
+        } catch(e) {}
+      };
+
+      function requestKmaWeatherQuery(nx, ny, locName) {
+        const targetNx = nx || currentKmaState.nx;
+        const targetNy = ny || currentKmaState.ny;
+        const targetName = locName || currentKmaState.locName;
+
+        // 데스크톱 앱(WebView2) 환경: C# 백엔드에 안전 요청
+        if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
           try {
-            const ctrl = new AbortController();
-            const tId = setTimeout(() => ctrl.abort(), 2500);
-            const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=ko`, {
-              signal: ctrl.signal
-            });
-            clearTimeout(tId);
-            if (res.ok) {
-              const info = await res.json();
-              const city = (info.city || info.principalSubdivision || '').trim();
-              const dong = (info.locality || '').trim();
-              if (city && dong && city !== dong) return `${city} ${dong}`;
-              if (dong) return dong;
-              if (city) return city;
-            }
+            window.chrome.webview.postMessage(JSON.stringify({
+              type: 'requestKmaWeather',
+              nx: targetNx,
+              ny: targetNy,
+              locName: targetName
+            }));
+            return;
           } catch(e) {}
-          return '현재 위치';
-        };
+        }
 
-        // 1. 캐시 확인 (30분 유효)
+        // 브라우저 및 PWA 환경: 기상청 API 직접 호출
+        try {
+          const now = new Date();
+          let baseDate = now;
+          if (now.getMinutes() < 45) {
+            baseDate = new Date(now.getTime() - 60 * 60 * 1000);
+          }
+          const y = baseDate.getFullYear();
+          const m = String(baseDate.getMonth() + 1).padStart(2, '0');
+          const d = String(baseDate.getDate()).padStart(2, '0');
+          const hh = String(baseDate.getHours()).padStart(2, '0');
+          const dateStr = `${y}${m}${d}`;
+          const timeStr = `${hh}30`;
+
+          const serviceKey = 'c728739b1ccef50f344581789f3e12513f4af17db97276f8dbf9fb9ccb204bd3';
+          const apiUrl = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst?serviceKey=${serviceKey}&numOfRows=60&pageNo=1&dataType=JSON&base_date=${dateStr}&base_time=${timeStr}&nx=${targetNx}&ny=${targetNy}`;
+
+          const ctrl = new AbortController();
+          const tId = setTimeout(() => ctrl.abort(), 4000);
+          fetch(apiUrl, { signal: ctrl.signal })
+            .then(res => {
+              clearTimeout(tId);
+              if (!res.ok) throw new Error('Network error');
+              return res.json();
+            })
+            .then(data => {
+              if (data && data.response && data.response.body && data.response.body.items && data.response.body.items.item) {
+                const items = data.response.body.items.item;
+                let minTarget = null;
+                for (const it of items) {
+                  const target = it.fcstDate + it.fcstTime;
+                  if (!minTarget || target < minTarget) minTarget = target;
+                }
+                let t1h = '', sky = '1', pty = '0';
+                for (const it of items) {
+                  if ((it.fcstDate + it.fcstTime) === minTarget) {
+                    if (it.category === 'T1H') t1h = it.fcstValue;
+                    if (it.category === 'SKY') sky = it.fcstValue;
+                    if (it.category === 'PTY') pty = it.fcstValue;
+                  }
+                }
+                let icon = '☀️';
+                let text = '맑음';
+                const ptyNum = parseInt(pty, 10);
+                const skyNum = parseInt(sky, 10);
+                if (ptyNum === 1 || ptyNum === 5) { icon = '🌧️'; text = '비'; }
+                else if (ptyNum === 2 || ptyNum === 6) { icon = '🌨️'; text = '비/눈'; }
+                else if (ptyNum === 3 || ptyNum === 7) { icon = '❄️'; text = '눈'; }
+                else {
+                  if (skyNum === 3) { icon = '⛅'; text = '구름많음'; }
+                  else if (skyNum === 4) { icon = '☁️'; text = '흐림'; }
+                  else { icon = '☀️'; text = '맑음'; }
+                }
+                const tempStr = t1h ? `${Math.round(parseFloat(t1h))}°C` : '';
+                window._applyKmaWeather(icon, text, tempStr, targetName);
+              }
+            })
+            .catch(() => {
+              const cachedStr = localStorage.getItem('briefing_weather_cache');
+              if (!cachedStr) setWeatherOfflineUI(targetName);
+            });
+        } catch(e) {
+          const cachedStr = localStorage.getItem('briefing_weather_cache');
+          if (!cachedStr) setWeatherOfflineUI(targetName);
+        }
+      }
+
+      function fetchBriefingWeather() {
+        // 1. 로컬 캐시 확인 (30분 유효)
         let hasValidCache = false;
-        let cachedObj = null;
         try {
           const cachedStr = localStorage.getItem('briefing_weather_cache');
           if (cachedStr) {
-            cachedObj = JSON.parse(cachedStr);
+            const cachedObj = JSON.parse(cachedStr);
             if (cachedObj && (Date.now() - cachedObj.ts < 1800000)) {
-              setOnlineUI(cachedObj.icon || '☀️', cachedObj.text || '맑음', cachedObj.temp || '', cachedObj.locName || DEFAULT_LOC.name);
+              if (cachedObj.isGeo && cachedObj.lat && cachedObj.lon) {
+                currentKmaState.lat = cachedObj.lat;
+                currentKmaState.lon = cachedObj.lon;
+                currentKmaState.nx = cachedObj.nx || currentKmaState.nx;
+                currentKmaState.ny = cachedObj.ny || currentKmaState.ny;
+                currentKmaState.isGeo = true;
+                currentKmaState.locName = cachedObj.locName || '현재 위치';
+              }
+              updateWeatherUI(cachedObj.icon || '☀️', cachedObj.text || '맑음', cachedObj.temp || '', currentKmaState.locName);
               hasValidCache = true;
             }
           }
         } catch(e) {}
 
         if (!hasValidCache) {
-          setOfflineUI(DEFAULT_LOC.name);
+          setWeatherOfflineUI(currentKmaState.locName);
         }
 
-        // Open-Meteo 날씨 조회 공통 함수
-        const requestOpenMeteo = (lat, lon, locName, isConfirmedGeo) => {
-          try {
-            const controller = new AbortController();
-            const timer = setTimeout(() => controller.abort(), 4000);
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code,temperature_2m&timezone=Asia%2FTokyo`;
+        // 2. 먼저 디폴트(또는 직전 확인 좌표)로 기상청 즉시 조회
+        requestKmaWeatherQuery(currentKmaState.nx, currentKmaState.ny, currentKmaState.locName);
 
-            fetch(url, { signal: controller.signal })
-              .then(res => {
-                if (!res.ok) throw new Error('Network error');
-                return res.json();
-              })
-              .then(data => {
-                clearTimeout(timer);
-                if (data && data.current) {
-                  const code = data.current.weather_code;
-                  const tempVal = Math.round(data.current.temperature_2m);
-                  const tempStr = isNaN(tempVal) ? '' : tempVal + '°C';
-                  let icon = '☀️';
-                  let text = '맑음';
-
-                  if (code === 0) { icon = '☀️'; text = '맑음'; }
-                  else if (code === 1 || code === 2) { icon = '⛅'; text = '구름조금'; }
-                  else if (code === 3) { icon = '☁️'; text = '흐림'; }
-                  else if (code === 45 || code === 48) { icon = '🌫️'; text = '안개'; }
-                  else if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) { icon = '🌧️'; text = '비'; }
-                  else if ([71, 73, 75, 77, 85, 86].includes(code)) { icon = '❄️'; text = '눈'; }
-                  else if ([95, 96, 99].includes(code)) { icon = '⛈️'; text = '뇌우'; }
-
-                  const finalLocName = locName || DEFAULT_LOC.name;
-                  setOnlineUI(icon, text, tempStr, finalLocName);
-
-                  localStorage.setItem('briefing_weather_cache', JSON.stringify({
-                    icon,
-                    text,
-                    temp: tempStr,
-                    locName: finalLocName,
-                    lat,
-                    lon,
-                    isConfirmedGeo: !!isConfirmedGeo,
-                    ts: Date.now()
-                  }));
-                }
-              })
-              .catch(() => {
-                if (!hasValidCache) {
-                  setOfflineUI(locName || DEFAULT_LOC.name);
-                }
-              });
-          } catch(e) {
-            if (!hasValidCache) {
-              setOfflineUI(locName || DEFAULT_LOC.name);
-            }
-          }
-        };
-
-        // 2. 먼저 디폴트(밀양시청 또는 직전 확인된 위치)로 지연 없이 즉시 날씨 표시/갱신
-        const initLat = (cachedObj && cachedObj.isConfirmedGeo && cachedObj.lat) ? cachedObj.lat : DEFAULT_LOC.lat;
-        const initLon = (cachedObj && cachedObj.isConfirmedGeo && cachedObj.lon) ? cachedObj.lon : DEFAULT_LOC.lon;
-        const initName = (cachedObj && cachedObj.isConfirmedGeo && cachedObj.locName) ? cachedObj.locName : DEFAULT_LOC.name;
-        const initIsGeo = !!(cachedObj && cachedObj.isConfirmedGeo);
-        requestOpenMeteo(initLat, initLon, initName, initIsGeo);
-
-        // 3. 데스크톱 & 모바일 위치 확인 시도 (확인 성공 시 해당 위치 날씨로 즉시 전환, 실패/거부 시 밀양시청 유지)
+        // 3. 브라우저/스마트폰/노트북 위치 확인 시도 (순수 로컬 수학 공식으로 nx, ny 변환 -> 기상청만 호출)
         if (typeof navigator !== 'undefined' && navigator.geolocation && typeof navigator.geolocation.getCurrentPosition === 'function') {
           try {
             navigator.geolocation.getCurrentPosition(
-              async (pos) => {
+              (pos) => {
                 if (pos && pos.coords && typeof pos.coords.latitude === 'number' && typeof pos.coords.longitude === 'number') {
                   const gLat = Number(pos.coords.latitude.toFixed(6));
                   const gLon = Number(pos.coords.longitude.toFixed(6));
-                  const gName = await resolveLocationName(gLat, gLon);
-                  requestOpenMeteo(gLat, gLon, gName, true);
+                  const grid = dfs_xy_conv(gLat, gLon);
+                  currentKmaState.lat = gLat;
+                  currentKmaState.lon = gLon;
+                  currentKmaState.nx = grid.nx;
+                  currentKmaState.ny = grid.ny;
+
+                  const dLat = Math.abs(gLat - KMA_CONFIG.defaultLat);
+                  const dLon = Math.abs(gLon - KMA_CONFIG.defaultLon);
+                  const isNearMiryang = (dLat < 0.02 && dLon < 0.02);
+                  currentKmaState.isGeo = !isNearMiryang;
+                  currentKmaState.locName = isNearMiryang ? KMA_CONFIG.defaultName : '현재 위치';
+
+                  requestKmaWeatherQuery(currentKmaState.nx, currentKmaState.ny, currentKmaState.locName);
                 }
               },
-              () => {
-                // 위치 확인 실패/거부/비활성화 시 디폴트 밀양시청으로 보장
-                if (initIsGeo) {
-                  requestOpenMeteo(DEFAULT_LOC.lat, DEFAULT_LOC.lon, DEFAULT_LOC.name, false);
-                }
-              },
+              () => {},
               { enableHighAccuracy: false, timeout: 4500, maximumAge: 600000 }
             );
           } catch(e) {}
@@ -15200,7 +15299,7 @@ function getRandomAppQuote() {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+  <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"> -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -16436,13 +16535,10 @@ function getRandomAppQuote() {
         }
         
         else if (a === 'openWeatherKma') {
-          let kmaUrl = 'https://www.weather.go.kr/w/index.do#dong/4827055000/35.503828/128.746608/%EA%B2%BD%EC%83%81%EB%82%A8%EB%8F%84%20%EB%B0%80%EC%96%91%EC%8B%9C%20%EA%B5%90%EB%8F%99/SEL/%EB%B0%80%EC%96%91%EC%8B%9C%EC%B2%AD';
-          try {
-            const wc = JSON.parse(localStorage.getItem('briefing_weather_cache') || 'null');
-            if (wc && wc.isConfirmedGeo && wc.locName && !wc.locName.includes('밀양')) {
-              kmaUrl = 'https://www.weather.go.kr/w/index.do';
-            }
-          } catch(e) {}
+          let kmaUrl = KMA_CONFIG.defaultUrl;
+          if (currentKmaState.isGeo) {
+            kmaUrl = 'https://www.weather.go.kr/w/index.do';
+          }
           if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
             window.chrome.webview.postMessage(JSON.stringify({ type: 'openExternal', url: kmaUrl }));
           } else {
