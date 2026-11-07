@@ -1,16 +1,22 @@
 /* =====================================================================
- * PWA Service Worker for D-Day 일정관리
+ * PWA Service Worker for D-Day 일정관리 (PWA Icon & Maskable Support)
  * ===================================================================== */
-const APP_VERSION = '1.0.0';
-const CACHE_NAME = 'todo-pwa-v1.0.0';
+const APP_VERSION = '1.0.1';
+const CACHE_NAME = 'todo-pwa-v1.0.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './favicon.ico',
-  './icon-32.png',
-  './icon-192.png',
-  './icon-512.png'
+  './아이콘/manifest.json',
+  './아이콘/favicon.ico',
+  './아이콘/favicon-16x16.png',
+  './아이콘/favicon-32x32.png',
+  './아이콘/favicon-48x48.png',
+  './아이콘/apple-touch-icon.png',
+  './아이콘/icon-192x192.png',
+  './아이콘/icon-512x512.png',
+  './아이콘/icon-maskable-192x192.png',
+  './아이콘/icon-maskable-512x512.png'
 ];
 
 // 1. 서비스워커 설치 (핵심 에셋 캐싱)
@@ -41,39 +47,41 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
-  // Firebase Firestore, Google Auth 및 외부 CDN, 비-GET 요청은 캐싱하지 않고 네트워크로 직접 전달
+  // Firebase Firestore, Google Auth 및 외부 CDN, 비 GET 요청은 캐싱하지 않고 네트워크로 직접 전달
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) {
     return;
   }
 
-  // HTML 페이지 접속(네비게이션): Network-First (온라인 시 최신 코드 반영, 오프라인 시 캐시 사용)
+  // HTML 페이지 접속(네비게이션): Network-First (온라인 시 최신 코드 반영, 오프라인 시 캐시 활용)
   if (req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       fetch(req)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
+        .then((res) => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
           }
-          return networkResponse;
+          return res;
         })
         .catch(() => {
-          return caches.match(req).then((cached) => cached || caches.match('./index.html'));
+          return caches.match('./index.html') || caches.match('./');
         })
     );
     return;
   }
 
-  // 정적 에셋(아이콘, 매니페스트 등): Cache-First
+  // 정적 리소스(JS, CSS, 이미지, 파비콘, 매니페스트): Cache-First (속도 최적화 및 오프라인 지원)
   event.respondWith(
     caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const clone = networkResponse.clone();
+      if (cached) {
+        return cached;
+      }
+      return fetch(req).then((res) => {
+        if (res && res.status === 200) {
+          const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
         }
-        return networkResponse;
+        return res;
       });
     })
   );
