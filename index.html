@@ -1870,6 +1870,30 @@
       box-shadow: 0 25px 50px -10px rgba(79, 70, 229, 0.32);
     }
 
+    /* [V1.0.4] 목록 탭 우측 일정 상세 미리보기 및 보고서 텍스트 자유 복사/블록 설정 허용 */
+    #listDetailContent,
+    .detail-card,
+    .detail-card .detail-title,
+    .detail-card .detail-value,
+    .detail-card .detail-memo,
+    .detail-card .detail-memo-full,
+    .schedule-detail-view td,
+    .detail-memo-scroll-box {
+      user-select: text !important;
+      -webkit-user-select: text !important;
+      cursor: text !important;
+    }
+
+    .detail-card button,
+    .detail-card .btn,
+    .detail-card .memo-tool-btn,
+    .schedule-detail-view button,
+    .schedule-detail-view .btn {
+      user-select: none !important;
+      -webkit-user-select: none !important;
+      cursor: pointer !important;
+    }
+
     dialog#storeModal {
       width: 360px;
       max-width: calc(100vw - 24px);
@@ -17843,13 +17867,61 @@ function getRandomAppQuote() {
     })();
   </script>
 
-  <!-- Service Worker Registration for PWA -->
+  <!-- Service Worker Registration & Silent Auto Update for PWA -->
   <script>
     if ('serviceWorker' in navigator) {
+      let isRefreshing = false;
+
+      // 1. 새 서비스 워커가 활성화되어 페이지 제어를 인계받았을 때 자동 새로고침
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (isRefreshing) return;
+        isRefreshing = true;
+        try {
+          if (typeof toast === 'function') {
+            toast('최신 버전으로 자동 갱신되었습니다.');
+          }
+        } catch (e) {}
+        setTimeout(() => {
+          window.location.reload();
+        }, 400);
+      });
+
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('PWA ServiceWorker 등록 완료:', reg.scope))
-          .catch(err => console.warn('PWA ServiceWorker 등록 실패:', err));
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          console.log('PWA ServiceWorker 등록 완료:', reg.scope);
+
+          // 2. 이미 대기 중인 새 버전이 있으면 즉시 활성화 트리거
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+
+          // 3. 새 버전이 설치 중인 것을 감지했을 때
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // 기존 버전이 실행 중인데 새 버전이 설치 완료됨 -> 즉시 활성화 요청
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+              }
+            });
+          });
+
+          // 4. 모바일 화면 전환 또는 브라우저 복귀 시(PWA 앱 켤 때) 백그라운드 자동 업데이트 체크
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+              reg.update().catch(() => {});
+            }
+          });
+          window.addEventListener('focus', () => {
+            reg.update().catch(() => {});
+          });
+
+          // 5. 1시간마다 주기적으로 백그라운드 업데이트 자동 확인
+          setInterval(() => {
+            reg.update().catch(() => {});
+          }, 60 * 60 * 1000);
+        }).catch(err => console.warn('PWA ServiceWorker 등록 실패:', err));
       });
     }
   </script>

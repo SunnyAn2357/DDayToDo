@@ -2,7 +2,7 @@
  * PWA Service Worker for D-Day 일정관리 (PWA Icon & Maskable Support)
  * ===================================================================== */
 const APP_VERSION = '1.0.0';
-const CACHE_NAME = 'todo-pwa-v1.0.3';
+const CACHE_NAME = 'todo-pwa-v1.0.4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -15,6 +15,13 @@ const ASSETS_TO_CACHE = [
   './icon-maskable-192x192.png',
   './icon-maskable-512x512.png'
 ];
+
+// 서비스워커 메시지 수신 (새 버전 배포 시 즉시 활성화 트리거)
+self.addEventListener('message', (event) => {
+  if (event.data && (event.data.type === 'SKIP_WAITING' || event.data === 'skipWaiting')) {
+    self.skipWaiting();
+  }
+});
 
 // 1. 서비스워커 설치 (핵심 에셋 캐싱)
 self.addEventListener('install', (event) => {
