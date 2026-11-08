@@ -4453,8 +4453,9 @@
         font-size: 17.5px !important;
       }
       dialog#overtimeAlertModal .overtime-modal-body {
-        padding: 14px 16px !important;
+        padding: 16px !important;
         gap: 12px !important;
+        justify-content: flex-start !important;
       }
       dialog#dailyBriefingModal,
       dialog#ddayAlertModal {
@@ -4780,7 +4781,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.2';
+      window.APP_VERSION = 'v1.0.4';
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -10756,7 +10757,7 @@
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.2</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.4</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -16147,16 +16148,16 @@ function getRandomAppQuote() {
               </div>
             </div>
 
-            <!-- 안내 본문 카드 (여유롭고 우아한 여백 및 정갈한 불릿 리스트) -->
-            <div class="modal-body overtime-modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; justify-content:space-between; gap:14px; background:#ffffff; box-sizing:border-box;">
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #4f46e5; padding:16px 18px; border-radius:0 10px 10px 0;">
+            <!-- 안내 본문 카드 (균형 잡힌 황금비율 여백 및 정갈한 불릿 리스트) -->
+            <div class="modal-body overtime-modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:20px 22px; display:flex; flex-direction:column; justify-content:center; gap:16px; background:#ffffff; box-sizing:border-box;">
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #4f46e5; padding:18px 20px; border-radius:0 10px 10px 0; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
                 <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
                   <span>📋</span> <span>초과근무 확인 및 등록 요청</span>
                 </div>
-                <div style="font-size:13px; color:#334155; line-height:1.55; margin-bottom:8px; font-weight:600; word-break:keep-all;">
+                <div style="font-size:13px; color:#334155; line-height:1.6; margin-bottom:9px; font-weight:600; word-break:keep-all;">
                   ${alertTimeDesc}
                 </div>
-                <div style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:#475569; line-height:1.55; word-break:keep-all;">
+                <div style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:#475569; line-height:1.6; word-break:keep-all;">
                   <div style="display:flex; align-items:flex-start; gap:6px;">
                     <span style="color:#4f46e5; font-weight:700; flex-shrink:0;">•</span>
                     <span style="word-break:keep-all;">인사랑에 접속하여 초과근무 기록을 정확히 등록 후 확인해 주세요.</span>
@@ -16168,8 +16169,8 @@ function getRandomAppQuote() {
                 </div>
               </div>
 
-              <div style="display:flex; align-items:center; justify-content:space-between; background:#faf5ff; border:1px solid #f3e8ff; padding:12px 16px; border-radius:10px;">
-                <div style="font-size:12px; color:#6b21a8; font-weight:600; line-height:1.45; word-break:keep-all;">
+              <div style="display:flex; align-items:center; justify-content:space-between; background:#faf5ff; border:1px solid #f3e8ff; padding:12px 18px; border-radius:10px;">
+                <div style="font-size:12px; color:#6b21a8; font-weight:600; line-height:1.5; word-break:keep-all;">
                   💡 당일 일정이 남아있는 경우 오늘 일정 브리핑도 함께 확인하세요.
                 </div>
               </div>
