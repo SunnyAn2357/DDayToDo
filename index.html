@@ -8,16 +8,16 @@
   <meta name="color-scheme" content="light">
   <title>MY 일정관리</title>
   <!-- Favicon (Desktop & Browser Tab) -->
-  <link rel="icon" type="image/x-icon" href="아이콘/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="아이콘/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="아이콘/favicon-16x16.png">
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 
   <!-- Apple Touch Icon (iOS Home Screen) -->
-  <link rel="apple-touch-icon" sizes="180x180" href="아이콘/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 
   <!-- Web App Manifest (Android PWA / Chrome / Samsung Internet) -->
-  <link rel="manifest" href="아이콘/manifest.json">
-  <meta name="theme-color" content="#4B49E6">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#4f46e5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <!-- [V2.1.8] 공공기관 폐쇄망/보안 무결성: 외부 통신은 기상청(apis.data.go.kr) 및 Firebase 전용 (시스템 맑은고딕/나눔고딕 100% 로컬 렌더링) -->
@@ -4415,6 +4415,42 @@
       }
       .desktop-widget-control-bar {
         padding: 8px 12px !important;
+      }
+
+      /* [V1.0.3] 독립 팝업 모달 모바일 최적화 (너비 자동 맞춤, 패딩 최적화, 스크롤 보장) */
+      dialog#overtimeAlertModal {
+        width: calc(100vw - 20px) !important;
+        max-width: 440px !important;
+        height: auto !important;
+        max-height: 88vh !important;
+        border-radius: 12px !important;
+      }
+      dialog#overtimeAlertModal .overtime-title {
+        font-size: 17.5px !important;
+      }
+      dialog#overtimeAlertModal .overtime-modal-body {
+        padding: 14px 16px !important;
+        gap: 12px !important;
+      }
+      dialog#dailyBriefingModal,
+      dialog#ddayAlertModal {
+        width: calc(100vw - 20px) !important;
+        max-width: 480px !important;
+        height: 84vh !important;
+        border-radius: 12px !important;
+      }
+      dialog#urgentAlertModal {
+        width: calc(100vw - 20px) !important;
+        max-width: 440px !important;
+        height: auto !important;
+        max-height: 85vh !important;
+        border-radius: 12px !important;
+      }
+      dialog#reportModal {
+        width: calc(100vw - 20px) !important;
+        max-width: 480px !important;
+        height: 84vh !important;
+        border-radius: 12px !important;
       }
     }
   
@@ -16075,48 +16111,48 @@ function getRandomAppQuote() {
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; background:#ffffff; border-radius:14px; overflow:hidden;">
             <!-- 상단 인디고-바이올렛 소프트 그라디언트 배너 (여유로운 패딩 및 정돈된 폰트) -->
-            <div style="background:linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-bottom:1px solid #c7d2fe; padding:20px 26px 16px; flex-shrink:0;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="display:inline-flex; align-items:center; gap:5px; background:#4f46e5; color:#ffffff; font-size:12px; font-weight:700; padding:3px 12px; border-radius:20px; box-shadow:0 2px 4px rgba(79,70,229,0.25);">
+            <div style="background:linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-bottom:1px solid #c7d2fe; padding:18px 22px 14px; flex-shrink:0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px;">
+                <span style="display:inline-flex; align-items:center; gap:5px; background:#4f46e5; color:#ffffff; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:20px; box-shadow:0 2px 4px rgba(79,70,229,0.25); white-space:nowrap; flex-shrink:0;">
                   ${alertTitle}
                 </span>
-                <span style="font-size:12.5px; font-weight:600; color:#4338ca;">${todayStr} (${timeStr})</span>
+                <span style="font-size:12px; font-weight:600; color:#4338ca; white-space:nowrap; flex-shrink:0;">${todayStr} (${timeStr})</span>
               </div>
               <div style="display:flex; align-items:baseline; gap:8px;">
-                <span style="font-size:22px; font-weight:700; color:#1e1b4b; letter-spacing:-0.02em;">인사랑 초과근무 기록 시간입니다.</span>
+                <span class="overtime-title" style="font-size:21px; font-weight:800; color:#1e1b4b; letter-spacing:-0.02em; line-height:1.3; word-break:keep-all;">인사랑 초과근무 기록 시간입니다.</span>
               </div>
             </div>
 
             <!-- 안내 본문 카드 (여유롭고 우아한 여백 및 정갈한 불릿 리스트) -->
-            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:20px 26px; display:flex; flex-direction:column; justify-content:space-between; gap:16px; background:#ffffff; box-sizing:border-box;">
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #4f46e5; padding:18px 20px; border-radius:0 10px 10px 0;">
+            <div class="modal-body overtime-modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; justify-content:space-between; gap:14px; background:#ffffff; box-sizing:border-box;">
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #4f46e5; padding:16px 18px; border-radius:0 10px 10px 0;">
                 <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
                   <span>📋</span> <span>초과근무 확인 및 등록 요청</span>
                 </div>
-                <div style="font-size:13px; color:#334155; line-height:1.6; margin-bottom:8px; font-weight:500;">
+                <div style="font-size:13px; color:#334155; line-height:1.55; margin-bottom:8px; font-weight:600; word-break:keep-all;">
                   ${alertTimeDesc}
                 </div>
-                <div style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:#475569; line-height:1.6;">
+                <div style="display:flex; flex-direction:column; gap:6px; font-size:12.5px; color:#475569; line-height:1.55; word-break:keep-all;">
                   <div style="display:flex; align-items:flex-start; gap:6px;">
-                    <span style="color:#4f46e5; font-weight:700;">•</span>
-                    <span>인사랑에 접속하여 초과근무 기록을 정확히 등록 후 확인해 주세요.</span>
+                    <span style="color:#4f46e5; font-weight:700; flex-shrink:0;">•</span>
+                    <span style="word-break:keep-all;">인사랑에 접속하여 초과근무 기록을 정확히 등록 후 확인해 주세요.</span>
                   </div>
                   <div style="display:flex; align-items:flex-start; gap:6px;">
-                    <span style="color:#4f46e5; font-weight:700;">•</span>
-                    <span>혹시 출근 등록을 아직 하지 않았다면 지금 해주세요.</span>
+                    <span style="color:#4f46e5; font-weight:700; flex-shrink:0;">•</span>
+                    <span style="word-break:keep-all;">혹시 출근 등록을 아직 하지 않았다면 지금 해주세요.</span>
                   </div>
                 </div>
               </div>
 
-              <div style="display:flex; align-items:center; justify-content:space-between; background:#faf5ff; border:1px solid #f3e8ff; padding:13px 18px; border-radius:10px;">
-                <div style="font-size:12.5px; color:#6b21a8; font-weight:600; line-height:1.5;">
+              <div style="display:flex; align-items:center; justify-content:space-between; background:#faf5ff; border:1px solid #f3e8ff; padding:12px 16px; border-radius:10px;">
+                <div style="font-size:12px; color:#6b21a8; font-weight:600; line-height:1.45; word-break:keep-all;">
                   💡 당일 일정이 남아있는 경우 오늘 일정 브리핑도 함께 확인하세요.
                 </div>
               </div>
             </div>
 
             <!-- 하단 액션 버튼 -->
-            <div class="modal-foot" style="padding:13px 22px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+            <div class="modal-foot" style="padding:12px 20px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
               <div>
                 <button type="button" class="btn" data-action="openBriefingFromUrgent" style="height:34px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#0f172a; font-weight:600; display:inline-flex; align-items:center; gap:5px; border-radius:10px; cursor:pointer;">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="m9 14 2 2 4-4"></path></svg><span>오늘 일정 브리핑</span>
@@ -16864,6 +16900,10 @@ function getRandomAppQuote() {
           if ($('dailyBriefingModal') && $('dailyBriefingModal').open) $('dailyBriefingModal').close();
           releaseDesktopTopmost();
         }
+        else if (a === 'closeOvertimeAlertModal') {
+          if ($('overtimeAlertModal') && $('overtimeAlertModal').open) $('overtimeAlertModal').close();
+          releaseDesktopTopmost();
+        }
         else if (a === 'openDetailFromBriefing') {
           const taskId = b.dataset.id;
           // [V1.6.2] 브리핑 모달 보존: 개별 일정 상세 확인 시에도 브리핑 창을 닫지 않고 유지하여, 상세 창을 닫으면 브리핑으로 복귀
@@ -16885,6 +16925,7 @@ function getRandomAppQuote() {
         }
         else if (a === 'openBriefingFromUrgent') {
           if ($('urgentAlertModal') && $('urgentAlertModal').open) $('urgentAlertModal').close();
+          if ($('overtimeAlertModal') && $('overtimeAlertModal').open) $('overtimeAlertModal').close();
           openDailyBriefingModal(true);
         }
         else if (a === 'closeDdayAlertModal') {
