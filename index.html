@@ -4781,7 +4781,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.5';
+      window.APP_VERSION = 'v1.0.6';
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -10757,7 +10757,7 @@
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.5</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.6</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -15041,6 +15041,9 @@ function getRandomAppQuote() {
                 startDate: todayStr,
                 dueDate: todayStr,
                 priority: r.priority || 'normal',
+                hourReminders: Array.isArray(r.hourReminders) ? r.hourReminders : [120, 60],
+                isHoliday: !!r.isHoliday,
+                holidayHasTask: !!r.holidayHasTask,
                 isRecurring: true
               });
             }
@@ -15938,7 +15941,8 @@ function getRandomAppQuote() {
             height: 640
           }));
         } else {
-          modal.showModal();
+          if (!modal.open) modal.showModal();
+          makeModalDraggable(modal, '.briefing-drag-header');
           fetchBriefingWeather();
         }
       }
@@ -15955,7 +15959,7 @@ function getRandomAppQuote() {
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box;">
             <!-- 상단 앰버 골드 하이라이트 배너 -->
-            <div style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-bottom:1px solid #fde68a; padding:18px 20px 14px; flex-shrink:0;">
+            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-bottom:1px solid #fde68a; padding:18px 20px 14px; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:#b45309; color:#ffffff; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:20px;">
                   ⏰ 일정 시작 ${timeLabel} 안내
@@ -16018,7 +16022,8 @@ function getRandomAppQuote() {
             height: 460
           }));
         } else {
-          modal.showModal();
+          if (!modal.open) modal.showModal();
+          makeModalDraggable(modal, '.briefing-drag-header');
         }
       }
 
@@ -16026,6 +16031,8 @@ function getRandomAppQuote() {
         const modal = $('ddayAlertModal');
         const container = $('ddayAlertContainer');
         if (!modal || !container || !alerts || !alerts.length) return;
+
+        const periodGuideText = new Date().getHours() >= 12 ? '오후 1시 정기 안내' : '오전 9시 정기 안내';
 
         const groups = {};
         alerts.forEach(a => {
@@ -16038,12 +16045,12 @@ function getRandomAppQuote() {
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box;">
             <!-- 인디고/바이올렛 프리미엄 배너 -->
-            <div style="background:linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); padding:20px 22px 18px; color:#ffffff; flex-shrink:0;">
+            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); padding:20px 22px 18px; color:#ffffff; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:rgba(199, 210, 254, 0.2); border:1px solid rgba(199, 210, 254, 0.4); color:#e0e7ff; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:20px;">
                   📅 D-Day 사전 예고 알림
                 </span>
-                <span style="font-size:12px; color:#c7d2fe;">오전 9시 정기 안내</span>
+                <span style="font-size:12px; color:#c7d2fe;">${periodGuideText}</span>
               </div>
               <h2 style="margin:0; font-size:18px; font-weight:800; color:#ffffff;">다가오는 마감 일정이 총 ${alerts.length}건 있습니다</h2>
               <div style="margin-top:4px; font-size:12px; color:#a5b4fc;">미리 준비하여 차질 없이 일정을 진행하세요.</div>
@@ -16096,7 +16103,8 @@ function getRandomAppQuote() {
             height: 580
           }));
         } else {
-          modal.showModal();
+          if (!modal.open) modal.showModal();
+          makeModalDraggable(modal, '.briefing-drag-header');
         }
       }
 
@@ -16136,7 +16144,7 @@ function getRandomAppQuote() {
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; background:#ffffff; border-radius:14px; overflow:hidden;">
             <!-- 상단 인디고-바이올렛 소프트 그라디언트 배너 (여유로운 패딩 및 정돈된 폰트) -->
-            <div style="background:linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-bottom:1px solid #c7d2fe; padding:18px 22px 14px; flex-shrink:0;">
+            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-bottom:1px solid #c7d2fe; padding:18px 22px 14px; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:#4f46e5; color:#ffffff; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:20px; box-shadow:0 2px 4px rgba(79,70,229,0.25); white-space:nowrap; flex-shrink:0;">
                   ${alertTitle}
@@ -16206,13 +16214,89 @@ function getRandomAppQuote() {
             height: 410
           }));
         } else {
-          modal.showModal();
+          if (!modal.open) modal.showModal();
+          makeModalDraggable(modal, '.briefing-drag-header');
         }
       }
 
       const triggeredAlertsInSession = new Set();
       const snoozedAlerts = {};
-      let ddayStartupCheckedInSession = false;
+
+      function collectUpcomingDdayAlerts(todayStr, allTasks, allRecurrings) {
+        const ddayAlerts = [];
+        const seenKeys = new Set();
+
+        (allTasks || []).forEach(t => {
+          if (!t || t.completed || !isWork(t)) return;
+          const due = t.dueDate || t.startDate;
+          if (!due || due <= todayStr) return;
+          const workDiff = taskWorkdays(t, todayStr);
+          const calDiff = daysBetween(todayStr, due);
+
+          // 1) 화면 표기 기준(근무일/달력일 설정 반영) D-3 이내(D-3, D-2, D-1) 이거나
+          // 2) 사용자가 알림 주기(reminders)에 체크한 사전 일수에 도달한 일정
+          const isWithinDday3 = (workDiff >= 1 && workDiff <= 3);
+          const isCustomReminderMatch = Array.isArray(t.reminders) && t.reminders.some(r =>
+            r > 0 && (r === workDiff || r === calDiff || reminderDate(due, r) === todayStr)
+          );
+
+          if (isWithinDday3 || isCustomReminderMatch) {
+            const key = String(t.id);
+            if (!seenKeys.has(key)) {
+              seenKeys.add(key);
+              ddayAlerts.push({ task: t, daysLeft: workDiff > 0 ? workDiff : calDiff });
+            }
+          }
+        });
+
+        // 아직 개별 task로 생성되지 않은 반복 일정 마스터(recurrings) 중 D-3 이내 도래분도 포함
+        const lookAheadEnd = addDays(todayStr, 14);
+        (allRecurrings || []).forEach(r => {
+          if (!r || !isWork(r)) return;
+          const dates = getDatesForRule(r, addDays(todayStr, 1), lookAheadEnd);
+          const deleted = new Set(r.deletedDates || []);
+          const span = Math.max(0, dayDistance(r.startDate || r.dueDate, r.dueDate || r.startDate));
+          dates.forEach(dStr => {
+            if (deleted.has(dStr)) return;
+            const targetDue = span > 0 ? addDays(dStr, span) : dStr;
+            if (targetDue <= todayStr) return;
+            const hasMaterialized = (allTasks || []).some(t => t.recurringId === r.id && (t.dueDate === targetDue || t.startDate === dStr));
+            if (hasMaterialized) return;
+
+            const virtualTask = {
+              id: r.id,
+              title: r.title,
+              time: r.time || '',
+              location: r.location || '',
+              memo: r.memo || '',
+              tags: r.tags || [],
+              startDate: dStr,
+              dueDate: targetDue,
+              ddayMode: r.ddayMode || 'workday',
+              priority: r.priority || 'normal',
+              reminders: Array.isArray(r.reminders) ? r.reminders : [0, 3],
+              isHoliday: !!r.isHoliday,
+              holidayHasTask: !!r.holidayHasTask,
+              isRecurring: true
+            };
+            const workDiff = taskWorkdays(virtualTask, todayStr);
+            const calDiff = daysBetween(todayStr, targetDue);
+            const isWithinDday3 = (workDiff >= 1 && workDiff <= 3);
+            const isCustomReminderMatch = Array.isArray(virtualTask.reminders) && virtualTask.reminders.some(rem =>
+              rem > 0 && (rem === workDiff || rem === calDiff || reminderDate(targetDue, rem) === todayStr)
+            );
+            if (isWithinDday3 || isCustomReminderMatch) {
+              const key = `${r.id}_${targetDue}`;
+              if (!seenKeys.has(key)) {
+                seenKeys.add(key);
+                ddayAlerts.push({ task: virtualTask, daysLeft: workDiff > 0 ? workDiff : calDiff });
+              }
+            }
+          });
+        });
+
+        return ddayAlerts;
+      }
 
       function checkSmartAlerts() {
         const now = new Date();
@@ -16222,61 +16306,57 @@ function getRandomAppQuote() {
         const currentTimeMinutes = currentHours * 60 + currentMinutes;
 
         // [V1.0.1] 다중 일정표 전체 통합 일정 데이터 로드 (초경량 합산)
-        const { tasks: allTasks } = (typeof getAllStoresTasks === 'function') ? getAllStoresTasks() : { tasks: (data && data.tasks) || [] };
+        const { tasks: allTasks, recurrings: allRecurrings } = (typeof getAllStoresTasks === 'function')
+          ? getAllStoresTasks()
+          : { tasks: (data && data.tasks) || [], recurrings: (data && data.recurrings) || [] };
 
-        // [1] D-Day 3일 남은 일정 체크 (다중 일정표 전체 대상):
-        // 조건: 1) 앱 켜자마자 (세션 당 1회) 또는 2) 오후 1시 (13:00~13:59 중 당일 1회)
-        const isStartupDdayCheck = !ddayStartupCheckedInSession;
-        const is1pmDdayCheck = (currentHours === 13 && localStorage.getItem('dday1pmAlertDone_' + todayStr) !== 'true');
+        // 당일 전체 미완료 일정 (단일·기간·반복 일정 통합)
+        const todayActiveItems = getTodayScheduleItems().filter(t => isWork(t));
 
-        if (isStartupDdayCheck || is1pmDdayCheck) {
-          const ddayAlerts = [];
-          (allTasks || []).forEach(t => {
-            if (t.completed) return;
-            const due = t.dueDate || t.startDate;
-            if (!due || due <= todayStr) return;
-            const diffDays = daysBetween(todayStr, due);
-            // D-Day 3일 남은 일정 (또는 설정된 알림 일수)
-            if (diffDays === 3 || (t.reminders && t.reminders.includes(diffDays))) {
-              ddayAlerts.push({ task: t, daysLeft: diffDays });
+        // [1] [V1.0.6] 업무 시간대 정기 일일브리핑 재표출 (하루 4회: 11:00, 13:00, 15:00, 17:00)
+        // 컴퓨터 켜자마자 최초 1회 브리핑 이후, 당일 미완료 일정이 남아 있는 경우에만 4개 주요 시각에 재안내
+        let didOpenBriefingNow = false;
+        const briefingTargetHours = [11, 13, 15, 17];
+        if (currentMinutes >= 0 && currentMinutes <= 5 && briefingTargetHours.includes(currentHours)) {
+          const scheduledBriefingKey = `scheduledBriefingDone_${todayStr}_${currentHours}`;
+          if (localStorage.getItem(scheduledBriefingKey) !== 'true') {
+            localStorage.setItem(scheduledBriefingKey, 'true');
+            if (todayActiveItems.length > 0) {
+              openDailyBriefingModal(true);
+              didOpenBriefingNow = true;
             }
-          });
+          }
+        }
 
-          if (isStartupDdayCheck) {
-            ddayStartupCheckedInSession = true;
+        // [2] [V1.0.6] D-Day 3일 남은 일정 정기 팝업 (다중 일정표 전체 대상):
+        // 조건: 1) 오전 9시 (09:00~11:59 중 당일 1회) 및 2) 오후 1시 (13:00~14:59 중 당일 1회)
+        const is9amDdayCheck = (currentHours >= 9 && currentHours < 12 && localStorage.getItem('dday9amAlertDone_' + todayStr) !== 'true');
+        const is1pmDdayCheck = (currentHours >= 13 && currentHours < 15 && localStorage.getItem('dday1pmAlertDone_' + todayStr) !== 'true');
+
+        if (is9amDdayCheck || is1pmDdayCheck) {
+          if (is9amDdayCheck) {
+            localStorage.setItem('dday9amAlertDone_' + todayStr, 'true');
           }
           if (is1pmDdayCheck) {
             localStorage.setItem('dday1pmAlertDone_' + todayStr, 'true');
           }
 
+          const ddayAlerts = collectUpcomingDdayAlerts(todayStr, allTasks, allRecurrings);
           if (ddayAlerts.length > 0) {
-            const dModal = $('ddayAlertModal');
-            if (!dModal || !dModal.open) {
+            if (didOpenBriefingNow) {
+              // 13시 정각 등 일일브리핑과 동시에 뜰 때는 브리핑 창 오픈 직후 계단식(Cascade)으로 전면에 함께 표출
+              setTimeout(() => {
+                openDdayAlertModal(ddayAlerts);
+              }, 550);
+            } else {
               openDdayAlertModal(ddayAlerts);
             }
           }
         }
 
-        // [2] [V1.0.2] 업무 시간대 정기 브리핑 재표출 (하루 4회: 11:00, 13:00, 15:00, 17:00 정각)
-        // 컴퓨터 켜자마자 최초 1회 브리핑 이후, 당일 미완료 일정이 남아 있는 경우에만 4개 주요 시각에 부드럽게 재안내
-        const briefingTargetHours = [11, 13, 15, 17];
-        if (currentMinutes === 0 && briefingTargetHours.includes(currentHours)) {
-          const scheduledBriefingKey = `scheduledBriefingDone_${todayStr}_${currentHours}`;
-          if (localStorage.getItem(scheduledBriefingKey) !== 'true') {
-            localStorage.setItem(scheduledBriefingKey, 'true');
-            const uncompletedTodayTasks = (allTasks || []).filter(t => !t.completed && (t.startDate === todayStr || t.dueDate === todayStr));
-            if (uncompletedTodayTasks.length > 0) {
-              const bModal = $('dailyBriefingModal');
-              if (!bModal || !bModal.open) {
-                openDailyBriefingModal(true); // 강제 표출
-              }
-            }
-          }
-        }
-
-        // [3] [V1.0.2] 당일 일정 중 지정 시간 임박 알림 (사용자가 체크하거나 기록한 시간만 엄격 적용)
-        const todayTasks = (allTasks || []).filter(t => !t.completed && (t.startDate === todayStr || t.dueDate === todayStr) && !!t.time);
-        todayTasks.forEach(t => {
+        // [3] [V1.0.6] 당일 일정 중 지정 시간 임박 알림 (사용자가 체크하거나 기록한 시간만 엄격 적용)
+        const todayTimedTasks = todayActiveItems.filter(t => !!t.time);
+        todayTimedTasks.forEach(t => {
           const timeParts = t.time.split(':');
           if (timeParts.length < 2) return;
           const tH = parseInt(timeParts[0], 10);
@@ -17780,10 +17860,17 @@ function getRandomAppQuote() {
         setView('calendar');
         initDesktopWidgetControls();
 
-        // [V1.6.0] 스마트 알림 스케줄러: 최초 실행 브리핑 & 1분 주기 알림 검사
+        // [V1.0.6] 스마트 알림 스케줄러: 컴퓨터 부팅/앱 기동 시 즉시 브리핑 & 1분 주기 알림 검사
         setTimeout(() => {
-          openDailyBriefingModal(false);
-          checkSmartAlerts();
+          if (sessionStorage.getItem('startupBriefingShown_session') !== 'true') {
+            sessionStorage.setItem('startupBriefingShown_session', 'true');
+            openDailyBriefingModal(true);
+          } else {
+            openDailyBriefingModal(false);
+          }
+          setTimeout(() => {
+            checkSmartAlerts();
+          }, 600);
         }, 1200);
         setInterval(checkSmartAlerts, 60000);
       }
