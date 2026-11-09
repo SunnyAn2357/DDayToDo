@@ -1844,7 +1844,8 @@
       background: #ffffff;
     }
 
-    dialog#urgentAlertModal {
+    dialog#urgentAlertModal,
+    dialog#reminderAlertModal {
       width: 480px;
       max-width: calc(100vw - 24px);
       height: 440px;
@@ -1869,6 +1870,8 @@
       padding: 0;
       box-shadow: 0 25px 50px -10px rgba(79, 70, 229, 0.32);
     }
+
+    dialog#reminderAlertModal { border-color: #60a5fa; box-shadow: 0 25px 50px -10px rgba(37, 99, 235, 0.28); }
 
     /* [V1.0.4] 목록 탭 우측 일정 상세 미리보기 및 보고서 텍스트 자유 복사/블록 설정 허용 */
     #listDetailContent,
@@ -4464,7 +4467,8 @@
         height: 84vh !important;
         border-radius: 12px !important;
       }
-      dialog#urgentAlertModal {
+      dialog#urgentAlertModal,
+    dialog#reminderAlertModal {
         width: calc(100vw - 20px) !important;
         max-width: 440px !important;
         height: auto !important;
@@ -4746,6 +4750,7 @@
   <dialog id="urgentAlertModal" class="modal"><div id="urgentAlertContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="overtimeAlertModal" class="modal"><div id="overtimeAlertContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="ddayAlertModal" class="modal"><div id="ddayAlertContainer" style="width:100%; height:100%;"></div></dialog>
+  <dialog id="reminderAlertModal" class="modal"><div id="reminderAlertContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="storeModal"></dialog>
 
   
@@ -4781,7 +4786,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.6';
+      window.APP_VERSION = 'v1.0.7';
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -7709,7 +7714,7 @@
       function isWeekday(s) { const n = parseDate(s).getDay(); return n !== 0 && n !== 6; }
       function isWork(t) { return !t.isHoliday || t.holidayHasTask; }
 
-      function makeTask(date) { return { id: uid(), recurringId: null, recurrenceType: null, title: '', memo: '', time: '', location: '', startDate: date, dueDate: date, ddayMode: 'workday', dueTime: '', priority: 'normal', tags: [], completed: false, completedAt: null, completedDate: '', recurrence: 'none', isLunar: false, reminders: [0], hourReminders: [120, 60], isHoliday: false, holidayHasTask: false, createdAt: iso(), updatedAt: iso() }; }
+      function makeTask(date) { return { id: uid(), recurringId: null, recurrenceType: null, title: '', memo: '', time: '', location: '', startDate: date, dueDate: date, ddayMode: 'workday', dueTime: '', priority: 'normal', tags: [], completed: false, completedAt: null, completedDate: '', recurrence: 'none', isLunar: false, reminders: [0], sameDayAlert: false, hourReminders: [120, 60], isHoliday: false, holidayHasTask: false, createdAt: iso(), updatedAt: iso() }; }
       function blank() { return { version: 2, tasks: [], recurrings: [], notifications: [], settings: { holidays: [], firedReminders: [], importMode: 'merge', desktopNotifications: false }, updatedAt: iso() }; }
       function completionDate(t) { if (validDate(t.completedDate)) return t.completedDate; if (validDate(t.completedAt)) return t.completedAt; if (t.completedAt && typeof t.completedAt === 'string') { const d = new Date(t.completedAt); if (!isNaN(d)) return dateStr(d); } return ''; }
 
@@ -7733,6 +7738,7 @@
           recurrence: (['weekly', 'monthly', 'yearly'].includes(r.recurrence) || (!isNaN(Number(r.recurrence)) && Number(r.recurrence) > 0)) ? r.recurrence : 'weekly',
           isLunar: !!r.isLunar,
           reminders: Array.isArray(r.reminders) ? [...new Set([0, ...r.reminders.map(Number)])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b) : [0, 3],
+          sameDayAlert: !!r.sameDayAlert,
           hourReminders: Array.isArray(r.hourReminders) ? [...new Set(r.hourReminders.map(Number))].filter(n => !isNaN(n) && n > 0).sort((a, b) => b - a) : [120, 60],
           isHoliday: !!r.isHoliday,
           holidayHasTask: !!r.holidayHasTask,
@@ -7760,6 +7766,7 @@
                 recurrence: ['weekly', 'monthly', 'yearly'].includes(r.recurrence) ? r.recurrence : 'weekly',
                 isLunar: !!r.isLunar,
                 reminders: Array.isArray(r.reminders) ? [...new Set([0, ...r.reminders.map(Number)])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b) : [0, 3],
+          sameDayAlert: !!r.sameDayAlert,
           hourReminders: Array.isArray(r.hourReminders) ? [...new Set(r.hourReminders.map(Number))].filter(n => !isNaN(n) && n > 0).sort((a, b) => b - a) : [120, 60],
                 isHoliday: !!r.isHoliday,
                 holidayHasTask: !!r.holidayHasTask,
@@ -7790,6 +7797,7 @@
           t.recurrence = 'none';
           const rem = r.reminders === undefined ? [0, 3] : r.reminders;
           t.reminders = [...new Set([0, ...rem.map(Number)])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b);
+          t.sameDayAlert = !!r.sameDayAlert;
           t.hourReminders = Array.isArray(r.hourReminders) ? [...new Set(r.hourReminders.map(Number))].filter(n => !isNaN(n) && n > 0).sort((a, b) => b - a) : [120, 60];
           t.completed = !!r.completed; t.completedDate = t.completed ? completionDate(r) : ''; t.completedAt = t.completed ? (r.completedAt || null) : null;
           t.isHoliday = !!r.isHoliday; t.holidayHasTask = t.isHoliday && !!r.holidayHasTask;
@@ -7960,6 +7968,7 @@
                 completedDate: '',
                 isLunar: !!rule.isLunar,
                 reminders: [...(rule.reminders || [0])],
+                sameDayAlert: !!rule.sameDayAlert,
                 isHoliday: !!rule.isHoliday,
                 holidayHasTask: !!rule.holidayHasTask,
                 createdAt: iso(),
@@ -9470,6 +9479,7 @@
                 <div class="options-card" style="display:flex; flex-direction:column; gap:8px; align-items:stretch; padding:8px 12px; box-sizing:border-box;">
                   <!-- 1행: 일자별 알림 -->
                   <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <label class="options-chip"><input type="checkbox" class="rem-today-check" ${editTarget.sameDayAlert ? 'checked' : ''}> 당일</label>
                     <label class="options-chip"><input type="checkbox" class="rem-check" value="3" ${(editTarget.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
                     <label class="options-chip"><input type="checkbox" class="rem-check" value="5" ${(editTarget.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
                     <label class="options-chip"><input type="checkbox" id="modalCustomRemCheck" ${customRemVal ? 'checked' : ''}> 기타</label>
@@ -9554,7 +9564,7 @@
             memoDiv.contentEditable = !isPureHoliday;
           }
           document.querySelectorAll('#editor input[name="modalDdayMode"]').forEach(el => el.disabled = isPureHoliday);
-          document.querySelectorAll('#editor .rem-check').forEach(el => el.disabled = isPureHoliday);
+          document.querySelectorAll('#editor .rem-check, #editor .rem-today-check').forEach(el => el.disabled = isPureHoliday);
           document.querySelectorAll('#editor .rec-check').forEach(el => el.disabled = isPureHoliday);
 
           ['fieldMemo', 'memoMdToolbar', 'fieldTags', 'fieldPriority', 'fieldDdayMode', 'fieldDateRange', 'fieldReminders', 'fieldRecurrence', 'fieldCompletion'].forEach(id => {
@@ -9789,6 +9799,7 @@
               ? customRem.value.split(',').map(x => x.trim()).filter(Boolean).map(Number)
               : [];
             editTarget.reminders = [...new Set([0, ...rems, ...c])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b);
+            editTarget.sameDayAlert = !!(document.querySelector('#editor .rem-today-check') && document.querySelector('#editor .rem-today-check').checked);
 
             // [V1.6.0] 시간별 당일 알림 주기 수집
             let hourRems = [...document.querySelectorAll('#editor .rem-hour-check:checked')].map(x => +x.value);
@@ -9831,6 +9842,7 @@
                 recurrence: rec,
                 isLunar: !!editTarget.isLunar,
                 reminders: [...editTarget.reminders],
+                sameDayAlert: !!editTarget.sameDayAlert,
                 isHoliday: !!editTarget.isHoliday,
                 holidayHasTask: !!editTarget.holidayHasTask,
                 deletedDates: [],
@@ -9850,6 +9862,7 @@
               rule.recurrence = rec;
               rule.isLunar = !!editTarget.isLunar;
               rule.reminders = [...editTarget.reminders];
+            rule.sameDayAlert = !!editTarget.sameDayAlert;
               rule.isHoliday = !!editTarget.isHoliday;
               rule.holidayHasTask = !!editTarget.holidayHasTask;
               rule.updatedAt = iso();
@@ -10283,6 +10296,7 @@
                 <div class="options-card" style="display:flex; flex-direction:column; gap:8px; align-items:stretch; padding:8px 12px; box-sizing:border-box;">
                   <!-- 1행: 일자별 알림 -->
                   <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <label class="options-chip"><input type="checkbox" class="rem-today-check" ${editingRule.sameDayAlert ? 'checked' : ''}> 당일</label>
                     <label class="options-chip"><input type="checkbox" class="rem-check" value="3" ${(editingRule.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
                     <label class="options-chip"><input type="checkbox" class="rem-check" value="5" ${(editingRule.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
                     <label class="options-chip"><input type="checkbox" id="recModalCustomRemCheck" ${customRemVal ? 'checked' : ''}> 기타</label>
@@ -10472,6 +10486,7 @@
               ? recCustomRem.value.split(',').map(x => x.trim()).filter(Boolean).map(Number)
               : [];
             r.reminders = [...new Set([0, ...rems, ...c])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b);
+            r.sameDayAlert = !!(document.querySelector('#editor .rem-today-check') && document.querySelector('#editor .rem-today-check').checked);
             let recHourRems = [...document.querySelectorAll('#editor .rec-rem-hour-check:checked')].map(x => +x.value);
             let recCh = (recCustomHourRemCheck && recCustomHourRemCheck.checked && recCustomHourRem)
               ? recCustomHourRem.value.split(',').map(x => x.trim()).filter(Boolean).map(val => {
@@ -10757,7 +10772,7 @@
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.6</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.7</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -15688,7 +15703,7 @@ function getRandomAppQuote() {
       var btn = e.target.closest('[data-action]');
       if (!btn) return;
       var action = btn.getAttribute('data-action');
-      if (action === 'closeDailyBriefingModal' || action === 'closeUrgentAlertModal' || action === 'closeOvertimeAlertModal' || action === 'closeDdayAlertModal' || action === 'closeAlert' || action === 'closeAlertModal') {
+      if (action === 'closeDailyBriefingModal' || action === 'closeUrgentAlertModal' || action === 'closeOvertimeAlertModal' || action === 'closeReminderAlertModal' || action === 'closeDdayAlertModal' || action === 'closeAlert' || action === 'closeAlertModal') {
         postAlertAction('closeAlertModal');
       } else if (action === 'openDetailFromBriefing') {
         var taskId = btn.getAttribute('data-id');
@@ -16015,7 +16030,7 @@ function getRandomAppQuote() {
           const fullHtml = buildIndependentAlertHtml(`⏰ 일정 시작 ${timeLabel} 안내`, container.innerHTML, [task]);
           window.chrome.webview.postMessage(JSON.stringify({
             type: 'openIndependentAlert',
-            alertType: 'urgent',
+            alertType: 'urgent_' + safeWindowKey(task.id) + '_' + minutesBefore,
             title: `⏰ 일정 시작 ${timeLabel} 안내`,
             html: fullHtml,
             width: 520,
@@ -16219,6 +16234,161 @@ function getRandomAppQuote() {
         }
       }
 
+      /* =====================================================================
+       * [V1.0.7] 일정별 '며칠 전 알림' 개별 팝업 (임박 알림처럼 일정마다 별도 창)
+       * - 표시 시각: 앱 기동 시 / 오전 9시 / 오후 1시 (D-Day 3일 예고와 함께)
+       * - 기준: 일정의 D-Day 기준(근무일/달력일)과 동일, 당일(0일)은 사용자가 '당일'을 체크한 경우에만
+       * ===================================================================== */
+      const reminderAlertQueue = [];
+      let noticeStartupDoneInSession = false;
+
+      function noticeKeyOf(task) {
+        return task && task.isRecurring ? `${task.id}_${task.dueDate}` : String(task && task.id);
+      }
+
+      function safeWindowKey(v) {
+        return String(v == null ? '' : v).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40);
+      }
+
+      function showNextReminderInBrowser() {
+        const modal = $('reminderAlertModal');
+        const container = $('reminderAlertContainer');
+        if (!modal || !container || modal.open || !reminderAlertQueue.length) return;
+        container.innerHTML = reminderAlertQueue.shift();
+        modal.showModal();
+        makeModalDraggable(modal, '.briefing-drag-header');
+      }
+
+      function openReminderAlertModal(task, daysBefore, playSound = true) {
+        const modal = $('reminderAlertModal');
+        const container = $('reminderAlertContainer');
+        if (!modal || !container || !task) return;
+
+        const due = task.dueDate || task.startDate || today();
+        const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+        const dueLabel = `${due} (${dayNames[parseDate(due).getDay()]})`;
+        const ddayLabel = daysBefore === 0 ? '오늘 마감' : `D-${daysBefore}`;
+        const headLabel = daysBefore === 0 ? '당일 알림' : `${daysBefore}일 전 알림`;
+
+        const html = `
+          <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box;">
+            <!-- 상단 블루 소프트 배너 -->
+            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-bottom:1px solid #bfdbfe; padding:18px 20px 14px; flex-shrink:0; cursor:move; user-select:none;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span style="display:inline-flex; align-items:center; gap:5px; background:#1d4ed8; color:#ffffff; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:20px; white-space:nowrap;">
+                  📅 일정 ${headLabel}
+                </span>
+                <span style="font-size:12px; font-weight:700; color:#1d4ed8;">${today()}</span>
+              </div>
+              <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;">
+                <span style="font-size:26px; font-weight:800; color:#1e3a8a; font-feature-settings:'tnum';">${ddayLabel}</span>
+                <span style="font-size:13px; font-weight:700; color:#1d4ed8;">마감 ${dueLabel}${task.time ? ' ' + esc(task.time) : ''}</span>
+              </div>
+            </div>
+
+            <!-- 일정 정보 -->
+            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:16px 20px; gap:10px; background:#ffffff; box-sizing:border-box;">
+              <div style="font-size:17px; font-weight:800; color:#0f172a; line-height:1.45; word-break:break-all;">
+                ${esc(task.title)}
+              </div>
+              ${task.location ? `
+                <div style="display:inline-flex; align-items:center; gap:5px; background:#f1f5f9; border:1px solid #cbd5e1; padding:4px 10px; border-radius:6px; font-size:12.5px; font-weight:600; color:#334155; align-self:flex-start;">
+                  <span>📍 장소:</span> <span>${esc(task.location)}</span>
+                </div>
+              ` : ''}
+              ${task.memo ? `
+                <div style="background:#f8fafc; border-left:3px solid #3b82f6; padding:8px 12px; font-size:12px; color:#475569; line-height:1.55; border-radius:0 6px 6px 0; max-height:90px; overflow-y:auto; word-break:break-all;">
+                  ${esc(task.memo.slice(0, 160))}${task.memo.length > 160 ? '...' : ''}
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- 하단 버튼 -->
+            <div class="modal-foot" style="padding:10px 16px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+              <button type="button" class="btn" data-action="openDetailFromBriefing" data-id="${task.id}" style="height:32px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:10px; cursor:pointer;">상세보기</button>
+              <button type="button" class="btn primary" data-action="closeReminderAlertModal" style="height:32px; font-size:12.5px; padding:0 22px; font-weight:700; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(79,70,229,0.28); cursor:pointer;">확인</button>
+            </div>
+          </div>
+        `;
+
+        if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
+          if (playSound) playChimeSound();
+          const fullHtml = buildIndependentAlertHtml(`📅 일정 ${headLabel}`, html, [task]);
+          window.chrome.webview.postMessage(JSON.stringify({
+            type: 'openIndependentAlert',
+            alertType: `reminder_${safeWindowKey(task.id)}_${daysBefore}`,
+            title: `📅 일정 ${headLabel}`,
+            html: fullHtml,
+            width: 520,
+            height: 420
+          }));
+        } else {
+          if (playSound) playChimeSound();
+          reminderAlertQueue.push(html);
+          showNextReminderInBrowser();
+        }
+      }
+
+      function collectReminderAlerts(todayStr, allTasks, allRecurrings) {
+        const out = [];
+        const seen = new Set();
+        const todayIsWorkday = isWeekday(todayStr) && !(typeof holidayCache !== 'undefined' && holidayCache && holidayCache.has(todayStr));
+
+        const evaluate = (t) => {
+          if (!t || t.completed || !isWork(t)) return;
+          const due = t.dueDate || t.startDate;
+          if (!due || due < todayStr) return;
+          const isCalendar = t.ddayMode === 'calendar';
+          const hits = new Set();
+          (Array.isArray(t.reminders) ? t.reminders : []).forEach(raw => {
+            const n = Number(raw);
+            if (isNaN(n) || n < 0) return;
+            if (n === 0) {
+              // 당일 알림은 사용자가 '당일'을 직접 체크한 일정만
+              if (t.sameDayAlert === true && due === todayStr) hits.add(0);
+              return;
+            }
+            const matched = isCalendar
+              ? daysBetween(todayStr, due) === n
+              : (todayIsWorkday && taskWorkdays(t, todayStr) === n);
+            if (matched) hits.add(n);
+          });
+          hits.forEach(n => {
+            const key = `${noticeKeyOf(t)}_${n}`;
+            if (seen.has(key)) return;
+            seen.add(key);
+            out.push({ task: t, daysLeft: n, key: noticeKeyOf(t) });
+          });
+        };
+
+        (allTasks || []).forEach(evaluate);
+
+        // 아직 개별 일정으로 생성되지 않은 반복 일정(앞으로 14일 이내 도래분)도 동일하게 판정
+        const lookAheadEnd = addDays(todayStr, 14);
+        (allRecurrings || []).forEach(r => {
+          if (!r || !isWork(r)) return;
+          const dates = getDatesForRule(r, todayStr, lookAheadEnd);
+          const deleted = new Set(r.deletedDates || []);
+          const span = Math.max(0, dayDistance(r.startDate || r.dueDate, r.dueDate || r.startDate));
+          dates.forEach(dStr => {
+            if (deleted.has(dStr)) return;
+            const targetDue = span > 0 ? addDays(dStr, span) : dStr;
+            if (targetDue < todayStr) return;
+            const materialized = (allTasks || []).some(t => t.recurringId === r.id && (t.dueDate === targetDue || t.startDate === dStr));
+            if (materialized) return;
+            evaluate({
+              id: r.id, title: r.title, time: r.time || '', location: r.location || '', memo: r.memo || '',
+              tags: r.tags || [], startDate: dStr, dueDate: targetDue, ddayMode: r.ddayMode || 'workday',
+              priority: r.priority || 'normal', reminders: Array.isArray(r.reminders) ? r.reminders : [0],
+              sameDayAlert: !!r.sameDayAlert, isHoliday: !!r.isHoliday, holidayHasTask: !!r.holidayHasTask,
+              isRecurring: true
+            });
+          });
+        });
+
+        return out;
+      }
+
       const triggeredAlertsInSession = new Set();
       const snoozedAlerts = {};
 
@@ -16328,32 +16498,40 @@ function getRandomAppQuote() {
           }
         }
 
-        // [2] [V1.0.6] D-Day 3일 남은 일정 정기 팝업 (다중 일정표 전체 대상):
-        // 조건: 1) 오전 9시 (09:00~11:59 중 당일 1회) 및 2) 오후 1시 (13:00~14:59 중 당일 1회)
-        const is9amDdayCheck = (currentHours >= 9 && currentHours < 12 && localStorage.getItem('dday9amAlertDone_' + todayStr) !== 'true');
-        const is1pmDdayCheck = (currentHours >= 13 && currentHours < 15 && localStorage.getItem('dday1pmAlertDone_' + todayStr) !== 'true');
+        // [2] [V1.0.7] D-Day 3일 예고 + 일정별 며칠 전 알림 팝업: 앱 기동 시 / 오전 9시 / 오후 1시
+        // (오전 9시: 09~11시대 당일 1회, 오후 1시: 13~14시대 당일 1회, 직전 20분 내 표출했으면 중복 표출 생략)
+        const isStartupNotice = !noticeStartupDoneInSession;
+        const is9amNotice = (currentHours >= 9 && currentHours < 12 && localStorage.getItem('dday9amAlertDone_' + todayStr) !== 'true');
+        const is1pmNotice = (currentHours >= 13 && currentHours < 15 && localStorage.getItem('dday1pmAlertDone_' + todayStr) !== 'true');
 
-        if (is9amDdayCheck || is1pmDdayCheck) {
-          if (is9amDdayCheck) {
-            localStorage.setItem('dday9amAlertDone_' + todayStr, 'true');
-          }
-          if (is1pmDdayCheck) {
-            localStorage.setItem('dday1pmAlertDone_' + todayStr, 'true');
-          }
+        if (isStartupNotice || is9amNotice || is1pmNotice) {
+          noticeStartupDoneInSession = true;
+          if (is9amNotice) localStorage.setItem('dday9amAlertDone_' + todayStr, 'true');
+          if (is1pmNotice) localStorage.setItem('dday1pmAlertDone_' + todayStr, 'true');
 
-          const ddayAlerts = collectUpcomingDdayAlerts(todayStr, allTasks, allRecurrings);
-          if (ddayAlerts.length > 0) {
-            if (didOpenBriefingNow) {
-              // 13시 정각 등 일일브리핑과 동시에 뜰 때는 브리핑 창 오픈 직후 계단식(Cascade)으로 전면에 함께 표출
-              setTimeout(() => {
-                openDdayAlertModal(ddayAlerts);
-              }, 550);
-            } else {
-              openDdayAlertModal(ddayAlerts);
+          const lastBatchAt = parseInt(localStorage.getItem('noticeBatchLastAt') || '0', 10);
+          const recentlyShown = (Date.now() - lastBatchAt) < 20 * 60 * 1000;
+
+          if (!recentlyShown) {
+            const reminderAlerts = collectReminderAlerts(todayStr, allTasks, allRecurrings);
+            const reminderKeys = new Set(reminderAlerts.map(a => a.key));
+            // D-Day 묶음 팝업은 D-3 이내만, 개별 며칠 전 알림이 뜨는 일정은 중복 표출하지 않음
+            const ddayAlerts = collectUpcomingDdayAlerts(todayStr, allTasks, allRecurrings)
+              .filter(a => a.daysLeft >= 1 && a.daysLeft <= 3 && !reminderKeys.has(noticeKeyOf(a.task)));
+
+            if (ddayAlerts.length > 0 || reminderAlerts.length > 0) {
+              localStorage.setItem('noticeBatchLastAt', String(Date.now()));
+              let delay = didOpenBriefingNow ? 550 : 0;
+              if (ddayAlerts.length > 0) {
+                setTimeout(() => openDdayAlertModal(ddayAlerts), delay);
+                delay += 550;
+              }
+              reminderAlerts.forEach((a, i) => {
+                setTimeout(() => openReminderAlertModal(a.task, a.daysLeft, i === 0 && ddayAlerts.length === 0), delay + i * 350);
+              });
             }
           }
         }
-
         // [3] [V1.0.6] 당일 일정 중 지정 시간 임박 알림 (사용자가 체크하거나 기록한 시간만 엄격 적용)
         const todayTimedTasks = todayActiveItems.filter(t => !!t.time);
         todayTimedTasks.forEach(t => {
@@ -17033,6 +17211,10 @@ function getRandomAppQuote() {
           if ($('overtimeAlertModal') && $('overtimeAlertModal').open) $('overtimeAlertModal').close();
           openDailyBriefingModal(true);
         }
+        else if (a === 'closeReminderAlertModal') {
+          if ($('reminderAlertModal') && $('reminderAlertModal').open) $('reminderAlertModal').close();
+          releaseDesktopTopmost();
+        }
         else if (a === 'closeDdayAlertModal') {
           if ($('ddayAlertModal') && $('ddayAlertModal').open) $('ddayAlertModal').close();
           releaseDesktopTopmost();
@@ -17618,6 +17800,8 @@ function getRandomAppQuote() {
         $('dailyBriefingModal')?.addEventListener('cancel', () => {});
         $('urgentAlertModal')?.addEventListener('cancel', () => {});
         $('ddayAlertModal')?.addEventListener('cancel', () => {});
+        $('reminderAlertModal')?.addEventListener('cancel', () => {});
+        $('reminderAlertModal')?.addEventListener('close', () => { setTimeout(showNextReminderInBrowser, 150); });
 
         /* [V1.3.3] 키보드 단축키 지원 및 계층형 ESC 방어 */
         document.addEventListener('keydown', e => {
@@ -17633,6 +17817,7 @@ function getRandomAppQuote() {
             const isUrgentOpen = $('urgentAlertModal') && $('urgentAlertModal').open;
             const isBriefingOpen = $('dailyBriefingModal') && $('dailyBriefingModal').open;
             const isDdayAlertOpen = $('ddayAlertModal') && $('ddayAlertModal').open;
+            const isReminderOpen = $('reminderAlertModal') && $('reminderAlertModal').open;
             const isStoreModalOpen = $('storeModal') && $('storeModal').open;
             const isReportModalOpen = $('reportModal') && $('reportModal').open;
             const isEditorOpen = $('editor') && $('editor').open;
@@ -17666,6 +17851,11 @@ function getRandomAppQuote() {
               return;
             }
 
+            if (isReminderOpen) {
+              e.preventDefault();
+              $('reminderAlertModal').close();
+              return;
+            }
             if (isUrgentOpen) {
               e.preventDefault();
               $('urgentAlertModal').close();
@@ -17723,6 +17913,7 @@ function getRandomAppQuote() {
                                ($('urgentAlertModal') && $('urgentAlertModal').open) ||
                                ($('dailyBriefingModal') && $('dailyBriefingModal').open) ||
                                ($('ddayAlertModal') && $('ddayAlertModal').open) ||
+                               ($('reminderAlertModal') && $('reminderAlertModal').open) ||
                                ($('storeModal') && $('storeModal').open) ||
                                ($('reportModal') && $('reportModal').open) ||
                                ($('editor') && $('editor').open) ||
