@@ -1,0 +1,38 @@
+# ==========================================
+# DDayToDo Online PWA - Git Ignore Rules
+# 웹앱 실행에 불필요한 모든 파일 원천 차단
+# ==========================================
+
+# 1. 백업 및 사용자 데이터 파일
+*.bak
+*.dday
+*.old
+*.backup
+*.tmp
+*.log
+
+# 2. 프로젝트 관리 및 개발 문서
+*.md
+*.txt
+*.pdf
+*.docx
+
+# 3. 로컬 스크립트 및 설정 파일
+*.bat
+*.cmd
+*.ps1
+*.iss
+*.json.bak
+
+# 4. OS 및 IDE 임시 파일
+Thumbs.db
+.DS_Store
+.vscode/
+.idea/
+
+# 5. 사내 보안 인증 및 라이선스 파일 (절대 유출 방지)
+*.pfx
+*.cer
+*.crt
+*.key
+*.ads_cert

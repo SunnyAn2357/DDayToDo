@@ -4786,7 +4786,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.8';
+      window.APP_VERSION = 'v1.0.9';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -7658,7 +7658,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             if (!block || block === editorEl) {
               const newDiv = document.createElement('div');
               newDiv.innerHTML = '<br>';
-              editorEl.appendChild(newDiv);
+              if (!editorEl.querySelector('div, h1, h2, h3, p, img, a') && !(editorEl.textContent || '').trim()) { editorEl.innerHTML = '<div><br></div>'; } editorEl.appendChild(newDiv);
               const r = document.createRange();
               r.setStart(newDiv, 0);
               r.collapse(true);
@@ -7673,7 +7673,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             const afterRange = document.createRange();
             afterRange.setStart(range.endContainer, range.endOffset);
             afterRange.setEnd(block, block.childNodes.length);
-            const afterContent = afterRange.extractContents();
+            const afterContent = afterRange.extractContents(); afterContent.querySelectorAll('a, span, strong, em, b, i, u, del, mark, font, code').forEach(function (el) { if (!el.textContent) el.remove(); });
 
             // 만약 현재 블록 앞부분이 비었으면 <br> 넣어주기
             if (!block.textContent && !block.querySelector('img, a, br')) {
@@ -7682,7 +7682,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
             // 새 줄 생성 (H 태그였든, 스타일 span이 있었든 다음 줄은 무조건 일반 div!)
             const nextDiv = document.createElement('div');
-            if (afterContent.textContent || afterContent.querySelector('img, a')) {
+            if (afterContent.textContent || afterContent.querySelector('img')) {
               nextDiv.appendChild(afterContent);
             } else {
               nextDiv.innerHTML = '<br>';
@@ -10773,7 +10773,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.8</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.9</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -18064,7 +18064,35 @@ function getRandomAppQuote() {
             checkSmartAlerts();
           }, 600);
         }, 1200);
-        setInterval(checkSmartAlerts, 60000);
+        (function () {
+        var lastTap = { date: '', t: 0 }, lastOpenAt = 0;
+        function openNewForDay(day) {
+          if (!day || !day.dataset || !day.dataset.date) return;
+          if (Date.now() - lastOpenAt < 700) return;
+          if (document.querySelector('dialog[open]')) return;
+          lastOpenAt = Date.now();
+          ui.selected = day.dataset.date;
+          renderCalendar();
+          renderSide();
+          openEditor();
+        }
+        function dayOf(e) {
+          var el = e.target && e.target.closest ? e.target : null;
+          if (!el) return null;
+          if (el.closest('.chip, .period-track-row, button, a, input, select, textarea, [data-action]:not([data-action="select"])')) return null;
+          return el.closest('.day[data-date]');
+        }
+        document.addEventListener('dblclick', function (e) { openNewForDay(dayOf(e)); });
+        document.addEventListener('pointerup', function (e) {
+          if (e.pointerType !== 'touch') return;
+          var day = dayOf(e);
+          if (!day) return;
+          var d = day.dataset.date, now = Date.now();
+          if (lastTap.date === d && now - lastTap.t < 380) { lastTap = { date: '', t: 0 }; openNewForDay(day); }
+          else { lastTap = { date: d, t: now }; }
+        });
+      })();
+      setInterval(checkSmartAlerts, 60000);
       }
 
       init();
