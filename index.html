@@ -4786,7 +4786,8 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.7';
+      window.APP_VERSION = 'v1.0.8';
+window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
         '%c[D-Day 일정관리] ' + window.APP_VERSION + ' (' + window.APP_MODE + ')',
@@ -6737,7 +6738,7 @@
           .replace(/'/g, '&#39;');
 
         // 0. 스마트 링크: [text](url 또는 로컬 폴더/파일 경로 - 공백 포함 경로 지원)
-        s = s.replace(/\[([^\]]+?)\]\(([^)\n]+)\)/g, (m, txt, url) => {
+        s = s.replace(/\[([^\]]+?)\]\(((?:[^()\n]|\([^()\n]*\))+)\)/g, (m, txt, url) => {
           const rawDecoded = url.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
           const cleanUrl = normalizeSmartLinkUrl(rawDecoded);
           const safeAttr = esc(cleanUrl);
@@ -8670,7 +8671,7 @@
             const priClass = isHol ? 'pri-holiday' : `pri-${t.priority || 'normal'}`;
             const checkPrefix = t.completed ? '✓ ' : '';
             const prefixTags = renderTaskPrefixTags(t);
-            html += `<div class="chip ${priClass} ${t.completed ? 'done' : ''}" data-action="edit" data-id="${t.id}" title="${esc(t.title)}" style="${t.titleColor ? `color:${t.titleColor} !important;` : ''}">${checkPrefix}${prefixTags}${esc(t.title)}</div>`;
+            html += `<div class="chip ${priClass} ${t.completed ? 'done' : ''}" data-action="edit" data-id="${t.id}" title="${esc(window.chipLabel(t))}" style="${t.titleColor ? `color:${t.titleColor} !important;` : ''}">${checkPrefix}${prefixTags}${esc(window.chipLabel(t))}</div>`;
             renderedCount++;
           });
 
@@ -10772,7 +10773,7 @@
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.7</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.8</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -16554,7 +16555,7 @@ function getRandomAppQuote() {
           hourRems.forEach(m => {
             const key = `urgent_${t.id}_${m}_${todayStr}`;
             const snoozeUntil = snoozedAlerts[key] || 0;
-            if (Date.now() < snoozeUntil) return;
+            if (Date.now() < snoozeUntil) return; window.__snoozeFired = window.__snoozeFired || {}; if (snoozeUntil > 0 && diffMin >= 0 && window.__snoozeFired[key] !== snoozeUntil) { window.__snoozeFired[key] = snoozeUntil; openUrgentAlertModal(t, m); return; }
 
             if (Math.abs(diffMin - m) <= 1 && !triggeredAlertsInSession.has(key)) {
               triggeredAlertsInSession.add(key);
