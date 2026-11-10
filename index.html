@@ -4786,7 +4786,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.9';
+      window.APP_VERSION = 'v1.0.10';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -10773,7 +10773,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.9</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.10</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -18083,6 +18083,7 @@ function getRandomAppQuote() {
           return el.closest('.day[data-date]');
         }
         document.addEventListener('dblclick', function (e) { openNewForDay(dayOf(e)); });
+        document.addEventListener('click', function (e) { if (e.detail !== 2) return; var day = dayOf(e); if (day) setTimeout(function () { openNewForDay(day); }, 0); }, true);
         document.addEventListener('pointerup', function (e) {
           if (e.pointerType !== 'touch') return;
           var day = dayOf(e);
