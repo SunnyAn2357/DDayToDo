@@ -1915,6 +1915,8 @@
     }
 
     .modal-fixed-top {
+      position: relative;
+      z-index: 20;
       flex-shrink: 0;
       background: #ffffff;
       box-sizing: border-box;
@@ -4786,7 +4788,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.10';
+      window.APP_VERSION = 'v1.0.11';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -9419,7 +9421,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <!-- 2-1. 내용 라벨 및 툴바 (왼쪽 정렬 배치) -->
               <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:2px;">
                 <label style="margin:0; font-size:12px; font-weight:600; color:#475569;">내용</label>
-                <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; overflow-x:auto;">
+                <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; flex-wrap:wrap;">
                   ${renderMarkdownToolbar('')}
                 </div>
               </div>
@@ -10237,7 +10239,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <!-- 2-1. 내용 라벨 및 툴바 (왼쪽 정렬 배치) -->
               <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:2px;">
                 <label style="margin:0; font-size:12px; font-weight:600; color:#475569;">내용</label>
-                <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; overflow-x:auto;">
+                <div style="display:flex; justify-content:flex-start; align-items:center; gap:8px; flex-wrap:wrap;">
                   ${renderMarkdownToolbar('rec')}
                 </div>
               </div>
@@ -10773,7 +10775,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.10</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.11</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
