@@ -4796,7 +4796,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.12';
+      window.APP_VERSION = 'v1.0.13';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -6201,9 +6201,112 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
        *   사용자 지정 공휴일은 일정의 isHoliday 항목으로 별도 관리됩니다(rebuildHolidays 참고).
        * ===================================================================== */
 
-      const BUILTIN_HOLIDAYS = { "2024-01-01": "신정", "2024-03-01": "삼일절", "2024-05-05": "어린이날", "2024-06-06": "현충일", "2024-08-15": "광복절", "2024-10-03": "개천절", "2024-10-09": "한글날", "2024-12-25": "성탄절", "2024-05-15": "부처님오신날", "2024-02-09": "설날연휴", "2024-02-10": "설날", "2024-02-11": "설날연휴", "2024-09-16": "추석연휴", "2024-09-17": "추석", "2024-09-18": "추석연휴", "2024-04-10": "국회의원선거", "2024-10-01": "국군의날", "2024-05-06": "대체(어린이날)", "2024-02-12": "대체(설날)", "2025-01-01": "신정", "2025-03-01": "삼일절", "2025-05-05": "부처님오신날", "2025-06-06": "현충일", "2025-08-15": "광복절", "2025-10-03": "개천절", "2025-10-09": "한글날", "2025-12-25": "성탄절", "2025-01-28": "설날연휴", "2025-01-29": "설날", "2025-01-30": "설날연휴", "2025-10-05": "추석연휴", "2025-10-06": "추석", "2025-10-07": "추석연휴", "2025-03-03": "대체(삼일절)", "2025-10-08": "대체(추석)", "2026-01-01": "신정", "2026-03-01": "삼일절", "2026-05-05": "어린이날", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-10-03": "개천절", "2026-10-09": "한글날", "2026-12-25": "성탄절", "2026-05-24": "부처님오신날", "2026-02-16": "설날연휴", "2026-02-17": "설날", "2026-02-18": "설날연휴", "2026-09-24": "추석연휴", "2026-09-25": "추석", "2026-09-26": "추석연휴", "2026-06-03": "지방선거", "2026-03-02": "대체(삼일절)", "2026-08-17": "대체(광복절)", "2026-10-05": "대체(개천절)", "2026-05-25": "대체(부처님오신날)", "2027-01-01": "신정", "2027-03-01": "삼일절", "2027-05-05": "어린이날", "2027-06-06": "현충일", "2027-08-15": "광복절", "2027-10-03": "개천절", "2027-10-09": "한글날", "2027-12-25": "성탄절", "2027-05-13": "부처님오신날", "2027-02-06": "설날연휴", "2027-02-07": "설날", "2027-02-08": "설날연휴", "2027-09-14": "추석연휴", "2027-09-15": "추석", "2027-09-16": "추석연휴", "2027-03-03": "대통령선거", "2027-08-16": "대체(광복절)", "2027-10-04": "대체(개천절)", "2027-10-11": "대체(한글날)", "2027-12-27": "대체(성탄절)", "2027-02-09": "대체(설날)", "2028-01-01": "신정", "2028-03-01": "삼일절", "2028-05-05": "어린이날", "2028-06-06": "현충일", "2028-08-15": "광복절", "2028-10-03": "추석", "2028-10-09": "한글날", "2028-12-25": "성탄절", "2028-05-02": "부처님오신날", "2028-01-26": "설날연휴", "2028-01-27": "설날", "2028-01-28": "설날연휴", "2028-10-02": "추석연휴", "2028-10-04": "추석연휴", "2028-04-12": "국회의원선거", "2029-01-01": "신정", "2029-03-01": "삼일절", "2029-05-05": "어린이날", "2029-06-06": "현충일", "2029-08-15": "광복절", "2029-10-03": "개천절", "2029-10-09": "한글날", "2029-12-25": "성탄절", "2029-05-20": "부처님오신날", "2029-02-12": "설날연휴", "2029-02-13": "설날", "2029-02-14": "설날연휴", "2029-09-21": "추석연휴", "2029-09-22": "추석", "2029-09-23": "추석연휴", "2029-05-07": "대체(어린이날)", "2029-05-21": "대체(부처님오신날)", "2029-09-24": "대체(추석)", "2030-01-01": "신정", "2030-03-01": "삼일절", "2030-05-05": "어린이날", "2030-06-06": "현충일", "2030-08-15": "광복절", "2030-10-03": "개천절", "2030-10-09": "한글날", "2030-12-25": "성탄절", "2030-05-09": "부처님오신날", "2030-02-02": "설날연휴", "2030-02-03": "설날", "2030-02-04": "설날연휴", "2030-09-11": "추석연휴", "2030-09-12": "추석", "2030-09-13": "추석연휴", "2030-05-06": "대체(어린이날)", "2030-02-05": "대체(설날)", "2031-01-01": "신정", "2031-03-01": "삼일절", "2031-05-05": "어린이날", "2031-06-06": "현충일", "2031-08-15": "광복절", "2031-10-03": "개천절", "2031-10-09": "한글날", "2031-12-25": "성탄절", "2031-05-28": "부처님오신날", "2031-01-22": "설날연휴", "2031-01-23": "설날", "2031-01-24": "설날연휴", "2031-09-30": "추석연휴", "2031-10-01": "추석", "2031-10-02": "추석연휴", "2031-03-03": "대체(삼일절)", "2032-01-01": "신정", "2032-03-01": "삼일절", "2032-05-05": "어린이날", "2032-06-06": "현충일", "2032-08-15": "광복절", "2032-10-03": "개천절", "2032-10-09": "한글날", "2032-12-25": "성탄절", "2032-05-16": "부처님오신날", "2032-02-10": "설날연휴", "2032-02-11": "설날", "2032-02-12": "설날연휴", "2032-09-18": "추석연휴", "2032-09-19": "추석", "2032-09-20": "추석연휴", "2032-08-16": "대체(광복절)", "2032-10-04": "대체(개천절)", "2032-10-11": "대체(한글날)", "2032-12-27": "대체(성탄절)", "2032-05-17": "대체(부처님오신날)", "2032-09-21": "대체(추석)", "2033-01-01": "신정", "2033-03-01": "삼일절", "2033-05-05": "어린이날", "2033-06-06": "현충일", "2033-08-15": "광복절", "2033-10-03": "개천절", "2033-10-09": "한글날", "2033-12-25": "성탄절", "2033-05-06": "부처님오신날", "2033-01-30": "설날연휴", "2033-01-31": "설날", "2033-02-01": "설날연휴", "2033-09-07": "추석연휴", "2033-09-08": "추석", "2033-09-09": "추석연휴", "2033-10-10": "대체(한글날)", "2033-12-26": "대체(성탄절)", "2033-02-02": "대체(설날)", "2034-01-01": "신정", "2034-03-01": "삼일절", "2034-05-05": "어린이날", "2034-06-06": "현충일", "2034-08-15": "광복절", "2034-10-03": "개천절", "2034-10-09": "한글날", "2034-12-25": "성탄절", "2034-05-25": "부처님오신날", "2034-02-18": "설날연휴", "2034-02-19": "설날", "2034-02-20": "설날연휴", "2034-09-26": "추석연휴", "2034-09-27": "추석", "2034-09-28": "추석연휴", "2034-02-21": "대체(설날)", "2035-01-01": "신정", "2035-03-01": "삼일절", "2035-05-05": "어린이날", "2035-06-06": "현충일", "2035-08-15": "광복절", "2035-10-03": "개천절", "2035-10-09": "한글날", "2035-12-25": "성탄절", "2035-05-15": "부처님오신날", "2035-02-07": "설날연휴", "2035-02-08": "설날", "2035-02-09": "설날연휴", "2035-09-15": "추석연휴", "2035-09-16": "추석", "2035-09-17": "추석연휴", "2035-05-07": "대체(어린이날)", "2035-09-18": "대체(추석)", "2036-01-01": "신정", "2036-03-01": "삼일절", "2036-05-05": "어린이날", "2036-06-06": "현충일", "2036-08-15": "광복절", "2036-10-03": "추석연휴", "2036-10-09": "한글날", "2036-12-25": "성탄절", "2036-05-03": "부처님오신날", "2036-01-27": "설날연휴", "2036-01-28": "설날", "2036-01-29": "설날연휴", "2036-10-04": "추석", "2036-10-05": "추석연휴", "2036-03-03": "대체(삼일절)", "2036-05-06": "대체(부처님오신날)", "2036-01-30": "대체(설날)", "2036-10-06": "대체(추석)", "2037-01-01": "신정", "2037-03-01": "삼일절", "2037-05-05": "어린이날", "2037-06-06": "현충일", "2037-08-15": "광복절", "2037-10-03": "개천절", "2037-10-09": "한글날", "2037-12-25": "성탄절", "2037-05-22": "부처님오신날", "2037-02-14": "설날연휴", "2037-02-15": "설날", "2037-02-16": "설날연휴", "2037-09-23": "추석연휴", "2037-09-24": "추석", "2037-09-25": "추석연휴", "2037-03-02": "대체(삼일절)", "2037-08-17": "대체(광복절)", "2037-10-05": "대체(개천절)", "2037-02-17": "대체(설날)", "2038-01-01": "신정", "2038-03-01": "삼일절", "2038-05-05": "어린이날", "2038-06-06": "현충일", "2038-08-15": "광복절", "2038-10-03": "개천절", "2038-10-09": "한글날", "2038-12-25": "성탄절", "2038-05-11": "부처님오신날", "2038-02-03": "설날연휴", "2038-02-04": "설날", "2038-02-05": "설날연휴", "2038-09-12": "추석연휴", "2038-09-13": "추석", "2038-09-14": "추석연휴", "2038-08-16": "대체(광복절)", "2038-10-04": "대체(개천절)", "2038-10-11": "대체(한글날)", "2038-12-27": "대체(성탄절)", "2038-09-15": "대체(추석)", "2039-01-01": "신정", "2039-03-01": "삼일절", "2039-05-05": "어린이날", "2039-06-06": "현충일", "2039-08-15": "광복절", "2039-10-03": "추석연휴", "2039-10-09": "한글날", "2039-12-25": "성탄절", "2039-04-30": "부처님오신날", "2039-01-23": "설날연휴", "2039-01-24": "설날", "2039-01-25": "설날연휴", "2039-10-01": "추석연휴", "2039-10-02": "추석", "2039-10-10": "대체(한글날)", "2039-12-26": "대체(성탄절)", "2039-05-02": "대체(부처님오신날)", "2039-01-26": "대체(설날)", "2039-10-04": "대체(추석)", "2040-01-01": "신정", "2040-03-01": "삼일절", "2040-05-05": "어린이날", "2040-06-06": "현충일", "2040-08-15": "광복절", "2040-10-03": "개천절", "2040-10-09": "한글날", "2040-12-25": "성탄절", "2040-05-18": "부처님오신날", "2040-02-11": "설날연휴", "2040-02-12": "설날", "2040-02-13": "설날연휴", "2040-09-20": "추석연휴", "2040-09-21": "추석", "2040-09-22": "추석연휴", "2040-05-07": "대체(어린이날)", "2040-02-14": "대체(설날)", "2041-01-01": "신정", "2041-03-01": "삼일절", "2041-05-05": "어린이날", "2041-06-06": "현충일", "2041-08-15": "광복절", "2041-10-03": "개천절", "2041-10-09": "한글날", "2041-12-25": "성탄절", "2041-05-07": "부처님오신날", "2041-01-31": "설날연휴", "2041-02-01": "설날", "2041-02-02": "설날연휴", "2041-09-09": "추석연휴", "2041-09-10": "추석", "2041-09-11": "추석연휴", "2041-05-06": "대체(어린이날)", "2042-01-01": "신정", "2042-03-01": "삼일절", "2042-05-05": "어린이날", "2042-06-06": "현충일", "2042-08-15": "광복절", "2042-10-03": "개천절", "2042-10-09": "한글날", "2042-12-25": "성탄절", "2042-05-26": "부처님오신날", "2042-01-21": "설날연휴", "2042-01-22": "설날", "2042-01-23": "설날연휴", "2042-09-27": "추석연휴", "2042-09-28": "추석", "2042-09-29": "추석연휴", "2042-03-03": "대체(삼일절)", "2042-09-30": "대체(추석)", "2043-01-01": "신정", "2043-03-01": "삼일절", "2043-05-05": "어린이날", "2043-06-06": "현충일", "2043-08-15": "광복절", "2043-10-03": "개천절", "2043-10-09": "한글날", "2043-12-25": "성탄절", "2043-05-16": "부처님오신날", "2043-02-09": "설날연휴", "2043-02-10": "설날", "2043-02-11": "설날연휴", "2043-09-16": "추석연휴", "2043-09-17": "추석", "2043-09-18": "추석연휴", "2043-03-02": "대체(삼일절)", "2043-08-17": "대체(광복절)", "2043-10-05": "대체(개천절)", "2043-05-18": "대체(부처님오신날)", "2044-01-01": "신정", "2044-03-01": "삼일절", "2044-05-05": "부처님오신날", "2044-06-06": "현충일", "2044-08-15": "광복절", "2044-10-03": "개천절", "2044-10-09": "한글날", "2044-12-25": "성탄절", "2044-01-29": "설날연휴", "2044-01-30": "설날", "2044-01-31": "설날연휴", "2044-10-04": "추석연휴", "2044-10-05": "추석", "2044-10-06": "추석연휴", "2044-10-10": "대체(한글날)", "2044-12-26": "대체(성탄절)", "2044-02-01": "대체(설날)", "2045-01-01": "신정", "2045-03-01": "삼일절", "2045-05-05": "어린이날", "2045-06-06": "현충일", "2045-08-15": "광복절", "2045-10-03": "개천절", "2045-10-09": "한글날", "2045-12-25": "성탄절", "2045-05-24": "부처님오신날", "2045-02-16": "설날연휴", "2045-02-17": "설날", "2045-02-18": "설날연휴", "2045-09-24": "추석연휴", "2045-09-25": "추석", "2045-09-26": "추석연휴", "2045-09-27": "대체(추석)" };
+      const BUILTIN_HOLIDAYS = { "2024-01-01": "신정", "2024-03-01": "삼일절", "2024-05-05": "어린이날", "2024-06-06": "현충일", "2024-08-15": "광복절", "2024-10-03": "개천절", "2024-10-09": "한글날", "2024-12-25": "성탄절", "2024-05-15": "부처님오신날", "2024-02-09": "설날연휴", "2024-02-10": "설날", "2024-02-11": "설날연휴", "2024-09-16": "추석연휴", "2024-09-17": "추석", "2024-09-18": "추석연휴", "2024-04-10": "국회의원선거", "2024-10-01": "국군의날", "2024-05-06": "대체(어린이날)", "2024-02-12": "대체(설날)", "2025-01-01": "신정", "2025-03-01": "삼일절", "2025-05-05": "부처님오신날", "2025-06-06": "현충일", "2025-08-15": "광복절", "2025-10-03": "개천절", "2025-10-09": "한글날", "2025-12-25": "성탄절", "2025-01-28": "설날연휴", "2025-01-29": "설날", "2025-01-30": "설날연휴", "2025-10-05": "추석연휴", "2025-10-06": "추석", "2025-10-07": "추석연휴", "2025-03-03": "대체(삼일절)", "2025-10-08": "대체(추석)", "2026-01-01": "신정", "2026-03-01": "삼일절", "2026-05-05": "어린이날", "2026-06-06": "현충일", "2026-08-15": "광복절", "2026-10-03": "개천절", "2026-10-09": "한글날", "2026-12-25": "성탄절", "2026-05-24": "부처님오신날", "2026-02-16": "설날연휴", "2026-02-17": "설날", "2026-02-18": "설날연휴", "2026-09-24": "추석연휴", "2026-09-25": "추석", "2026-09-26": "추석연휴", "2026-06-03": "지방선거", "2026-03-02": "대체(삼일절)", "2026-08-17": "대체(광복절)", "2026-10-05": "대체(개천절)", "2026-05-25": "대체(부처님오신날)", "2027-01-01": "신정", "2027-03-01": "삼일절", "2027-05-05": "어린이날", "2027-06-06": "현충일", "2027-08-15": "광복절", "2027-10-03": "개천절", "2027-10-09": "한글날", "2027-12-25": "성탄절", "2027-05-13": "부처님오신날", "2027-02-06": "설날연휴", "2027-02-07": "설날", "2027-02-08": "설날연휴", "2027-09-14": "추석연휴", "2027-09-15": "추석", "2027-09-16": "추석연휴", "2027-08-16": "대체(광복절)", "2027-10-04": "대체(개천절)", "2027-10-11": "대체(한글날)", "2027-12-27": "대체(성탄절)", "2027-02-09": "대체(설날)", "2028-01-01": "신정", "2028-03-01": "삼일절", "2028-05-05": "어린이날", "2028-06-06": "현충일", "2028-08-15": "광복절", "2028-10-03": "추석", "2028-10-09": "한글날", "2028-12-25": "성탄절", "2028-05-02": "부처님오신날", "2028-01-26": "설날연휴", "2028-01-27": "설날", "2028-01-28": "설날연휴", "2028-10-02": "추석연휴", "2028-10-04": "추석연휴", "2029-01-01": "신정", "2029-03-01": "삼일절", "2029-05-05": "어린이날", "2029-06-06": "현충일", "2029-08-15": "광복절", "2029-10-03": "개천절", "2029-10-09": "한글날", "2029-12-25": "성탄절", "2029-05-20": "부처님오신날", "2029-02-12": "설날연휴", "2029-02-13": "설날", "2029-02-14": "설날연휴", "2029-09-21": "추석연휴", "2029-09-22": "추석", "2029-09-23": "추석연휴", "2029-05-07": "대체(어린이날)", "2029-05-21": "대체(부처님오신날)", "2029-09-24": "대체(추석)", "2030-01-01": "신정", "2030-03-01": "삼일절", "2030-05-05": "어린이날", "2030-06-06": "현충일", "2030-08-15": "광복절", "2030-10-03": "개천절", "2030-10-09": "한글날", "2030-12-25": "성탄절", "2030-05-09": "부처님오신날", "2030-02-02": "설날연휴", "2030-02-03": "설날", "2030-02-04": "설날연휴", "2030-09-11": "추석연휴", "2030-09-12": "추석", "2030-09-13": "추석연휴", "2030-05-06": "대체(어린이날)", "2030-02-05": "대체(설날)", "2031-01-01": "신정", "2031-03-01": "삼일절", "2031-05-05": "어린이날", "2031-06-06": "현충일", "2031-08-15": "광복절", "2031-10-03": "개천절", "2031-10-09": "한글날", "2031-12-25": "성탄절", "2031-05-28": "부처님오신날", "2031-01-22": "설날연휴", "2031-01-23": "설날", "2031-01-24": "설날연휴", "2031-09-30": "추석연휴", "2031-10-01": "추석", "2031-10-02": "추석연휴", "2031-03-03": "대체(삼일절)", "2032-01-01": "신정", "2032-03-01": "삼일절", "2032-05-05": "어린이날", "2032-06-06": "현충일", "2032-08-15": "광복절", "2032-10-03": "개천절", "2032-10-09": "한글날", "2032-12-25": "성탄절", "2032-05-16": "부처님오신날", "2032-02-10": "설날연휴", "2032-02-11": "설날", "2032-02-12": "설날연휴", "2032-09-18": "추석연휴", "2032-09-19": "추석", "2032-09-20": "추석연휴", "2032-08-16": "대체(광복절)", "2032-10-04": "대체(개천절)", "2032-10-11": "대체(한글날)", "2032-12-27": "대체(성탄절)", "2032-05-17": "대체(부처님오신날)", "2032-09-21": "대체(추석)", "2033-01-01": "신정", "2033-03-01": "삼일절", "2033-05-05": "어린이날", "2033-06-06": "현충일", "2033-08-15": "광복절", "2033-10-03": "개천절", "2033-10-09": "한글날", "2033-12-25": "성탄절", "2033-05-06": "부처님오신날", "2033-01-30": "설날연휴", "2033-01-31": "설날", "2033-02-01": "설날연휴", "2033-09-07": "추석연휴", "2033-09-08": "추석", "2033-09-09": "추석연휴", "2033-10-10": "대체(한글날)", "2033-12-26": "대체(성탄절)", "2033-02-02": "대체(설날)", "2034-01-01": "신정", "2034-03-01": "삼일절", "2034-05-05": "어린이날", "2034-06-06": "현충일", "2034-08-15": "광복절", "2034-10-03": "개천절", "2034-10-09": "한글날", "2034-12-25": "성탄절", "2034-05-25": "부처님오신날", "2034-02-18": "설날연휴", "2034-02-19": "설날", "2034-02-20": "설날연휴", "2034-09-26": "추석연휴", "2034-09-27": "추석", "2034-09-28": "추석연휴", "2034-02-21": "대체(설날)", "2035-01-01": "신정", "2035-03-01": "삼일절", "2035-05-05": "어린이날", "2035-06-06": "현충일", "2035-08-15": "광복절", "2035-10-03": "개천절", "2035-10-09": "한글날", "2035-12-25": "성탄절", "2035-05-15": "부처님오신날", "2035-02-07": "설날연휴", "2035-02-08": "설날", "2035-02-09": "설날연휴", "2035-09-15": "추석연휴", "2035-09-16": "추석", "2035-09-17": "추석연휴", "2035-05-07": "대체(어린이날)", "2035-09-18": "대체(추석)", "2036-01-01": "신정", "2036-03-01": "삼일절", "2036-05-05": "어린이날", "2036-06-06": "현충일", "2036-08-15": "광복절", "2036-10-03": "추석연휴", "2036-10-09": "한글날", "2036-12-25": "성탄절", "2036-05-03": "부처님오신날", "2036-01-27": "설날연휴", "2036-01-28": "설날", "2036-01-29": "설날연휴", "2036-10-04": "추석", "2036-10-05": "추석연휴", "2036-03-03": "대체(삼일절)", "2036-05-06": "대체(부처님오신날)", "2036-01-30": "대체(설날)", "2036-10-06": "대체(추석)", "2037-01-01": "신정", "2037-03-01": "삼일절", "2037-05-05": "어린이날", "2037-06-06": "현충일", "2037-08-15": "광복절", "2037-10-03": "개천절", "2037-10-09": "한글날", "2037-12-25": "성탄절", "2037-05-22": "부처님오신날", "2037-02-14": "설날연휴", "2037-02-15": "설날", "2037-02-16": "설날연휴", "2037-09-23": "추석연휴", "2037-09-24": "추석", "2037-09-25": "추석연휴", "2037-03-02": "대체(삼일절)", "2037-08-17": "대체(광복절)", "2037-10-05": "대체(개천절)", "2037-02-17": "대체(설날)", "2038-01-01": "신정", "2038-03-01": "삼일절", "2038-05-05": "어린이날", "2038-06-06": "현충일", "2038-08-15": "광복절", "2038-10-03": "개천절", "2038-10-09": "한글날", "2038-12-25": "성탄절", "2038-05-11": "부처님오신날", "2038-02-03": "설날연휴", "2038-02-04": "설날", "2038-02-05": "설날연휴", "2038-09-12": "추석연휴", "2038-09-13": "추석", "2038-09-14": "추석연휴", "2038-08-16": "대체(광복절)", "2038-10-04": "대체(개천절)", "2038-10-11": "대체(한글날)", "2038-12-27": "대체(성탄절)", "2038-09-15": "대체(추석)", "2039-01-01": "신정", "2039-03-01": "삼일절", "2039-05-05": "어린이날", "2039-06-06": "현충일", "2039-08-15": "광복절", "2039-10-03": "추석연휴", "2039-10-09": "한글날", "2039-12-25": "성탄절", "2039-04-30": "부처님오신날", "2039-01-23": "설날연휴", "2039-01-24": "설날", "2039-01-25": "설날연휴", "2039-10-01": "추석연휴", "2039-10-02": "추석", "2039-10-10": "대체(한글날)", "2039-12-26": "대체(성탄절)", "2039-05-02": "대체(부처님오신날)", "2039-01-26": "대체(설날)", "2039-10-04": "대체(추석)", "2040-01-01": "신정", "2040-03-01": "삼일절", "2040-05-05": "어린이날", "2040-06-06": "현충일", "2040-08-15": "광복절", "2040-10-03": "개천절", "2040-10-09": "한글날", "2040-12-25": "성탄절", "2040-05-18": "부처님오신날", "2040-02-11": "설날연휴", "2040-02-12": "설날", "2040-02-13": "설날연휴", "2040-09-20": "추석연휴", "2040-09-21": "추석", "2040-09-22": "추석연휴", "2040-05-07": "대체(어린이날)", "2040-02-14": "대체(설날)", "2041-01-01": "신정", "2041-03-01": "삼일절", "2041-05-05": "어린이날", "2041-06-06": "현충일", "2041-08-15": "광복절", "2041-10-03": "개천절", "2041-10-09": "한글날", "2041-12-25": "성탄절", "2041-05-07": "부처님오신날", "2041-01-31": "설날연휴", "2041-02-01": "설날", "2041-02-02": "설날연휴", "2041-09-09": "추석연휴", "2041-09-10": "추석", "2041-09-11": "추석연휴", "2041-05-06": "대체(어린이날)", "2042-01-01": "신정", "2042-03-01": "삼일절", "2042-05-05": "어린이날", "2042-06-06": "현충일", "2042-08-15": "광복절", "2042-10-03": "개천절", "2042-10-09": "한글날", "2042-12-25": "성탄절", "2042-05-26": "부처님오신날", "2042-01-21": "설날연휴", "2042-01-22": "설날", "2042-01-23": "설날연휴", "2042-09-27": "추석연휴", "2042-09-28": "추석", "2042-09-29": "추석연휴", "2042-03-03": "대체(삼일절)", "2042-09-30": "대체(추석)", "2043-01-01": "신정", "2043-03-01": "삼일절", "2043-05-05": "어린이날", "2043-06-06": "현충일", "2043-08-15": "광복절", "2043-10-03": "개천절", "2043-10-09": "한글날", "2043-12-25": "성탄절", "2043-05-16": "부처님오신날", "2043-02-09": "설날연휴", "2043-02-10": "설날", "2043-02-11": "설날연휴", "2043-09-16": "추석연휴", "2043-09-17": "추석", "2043-09-18": "추석연휴", "2043-03-02": "대체(삼일절)", "2043-08-17": "대체(광복절)", "2043-10-05": "대체(개천절)", "2043-05-18": "대체(부처님오신날)", "2044-01-01": "신정", "2044-03-01": "삼일절", "2044-05-05": "부처님오신날", "2044-06-06": "현충일", "2044-08-15": "광복절", "2044-10-03": "개천절", "2044-10-09": "한글날", "2044-12-25": "성탄절", "2044-01-29": "설날연휴", "2044-01-30": "설날", "2044-01-31": "설날연휴", "2044-10-04": "추석연휴", "2044-10-05": "추석", "2044-10-06": "추석연휴", "2044-10-10": "대체(한글날)", "2044-12-26": "대체(성탄절)", "2044-02-01": "대체(설날)", "2045-01-01": "신정", "2045-03-01": "삼일절", "2045-05-05": "어린이날", "2045-06-06": "현충일", "2045-08-15": "광복절", "2045-10-03": "개천절", "2045-10-09": "한글날", "2045-12-25": "성탄절", "2045-05-24": "부처님오신날", "2045-02-16": "설날연휴", "2045-02-17": "설날", "2045-02-18": "설날연휴", "2045-09-24": "추석연휴", "2045-09-25": "추석", "2045-09-26": "추석연휴", "2045-09-27": "대체(추석)" };
 
       /* ============================ [END SECTION 2/3] 내장 공휴일 ============================ */
+
+      /* =====================================================================
+       * [V1.0.13] 한국천문연구원 특일 정보 API 하이브리드 공휴일 동기화 엔진
+       * ===================================================================== */
+      const KASI_HOLIDAY_KEY = 'c728739b1ccef50f344581789f3e12513f4af17db97276f8dbf9fb9ccb204bd3';
+      const KASI_HOLIDAY_TTL = 24 * 60 * 60 * 1000;
+      const KASI_HOLIDAY_MAP = {};
+      const _kasiSyncInFlight = new Set();
+
+      function normalizeKasiHolidayName(rawName) {
+        let n = String(rawName || '').trim();
+        if (!n) return '공휴일';
+        if (n === '1월1일') return '신정';
+        if (n === '기독탄신일') return '성탄절';
+        if (n === '석가탄신일') return '부처님오신날';
+        n = n.replace(/대체공휴일\(/g, '대체(');
+        return n;
+      }
+
+      function loadKasiHolidayCache(year) {
+        const y = String(year);
+        if (KASI_HOLIDAY_MAP[y]) return KASI_HOLIDAY_MAP[y];
+        try {
+          const raw = localStorage.getItem('kasi_holidays_v1_' + y);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed.items && typeof parsed.items === 'object' && Object.keys(parsed.items).length > 0) {
+              KASI_HOLIDAY_MAP[y] = parsed.items;
+              return KASI_HOLIDAY_MAP[y];
+            }
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      function getEffectiveBuiltinHolidayName(dateStr) {
+        if (!dateStr) return null;
+        const y = dateStr.slice(0, 4);
+        const apiMap = loadKasiHolidayCache(y);
+        if (apiMap) return apiMap[dateStr] || null;
+        return BUILTIN_HOLIDAYS[dateStr] || null;
+      }
+
+      async function syncKasiHolidaysForYear(year, force = false) {
+        const y = String(year);
+        if (!/^\d{4}$/.test(y)) return;
+        const yNum = parseInt(y, 10);
+        const curY = new Date().getFullYear();
+        if (yNum < curY - 1 || yNum > curY + 2) return;
+        if (_kasiSyncInFlight.has(y)) return;
+
+        if (!force) {
+          try {
+            const raw = localStorage.getItem('kasi_holidays_v1_' + y);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (parsed && parsed.items && Object.keys(parsed.items).length > 0) {
+                KASI_HOLIDAY_MAP[y] = parsed.items;
+                if (Date.now() - (parsed.ts || 0) < KASI_HOLIDAY_TTL) return;
+              }
+            }
+          } catch (e) {}
+        }
+
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) return;
+
+        _kasiSyncInFlight.add(y);
+        try {
+          const url = `https://apis.data.go.kr/B090041/openapi/service/SpcdeInfoService/getRestDeInfo?solYear=${y}&numOfRows=50&_type=json&ServiceKey=${KASI_HOLIDAY_KEY}`;
+          const res = await fetch(url);
+          if (!res.ok) return;
+          const json = await res.json();
+          const header = json && json.response && json.response.header;
+          if (!header || header.resultCode !== '00') return;
+
+          const body = json.response.body;
+          const rawItems = body && body.items && body.items.item;
+          const arr = Array.isArray(rawItems) ? rawItems : (rawItems ? [rawItems] : []);
+          const nextMap = {};
+          arr.forEach(item => {
+            if (!item || String(item.isHoliday).toUpperCase() !== 'Y') return;
+            const loc = String(item.locdate || '');
+            if (loc.length !== 8) return;
+            const isoDate = `${loc.slice(0, 4)}-${loc.slice(4, 6)}-${loc.slice(6, 8)}`;
+            const name = normalizeKasiHolidayName(item.dateName);
+            if (!nextMap[isoDate]) nextMap[isoDate] = name;
+          });
+
+          if (Object.keys(nextMap).length > 0) {
+            KASI_HOLIDAY_MAP[y] = nextMap;
+            try {
+              localStorage.setItem('kasi_holidays_v1_' + y, JSON.stringify({ ts: Date.now(), items: nextMap }));
+            } catch (e) {}
+            if (typeof rebuildHolidays === 'function') rebuildHolidays();
+            if (typeof renderCalendar === 'function' && ui && String(ui.year) === y) renderCalendar();
+            if (typeof renderSide === 'function') renderSide();
+            if (typeof renderClock === 'function') renderClock();
+          }
+        } catch (e) {
+        } finally {
+          _kasiSyncInFlight.delete(y);
+        }
+      }
 
       /* =====================================================================
        * [SECTION 3/3] 애플리케이션 로직
@@ -8015,7 +8118,18 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         ddayFilter: 'all', listSelectedTask: null, hideCompleted: false
       };
 
-      function rebuildHolidays() { holidayCache = new Set([...Object.keys(BUILTIN_HOLIDAYS), ...data.settings.holidays, ...data.tasks.filter(t => t.isHoliday).map(t => t.dueDate)]); }
+      function rebuildHolidays() {
+        const builtinKeys = Object.keys(BUILTIN_HOLIDAYS).filter(d => !loadKasiHolidayCache(d.slice(0, 4)));
+        const apiKeys = [];
+        try {
+          const curY = new Date().getFullYear();
+          for (let y = curY - 1; y <= curY + 2; y++) {
+            const m = loadKasiHolidayCache(y);
+            if (m) apiKeys.push(...Object.keys(m));
+          }
+        } catch (e) {}
+        holidayCache = new Set([...builtinKeys, ...apiKeys, ...data.settings.holidays, ...data.tasks.filter(t => t.isHoliday).map(t => t.dueDate)]);
+      }
 
       function workdays(a, b, holidays = holidayCache) {
         if (a === b) return 0; if (a > b) return -workdays(b, a, holidays);
@@ -8196,7 +8310,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
       function getHolidayOrFestivalInfo(s) {
         if (!s) return null;
-        let hol = BUILTIN_HOLIDAYS[s];
+        let hol = getEffectiveBuiltinHolidayName(s);
         if (hol) return { name: hol.replace(/대체공휴일\(/g, '대체('), isHoliday: true };
         const customHol = (data.tasks || []).find(t => t.dueDate === s && t.isHoliday);
         if (customHol) return { name: (customHol.title || '공휴일').replace(/대체공휴일\(/g, '대체('), isHoliday: true };
@@ -8559,6 +8673,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         // 해당 캘린더 화면(42개 셀)의 반복 일정 인스턴스 자동 생성 및 저장
         syncRecurringInstances(startRange, endRange);
+        if (typeof syncKasiHolidaysForYear === 'function') syncKasiHolidaysForYear(ui.year);
 
         const byDate = new Map();
         for (const t of data.tasks) {
@@ -8591,7 +8706,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           const holidayDayClass = (isHoliday && !isSunday) ? 'holiday-day' : '';
 
           let extraHeaderText = '';
-          const builtinHolidayName = BUILTIN_HOLIDAYS[s];
+          const builtinHolidayName = getEffectiveBuiltinHolidayName(s);
           if (builtinHolidayName) {
             extraHeaderText = `<span class="holiday-name-text" title="${builtinHolidayName}">${builtinHolidayName}</span>`;
           } else if (lunarConverter) {
@@ -10655,6 +10770,43 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         }
       }
 
+      function getAlertPreferences() {
+        const allDisabled = localStorage.getItem('dday_all_popups_disabled') === 'true';
+        const overtimeEnabled = localStorage.getItem('dday_overtime_popup_enabled') !== 'false';
+        let minStart = parseInt(localStorage.getItem('dday_overtime_min_start') || '20', 10);
+        let minEnd = parseInt(localStorage.getItem('dday_overtime_min_end') || '40', 10);
+        if (isNaN(minStart) || minStart < 0 || minStart > 59) minStart = 20;
+        if (isNaN(minEnd) || minEnd < 0 || minEnd > 59) minEnd = 40;
+        if (minStart > minEnd) { const tmp = minStart; minStart = minEnd; minEnd = tmp; }
+        return { allDisabled, overtimeEnabled, minStart, minEnd };
+      }
+
+      function saveAlertPreferences(prefs) {
+        const prev = getAlertPreferences();
+        const nextAll = typeof prefs.allDisabled === 'boolean' ? prefs.allDisabled : prev.allDisabled;
+        const nextOt = typeof prefs.overtimeEnabled === 'boolean' ? prefs.overtimeEnabled : prev.overtimeEnabled;
+        let s = prefs.minStart !== undefined ? parseInt(prefs.minStart, 10) : prev.minStart;
+        let e = prefs.minEnd !== undefined ? parseInt(prefs.minEnd, 10) : prev.minEnd;
+        if (isNaN(s) || s < 0) s = 0;
+        if (s > 59) s = 59;
+        if (isNaN(e) || e < 0) e = 0;
+        if (e > 59) e = 59;
+        if (s > e) { const tmp = s; s = e; e = tmp; }
+        localStorage.setItem('dday_all_popups_disabled', nextAll ? 'true' : 'false');
+        localStorage.setItem('dday_overtime_popup_enabled', nextOt ? 'true' : 'false');
+        localStorage.setItem('dday_overtime_min_start', String(s));
+        localStorage.setItem('dday_overtime_min_end', String(e));
+        const now = new Date();
+        const todayStr = today();
+        const h = now.getHours();
+        const alertedKey = `overtimeAlertDone_${todayStr}_${h}`;
+        if (localStorage.getItem(alertedKey) !== 'true') {
+          const targetMin = (s === e) ? s : (Math.floor(Math.random() * (e - s + 1)) + s);
+          localStorage.setItem(`overtimeTargetMin_${todayStr}_${h}`, String(targetMin));
+        }
+        return { allDisabled: nextAll, overtimeEnabled: nextOt, minStart: s, minEnd: e };
+      }
+
       function openSettings() {
 
         const curDate = parseDate(today());
@@ -10680,6 +10832,8 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           ? window._isAutoStartupEnabled
           : (localStorage.getItem('auto_startup') !== 'false');
 
+        const alertPrefs = getAlertPreferences();
+
         const modal = $('settings');
         modal.innerHTML = `
           <div class="modal-frame" style="width:100%; max-width:100%; box-sizing:border-box; overflow:hidden;">
@@ -10693,97 +10847,156 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               </div>
               <button type="button" class="btn icon" data-action="closeSettings" aria-label="닫기" style="border:none; background:transparent; cursor:pointer; color:#64748b; padding:4px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">${icon('close')}</button>
             </div>
+
+            <!-- 상단 2개 세그먼트 탭 -->
+            <div style="padding:8px 14px 0; background:#ffffff; border-bottom:1px solid #f1f5f9;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; background:#f1f5f9; padding:3px; border-radius:9px;">
+                <button type="button" class="settings-tab-btn" data-settings-tab="general" style="height:30px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; background:#ffffff; color:#4f46e5; box-shadow:0 1px 3px rgba(0,0,0,0.08); transition:all 0.15s ease;">🔔 알림 · 일반</button>
+                <button type="button" class="settings-tab-btn" data-settings-tab="data" style="height:30px; border:none; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; color:#64748b; transition:all 0.15s ease;">💾 데이터 · 백업</button>
+              </div>
+              <div style="height:8px;"></div>
+            </div>
+
             <div class="modal-body" style="padding:10px 14px; gap:8px; box-sizing:border-box; overflow-y:auto; width:100%;">
               
-              <!-- 1. 일정 내보내기 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:9px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                  <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
-                    <span style="font-size:12.5px; font-weight:700; color:#1e293b;">일정 내보내기</span>
-                    <span style="font-size:11.5px; color:#64748b; font-weight:500;">(${esc(activeStore.name)})</span>
-                  </div>
-                  <button type="button" class="btn" data-action="exportAllBackup" style="height:26px; font-size:11.5px; padding:0 11px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; flex-shrink:0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">전체 백업</button>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr auto 1fr auto; gap:5px; align-items:center; width:100%; box-sizing:border-box;">
-                  <input type="date" id="exportRangeStart" class="control" value="${startOfMonth}" style="height:28px; font-size:11.5px; padding:0 6px; border-radius:6px; border:1px solid #cbd5e1; width:100%; min-width:0; box-sizing:border-box;">
-                  <span style="color:#64748b; font-weight:700; font-size:11px;">~</span>
-                  <input type="date" id="exportRangeEnd" class="control" value="${endOfRange}" style="height:28px; font-size:11.5px; padding:0 6px; border-radius:6px; border:1px solid #cbd5e1; width:100%; min-width:0; box-sizing:border-box;">
-                  <button type="button" class="btn" data-action="exportRangeBackup" style="height:28px; font-size:11.5px; padding:0 11px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; white-space:nowrap; flex-shrink:0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">일정 내보내기</button>
-                </div>
-                <div class="settings-desc" style="margin-top:4px; font-size:11px; color:#64748b; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">지정한 기간의 일정 파일(.dday) 내보내기 및 전체 백업을 지원합니다.</div>
-              </div>
+              <!-- [TAB 1] 알림 · 일반 -->
+              <div id="settingsPaneGeneral" style="display:flex; flex-direction:column; gap:8px; width:100%;">
 
-              <!-- 2. 일정 가져오기 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:9px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
-                <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
-                  <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
-                  <span style="font-size:12.5px; font-weight:700; color:#1e293b;">일정 가져오기</span>
-                </div>
-                <div style="display:grid; grid-template-columns:auto 1fr auto; gap:5px; align-items:center; width:100%; box-sizing:border-box;">
-                  <input type="file" id="importFile" accept=".dday,.json" style="display:none;">
-                  <button type="button" class="btn" id="customFilePickBtn" style="height:28px; font-size:11.5px; padding:0 10px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; white-space:nowrap; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">파일 선택</button>
-                  <span id="importFileNameDisplay" style="font-size:11.5px; color:#64748b; min-width:0; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:0 8px; height:28px; line-height:26px; box-sizing:border-box; display:block;">선택된 파일 없음 (.dday)</span>
-                  <button type="button" class="btn" data-action="importMerge" style="height:28px; font-size:11.5px; padding:0 12px; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; font-weight:700; border-radius:6px; box-shadow:0 2px 5px rgba(79,70,229,0.22); white-space:nowrap; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.background='#4338ca';" onmouseout="this.style.background='#4f46e5';">일정 추가</button>
-                </div>
-                <p class="settings-desc" style="margin-top:4px; font-size:11px; color:#64748b; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">선택한 파일(.dday)의 일정을 현재 일정표에 안전하게 추가(병합)합니다.</p>
-              </div>
-
-              <!-- 3. 빠른 연결 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:9px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
-                <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
-                  <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
-                  <span style="font-size:12.5px; font-weight:700; color:#1e293b;">빠른 연결</span>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:5px;">
-                  <div style="display:flex; gap:16px; align-items:center;">
-                    <label style="cursor:pointer; font-size:12px; font-weight:600; color:#334155; display:inline-flex; align-items:center; gap:5px;">
-                      <input type="radio" name="quickConnectType" value="miryang" ${(!quickType || quickType === 'miryang') ? 'checked' : ''} style="cursor:pointer; accent-color:#4f46e5; width:14px; height:14px;"> 밀양시 홈페이지
-                    </label>
-                    <label style="cursor:pointer; font-size:12px; font-weight:600; color:#334155; display:inline-flex; align-items:center; gap:5px;">
-                      <input type="radio" name="quickConnectType" value="custom" ${quickType === 'custom' ? 'checked' : ''} style="cursor:pointer; accent-color:#4f46e5; width:14px; height:14px;"> 기타
+                <!-- 1-1. 전체 팝업 중지 -->
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid ${alertPrefs.allDisabled ? '#fca5a5' : '#e2e8f0'}; border-radius:10px; background:${alertPrefs.allDisabled ? '#fff7f7' : '#ffffff'}; transition:all 0.15s ease;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="color:${alertPrefs.allDisabled ? '#e11d48' : '#4f46e5'}; font-size:10px; line-height:1;">●</span>
+                      <span style="font-size:12.5px; font-weight:700; color:#1e293b;">전체 팝업 중지</span>
+                    </div>
+                    <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none;">
+                      <input type="checkbox" id="allPopupsDisabledCheckbox" ${alertPrefs.allDisabled ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer; accent-color:#e11d48;">
+                      <span id="allPopupsStatusText" style="font-size:11.5px; font-weight:700; color:${alertPrefs.allDisabled ? '#e11d48' : '#64748b'};">${alertPrefs.allDisabled ? '중지됨 (모든 알림 꺼짐)' : '사용 중'}</span>
                     </label>
                   </div>
-                  <div id="quickConnectCustomRow" style="display:${quickType === 'custom' ? 'flex' : 'none'}; align-items:center; gap:5px; width:100%;">
-                    <input type="url" id="quickConnectCustomUrl" class="control" placeholder="연결할 웹 주소 입력 (예: https://www.miryang.go.kr)" value="${esc(customUrl)}" style="flex:1; height:28px; font-size:11.5px; padding:0 8px; border-radius:6px; border:1px solid #cbd5e1; box-sizing:border-box;">
-                  </div>
+                  <p class="settings-desc" style="margin:4px 0 0; font-size:11px; color:#64748b; line-height:1.3;">일일 브리핑, D-Day, 일정 임박, 초과근무 등 모든 자동 알림 팝업을 일괄 중지합니다. (직접 버튼 클릭 시에는 열림)</p>
                 </div>
-                <p class="settings-desc" style="margin-top:4px; font-size:11px; color:#64748b; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">상단 로고(BI) 클릭 또는 단축키(H) 입력 시 지정된 웹사이트로 즉시 연결됩니다.</p>
-              </div>
 
-              <!-- 4. 윈도우 시작 시 자동 실행 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:9px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:6px;">
+                <!-- 1-2. 초과근무기록 팝업 & 시간 설정 -->
+                <div id="overtimeSettingsCard" class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff; opacity:${alertPrefs.allDisabled ? '0.52' : '1'}; pointer-events:${alertPrefs.allDisabled ? 'none' : 'auto'}; transition:opacity 0.15s ease;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                      <span style="font-size:12.5px; font-weight:700; color:#1e293b;">초과근무기록 팝업</span>
+                    </div>
+                    <label style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none;">
+                      <input type="checkbox" id="overtimePopupEnabledCheckbox" ${alertPrefs.overtimeEnabled ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer; accent-color:#4f46e5;">
+                      <span id="overtimePopupStatusText" style="font-size:11.5px; font-weight:700; color:${alertPrefs.overtimeEnabled ? '#4f46e5' : '#64748b'};">${alertPrefs.overtimeEnabled ? '켜짐' : '꺼짐'}</span>
+                    </label>
+                  </div>
+                  <div id="overtimeTimeRangeRow" style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; padding:7px 10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; opacity:${alertPrefs.overtimeEnabled ? '1' : '0.5'}; pointer-events:${alertPrefs.overtimeEnabled ? 'auto' : 'none'};">
+                    <span style="font-size:11.5px; font-weight:600; color:#334155; white-space:nowrap;">알림 시간 (매 시)</span>
+                    <div style="display:flex; align-items:center; gap:5px;">
+                      <input type="number" id="overtimeMinStart" min="0" max="59" value="${alertPrefs.minStart}" class="control" style="width:52px; height:26px; font-size:12px; font-weight:700; text-align:center; padding:0 4px; border:1px solid #cbd5e1; border-radius:6px;">
+                      <span style="font-size:11.5px; color:#475569; font-weight:600;">분 ~</span>
+                      <input type="number" id="overtimeMinEnd" min="0" max="59" value="${alertPrefs.minEnd}" class="control" style="width:52px; height:26px; font-size:12px; font-weight:700; text-align:center; padding:0 4px; border:1px solid #cbd5e1; border-radius:6px;">
+                      <span style="font-size:11.5px; color:#475569; font-weight:600;">분 사이</span>
+                    </div>
+                  </div>
+                  <p class="settings-desc" style="margin:4px 0 0; font-size:11px; color:#64748b; line-height:1.3;">평일 18~09시·휴일 종일 매 시 1회 표출 (두 분이 같으면 정시, 다르면 사이 랜덤 표출)</p>
+                </div>
+
+                <!-- 1-3. 윈도우 시작 시 자동 실행 -->
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                      <span style="font-size:12.5px; font-weight:700; color:#1e293b;">윈도우 시작 시 자동 실행</span>
+                    </div>
+                    <label class="toggle-switch" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none;">
+                      <input type="checkbox" id="autoStartupCheckbox" data-action="toggleAutoStartup" ${isAutoStartup ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer; accent-color:#4f46e5;">
+                      <span id="autoStartupStatusText" style="font-size:11.5px; font-weight:600; color:${isAutoStartup ? '#4f46e5' : '#64748b'};">${isAutoStartup ? '자동 실행 켜짐' : '자동 실행 꺼짐'}</span>
+                    </label>
+                  </div>
+                  <p class="settings-desc" style="margin:4px 0 0; font-size:11px; color:#64748b; line-height:1.3;">PC 부팅 시 일정관리 위젯 및 알림을 백그라운드로 자동 실행합니다.</p>
+                </div>
+
+                <!-- 1-4. 빠른 연결 -->
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                  <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
                     <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
-                    <span style="font-size:12.5px; font-weight:700; color:#1e293b;">윈도우 시작 시 자동 실행</span>
+                    <span style="font-size:12.5px; font-weight:700; color:#1e293b;">빠른 연결</span>
                   </div>
-                  <label class="toggle-switch" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none;">
-                    <input type="checkbox" id="autoStartupCheckbox" data-action="toggleAutoStartup" ${isAutoStartup ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer; accent-color:#4f46e5;">
-                    <span id="autoStartupStatusText" style="font-size:11.5px; font-weight:600; color:${isAutoStartup ? '#4f46e5' : '#64748b'};">${isAutoStartup ? '자동 실행 켜짐' : '자동 실행 꺼짐'}</span>
-                  </label>
+                  <div style="display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:flex; gap:16px; align-items:center;">
+                      <label style="cursor:pointer; font-size:12px; font-weight:600; color:#334155; display:inline-flex; align-items:center; gap:5px;">
+                        <input type="radio" name="quickConnectType" value="miryang" ${(!quickType || quickType === 'miryang') ? 'checked' : ''} style="cursor:pointer; accent-color:#4f46e5; width:14px; height:14px;"> 밀양시 홈페이지
+                      </label>
+                      <label style="cursor:pointer; font-size:12px; font-weight:600; color:#334155; display:inline-flex; align-items:center; gap:5px;">
+                        <input type="radio" name="quickConnectType" value="custom" ${quickType === 'custom' ? 'checked' : ''} style="cursor:pointer; accent-color:#4f46e5; width:14px; height:14px;"> 기타
+                      </label>
+                    </div>
+                    <div id="quickConnectCustomRow" style="display:${quickType === 'custom' ? 'flex' : 'none'}; align-items:center; gap:5px; width:100%;">
+                      <input type="url" id="quickConnectCustomUrl" class="control" placeholder="연결할 웹 주소 입력 (예: https://www.miryang.go.kr)" value="${esc(customUrl)}" style="flex:1; height:28px; font-size:11.5px; padding:0 8px; border-radius:6px; border:1px solid #cbd5e1; box-sizing:border-box;">
+                    </div>
+                  </div>
+                  <p class="settings-desc" style="margin:4px 0 0; font-size:11px; color:#64748b; line-height:1.3;">상단 로고(BI) 클릭 또는 단축키(H) 입력 시 지정된 웹사이트로 즉시 연결됩니다.</p>
                 </div>
-                <p class="settings-desc" style="margin-top:4px; font-size:11px; color:#64748b; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">PC 부팅 시 일정관리 위젯 및 알림을 백그라운드로 자동 실행합니다.</p>
+
               </div>
 
-              <!-- 5. 데이터 관리 -->
-              <div class="settings-card" style="box-sizing:border-box; width:100%; padding:9px 12px; border:1px solid #fecdd3; border-radius:10px; background:#ffffff;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:6px;">
-                    <span style="color:#e11d48; font-size:10px; line-height:1;">●</span>
-                    <span style="font-size:12.5px; font-weight:700; color:#334155;">데이터 관리</span>
+              <!-- [TAB 2] 데이터 · 백업 -->
+              <div id="settingsPaneData" style="display:none; flex-direction:column; gap:8px; width:100%;">
+
+                <!-- 2-1. 일정 내보내기 -->
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                      <span style="font-size:12.5px; font-weight:700; color:#1e293b;">일정 내보내기</span>
+                      <span style="font-size:11.5px; color:#64748b; font-weight:500;">(${esc(activeStore.name)})</span>
+                    </div>
+                    <button type="button" class="btn" data-action="exportAllBackup" style="height:26px; font-size:11.5px; padding:0 11px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; flex-shrink:0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">전체 백업</button>
                   </div>
-                  <button type="button" class="btn" data-action="resetData" style="height:26px; font-size:11px; padding:0 10px; background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; font-weight:600; border-radius:6px; flex-shrink:0; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.background='#ffe4e6';" onmouseout="this.style.background='#fff1f2';">현재 일정표 삭제</button>
+                  <div style="display:grid; grid-template-columns:1fr auto 1fr auto; gap:5px; align-items:center; width:100%; box-sizing:border-box;">
+                    <input type="date" id="exportRangeStart" class="control" value="${startOfMonth}" style="height:28px; font-size:11.5px; padding:0 6px; border-radius:6px; border:1px solid #cbd5e1; width:100%; min-width:0; box-sizing:border-box;">
+                    <span style="color:#64748b; font-weight:700; font-size:11px;">~</span>
+                    <input type="date" id="exportRangeEnd" class="control" value="${endOfRange}" style="height:28px; font-size:11.5px; padding:0 6px; border-radius:6px; border:1px solid #cbd5e1; width:100%; min-width:0; box-sizing:border-box;">
+                    <button type="button" class="btn" data-action="exportRangeBackup" style="height:28px; font-size:11.5px; padding:0 11px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; white-space:nowrap; flex-shrink:0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">일정 내보내기</button>
+                  </div>
+                  <div class="settings-desc" style="margin-top:4px; font-size:11px; color:#64748b; line-height:1.3;">지정한 기간의 일정 파일(.dday) 내보내기 및 전체 백업을 지원합니다.</div>
                 </div>
-                <p class="settings-desc" style="margin-top:4px; font-size:11px; color:#64748b; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">현재 열려 있는 일정표(${esc(activeStore.name)})의 모든 일정을 초기화합니다.</p>
+
+                <!-- 2-2. 일정 가져오기 -->
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                  <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+                    <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                    <span style="font-size:12.5px; font-weight:700; color:#1e293b;">일정 가져오기</span>
+                  </div>
+                  <div style="display:grid; grid-template-columns:auto 1fr auto; gap:5px; align-items:center; width:100%; box-sizing:border-box;">
+                    <input type="file" id="importFile" accept=".dday,.json" style="display:none;">
+                    <button type="button" class="btn" id="customFilePickBtn" style="height:28px; font-size:11.5px; padding:0 10px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; white-space:nowrap; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">파일 선택</button>
+                    <span id="importFileNameDisplay" style="font-size:11.5px; color:#64748b; min-width:0; width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:0 8px; height:28px; line-height:26px; box-sizing:border-box; display:block;">선택된 파일 없음 (.dday)</span>
+                    <button type="button" class="btn" data-action="importMerge" style="height:28px; font-size:11.5px; padding:0 12px; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; font-weight:700; border-radius:6px; box-shadow:0 2px 5px rgba(79,70,229,0.22); white-space:nowrap; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.background='#4338ca';" onmouseout="this.style.background='#4f46e5';">일정 추가</button>
+                  </div>
+                  <p class="settings-desc" style="margin:4px 0 0; font-size:11px; color:#64748b; line-height:1.3;">선택한 파일(.dday)의 일정을 현재 일정표에 안전하게 추가(병합)합니다.</p>
+                </div>
+
+                <!-- 2-3. 데이터 관리 -->
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #fecdd3; border-radius:10px; background:#ffffff;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="color:#e11d48; font-size:10px; line-height:1;">●</span>
+                      <span style="font-size:12.5px; font-weight:700; color:#334155;">데이터 초기화</span>
+                    </div>
+                    <button type="button" class="btn" data-action="resetData" style="height:26px; font-size:11px; padding:0 10px; background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; font-weight:600; border-radius:6px; flex-shrink:0; cursor:pointer; transition:all 0.15s ease;" onmouseover="this.style.background='#ffe4e6';" onmouseout="this.style.background='#fff1f2';">현재 일정표 삭제</button>
+                  </div>
+                  <p class="settings-desc" style="margin:4px 0 0; font-size:11px; color:#64748b; line-height:1.3;">현재 열려 있는 일정표(${esc(activeStore.name)})의 모든 일정을 초기화합니다.</p>
+                </div>
+
               </div>
 
-              <!-- 6. 앱 정보 및 [닫기] 버튼 -->
+              <!-- 공통 하단: 앱 정보 및 [닫기] 버튼 -->
               <div style="padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:2px; box-sizing:border-box; width:100%;">
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.12</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.13</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -10794,6 +11007,79 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
             </div>
           </div>`;
+
+        const tabBtns = modal.querySelectorAll('.settings-tab-btn');
+        const paneGeneral = $('settingsPaneGeneral');
+        const paneData = $('settingsPaneData');
+        tabBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            const target = btn.getAttribute('data-settings-tab');
+            tabBtns.forEach(b => {
+              const active = b.getAttribute('data-settings-tab') === target;
+              b.style.background = active ? '#ffffff' : 'transparent';
+              b.style.color = active ? '#4f46e5' : '#64748b';
+              b.style.fontWeight = active ? '700' : '600';
+              b.style.boxShadow = active ? '0 1px 3px rgba(0,0,0,0.08)' : 'none';
+            });
+            if (paneGeneral) paneGeneral.style.display = target === 'general' ? 'flex' : 'none';
+            if (paneData) paneData.style.display = target === 'data' ? 'flex' : 'none';
+          });
+        });
+
+        const allCb = $('allPopupsDisabledCheckbox');
+        const allTxt = $('allPopupsStatusText');
+        const otCard = $('overtimeSettingsCard');
+        const otCb = $('overtimePopupEnabledCheckbox');
+        const otTxt = $('overtimePopupStatusText');
+        const otRow = $('overtimeTimeRangeRow');
+        const otMinStart = $('overtimeMinStart');
+        const otMinEnd = $('overtimeMinEnd');
+
+        const syncAlertSettingsUI = (p) => {
+          if (allTxt) {
+            allTxt.textContent = p.allDisabled ? '중지됨 (모든 알림 꺼짐)' : '사용 중';
+            allTxt.style.color = p.allDisabled ? '#e11d48' : '#64748b';
+          }
+          if (otCard) {
+            otCard.style.opacity = p.allDisabled ? '0.52' : '1';
+            otCard.style.pointerEvents = p.allDisabled ? 'none' : 'auto';
+          }
+          if (otTxt) {
+            otTxt.textContent = p.overtimeEnabled ? '켜짐' : '꺼짐';
+            otTxt.style.color = p.overtimeEnabled ? '#4f46e5' : '#64748b';
+          }
+          if (otRow) {
+            otRow.style.opacity = p.overtimeEnabled ? '1' : '0.5';
+            otRow.style.pointerEvents = p.overtimeEnabled ? 'auto' : 'none';
+          }
+          if (otMinStart && document.activeElement !== otMinStart) otMinStart.value = p.minStart;
+          if (otMinEnd && document.activeElement !== otMinEnd) otMinEnd.value = p.minEnd;
+        };
+
+        if (allCb) {
+          allCb.addEventListener('change', () => {
+            const p = saveAlertPreferences({ allDisabled: allCb.checked });
+            syncAlertSettingsUI(p);
+            toast(p.allDisabled ? '모든 자동 알림 팝업이 중지되었습니다.' : '자동 알림 팝업이 다시 활성화되었습니다.');
+          });
+        }
+        if (otCb) {
+          otCb.addEventListener('change', () => {
+            const p = saveAlertPreferences({ overtimeEnabled: otCb.checked });
+            syncAlertSettingsUI(p);
+            toast(p.overtimeEnabled ? '초과근무기록 팝업이 켜졌습니다.' : '초과근무기록 팝업이 꺼졌습니다.');
+          });
+        }
+        const onTimeInputCommit = () => {
+          const p = saveAlertPreferences({
+            minStart: otMinStart ? otMinStart.value : 20,
+            minEnd: otMinEnd ? otMinEnd.value : 40
+          });
+          if (otMinStart) otMinStart.value = p.minStart;
+          if (otMinEnd) otMinEnd.value = p.minEnd;
+        };
+        if (otMinStart) otMinStart.addEventListener('change', onTimeInputCommit);
+        if (otMinEnd) otMinEnd.addEventListener('change', onTimeInputCommit);
 
         const pickBtn = $('customFilePickBtn');
         const fileInp = $('importFile');
@@ -15316,14 +15602,14 @@ function getRandomAppQuote() {
         }
       }
 
-      function fetchBriefingWeather() {
-        // 1. 로컬 캐시 확인 (30분 유효)
+      function fetchBriefingWeather(force = false) {
+        // 1. 로컬 캐시 확인 (1시간 유효)
         let hasValidCache = false;
         try {
           const cachedStr = localStorage.getItem('briefing_weather_cache');
           if (cachedStr) {
             const cachedObj = JSON.parse(cachedStr);
-            if (cachedObj && (Date.now() - cachedObj.ts < 1800000)) {
+            if (cachedObj && (Date.now() - cachedObj.ts < 3600000)) {
               if (cachedObj.isGeo && cachedObj.lat && cachedObj.lon) {
                 currentKmaState.lat = cachedObj.lat;
                 currentKmaState.lon = cachedObj.lon;
@@ -15337,6 +15623,8 @@ function getRandomAppQuote() {
             }
           }
         } catch(e) {}
+
+        if (hasValidCache && !force) return;
 
         if (!hasValidCache) {
           setWeatherOfflineUI(currentKmaState.locName);
@@ -16402,7 +16690,27 @@ function getRandomAppQuote() {
       }
 
       const triggeredAlertsInSession = new Set();
-      const snoozedAlerts = {};
+      const SNOOZED_STORAGE_KEY = 'dday_snoozed_alerts_v1';
+      const snoozedAlerts = (() => {
+        try {
+          const raw = localStorage.getItem(SNOOZED_STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') {
+              const now = Date.now();
+              const clean = {};
+              Object.keys(parsed).forEach(k => {
+                if (typeof parsed[k] === 'number' && parsed[k] > now - 30 * 60 * 1000) clean[k] = parsed[k];
+              });
+              return clean;
+            }
+          }
+        } catch (e) {}
+        return {};
+      })();
+      function saveSnoozedAlerts() {
+        try { localStorage.setItem(SNOOZED_STORAGE_KEY, JSON.stringify(snoozedAlerts)); } catch (e) {}
+      }
 
       function collectUpcomingDdayAlerts(todayStr, allTasks, allRecurrings) {
         const ddayAlerts = [];
@@ -16481,6 +16789,11 @@ function getRandomAppQuote() {
       }
 
       function checkSmartAlerts() {
+        const alertPrefs = typeof getAlertPreferences === 'function'
+          ? getAlertPreferences()
+          : { allDisabled: false, overtimeEnabled: true, minStart: 20, minEnd: 40 };
+        if (alertPrefs.allDisabled) return;
+
         const now = new Date();
         const todayStr = today();
         const currentHours = now.getHours();
@@ -16566,7 +16879,15 @@ function getRandomAppQuote() {
           hourRems.forEach(m => {
             const key = `urgent_${t.id}_${m}_${todayStr}`;
             const snoozeUntil = snoozedAlerts[key] || 0;
-            if (Date.now() < snoozeUntil) return; window.__snoozeFired = window.__snoozeFired || {}; if (snoozeUntil > 0 && diffMin >= 0 && window.__snoozeFired[key] !== snoozeUntil) { window.__snoozeFired[key] = snoozeUntil; openUrgentAlertModal(t, m); return; }
+            if (Date.now() < snoozeUntil) return;
+            window.__snoozeFired = window.__snoozeFired || {};
+            if (snoozeUntil > 0 && diffMin >= -20 && window.__snoozeFired[key] !== snoozeUntil) {
+              window.__snoozeFired[key] = snoozeUntil;
+              delete snoozedAlerts[key];
+              saveSnoozedAlerts();
+              openUrgentAlertModal(t, m);
+              return;
+            }
 
             if (Math.abs(diffMin - m) <= 1 && !triggeredAlertsInSession.has(key)) {
               triggeredAlertsInSession.add(key);
@@ -16575,30 +16896,34 @@ function getRandomAppQuote() {
           });
         });
 
-        // [4] [V1.0.1] 인사랑 초과근무 팝업:
-        // - 평일(월~금, 공휴일 제외): 18:00 ~ 익일 09:00
-        // - 토요일, 일요일, 법정·대체공휴일, 일정 공휴일 체크일: 해당일 24시간 내내 (00:00 ~ 23:59)
-        // 각 시간대별 20분~40분 사이 랜덤 1회 초과근무 팝업
-        const isRestDay = isRestDayToday();
-        const isOvertimeHours = isRestDay ? true : (currentHours >= 18 || currentHours < 9);
+        // [4] [V1.0.13] 인사랑 초과근무 팝업 (ON/OFF 및 사용자 지정 분 범위 지원)
+        if (alertPrefs.overtimeEnabled) {
+          const isRestDay = isRestDayToday();
+          const isOvertimeHours = isRestDay ? true : (currentHours >= 18 || currentHours < 9);
 
-        if (isOvertimeHours) {
-          const overtimeHourKey = `overtimeTargetMin_${todayStr}_${currentHours}`;
-          let targetMin = localStorage.getItem(overtimeHourKey);
-          if (!targetMin) {
-            // 20 ~ 40분 사이 랜덤 결정
-            targetMin = Math.floor(Math.random() * 21) + 20;
-            localStorage.setItem(overtimeHourKey, String(targetMin));
-          } else {
-            targetMin = parseInt(targetMin, 10);
-          }
+          if (isOvertimeHours) {
+            const overtimeHourKey = `overtimeTargetMin_${todayStr}_${currentHours}`;
+            let targetMin = localStorage.getItem(overtimeHourKey);
+            const sMin = alertPrefs.minStart;
+            const eMin = alertPrefs.minEnd;
+            if (targetMin === null || targetMin === '' || isNaN(parseInt(targetMin, 10))) {
+              targetMin = (sMin === eMin) ? sMin : (Math.floor(Math.random() * (eMin - sMin + 1)) + sMin);
+              localStorage.setItem(overtimeHourKey, String(targetMin));
+            } else {
+              targetMin = parseInt(targetMin, 10);
+              if (targetMin < sMin || targetMin > eMin) {
+                targetMin = (sMin === eMin) ? sMin : (Math.floor(Math.random() * (eMin - sMin + 1)) + sMin);
+                localStorage.setItem(overtimeHourKey, String(targetMin));
+              }
+            }
 
-          const overtimeAlertedKey = `overtimeAlertDone_${todayStr}_${currentHours}`;
-          const alreadyAlerted = localStorage.getItem(overtimeAlertedKey) === 'true';
+            const overtimeAlertedKey = `overtimeAlertDone_${todayStr}_${currentHours}`;
+            const alreadyAlerted = localStorage.getItem(overtimeAlertedKey) === 'true';
 
-          if (!alreadyAlerted && currentMinutes >= targetMin) {
-            localStorage.setItem(overtimeAlertedKey, 'true');
-            openOvertimeAlertModal(isRestDay);
+            if (!alreadyAlerted && currentMinutes >= targetMin) {
+              localStorage.setItem(overtimeAlertedKey, 'true');
+              openOvertimeAlertModal(isRestDay);
+            }
           }
         }
       }
@@ -17214,6 +17539,7 @@ function getRandomAppQuote() {
           if (taskId) {
             const key = `urgent_${taskId}_${minutes}_${today()}`;
             snoozedAlerts[key] = Date.now() + 10 * 60 * 1000;
+            saveSnoozedAlerts();
             toast('10분 뒤에 다시 알려드립니다.');
           }
           if ($('urgentAlertModal') && $('urgentAlertModal').open) $('urgentAlertModal').close();
@@ -17582,13 +17908,23 @@ function getRandomAppQuote() {
         if (savedTheme === 'dark') {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
-        // [V1.8.4] 브리핑 모달과 완전 독립: 앱 켜지자마자 0초 즉시 실시간 날씨 호출 및 30분 주기 자동 갱신
+        // [V1.0.13] 브리핑 모달과 완전 독립: 앱 켜지자마자 즉시 날씨(1시간 캐시) 및 특일정보 API 동기화
         try { fetchBriefingWeather(); } catch(e) { console.error('Weather init error:', e); }
+        try {
+          const curY = new Date().getFullYear();
+          syncKasiHolidaysForYear(curY);
+          syncKasiHolidaysForYear(curY + 1);
+        } catch(e) {}
         setInterval(() => {
-          try { fetchBriefingWeather(); } catch(e) {}
-        }, 30 * 60 * 1000);
+          try { fetchBriefingWeather(true); } catch(e) {}
+        }, 60 * 60 * 1000);
         window.addEventListener('online', () => {
-          try { fetchBriefingWeather(); } catch(e) {}
+          try { fetchBriefingWeather(true); } catch(e) {}
+          try {
+            const curY = new Date().getFullYear();
+            syncKasiHolidaysForYear(curY);
+            syncKasiHolidaysForYear(curY + 1);
+          } catch(e) {}
         });
         loadCurrentStoreData();
         renderStoreTabs();
@@ -17674,6 +18010,7 @@ function getRandomAppQuote() {
                 if (taskId) {
                   const key = 'urgent_' + taskId + '_' + minutes + '_' + today();
                   snoozedAlerts[key] = Date.now() + 10 * 60 * 1000;
+                  saveSnoozedAlerts();
                   toast('10분 뒤에 다시 알려드립니다.');
                 }
               } else if (data.type === 'openBriefingFromUrgent' || data.type === 'triggerBriefing') {
@@ -18065,11 +18402,14 @@ function getRandomAppQuote() {
 
         // [V1.0.6] 스마트 알림 스케줄러: 컴퓨터 부팅/앱 기동 시 즉시 브리핑 & 1분 주기 알림 검사
         setTimeout(() => {
-          if (sessionStorage.getItem('startupBriefingShown_session') !== 'true') {
-            sessionStorage.setItem('startupBriefingShown_session', 'true');
-            openDailyBriefingModal(true);
-          } else {
-            openDailyBriefingModal(false);
+          const alertPrefs = typeof getAlertPreferences === 'function' ? getAlertPreferences() : { allDisabled: false };
+          if (!alertPrefs.allDisabled) {
+            if (sessionStorage.getItem('startupBriefingShown_session') !== 'true') {
+              sessionStorage.setItem('startupBriefingShown_session', 'true');
+              openDailyBriefingModal(true);
+            } else {
+              openDailyBriefingModal(false);
+            }
           }
           setTimeout(() => {
             checkSmartAlerts();
