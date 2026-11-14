@@ -1566,7 +1566,9 @@
       color: #0f172a;
       word-break: break-word;
       overflow-wrap: anywhere;
-      white-space: normal;
+      white-space: pre-wrap;
+      tab-size: 4;
+      -moz-tab-size: 4;
     }
 
     .detail-actions {
@@ -1885,6 +1887,12 @@
       user-select: text !important;
       -webkit-user-select: text !important;
       cursor: text !important;
+    }
+
+    .detail-memo-scroll-box {
+      white-space: pre-wrap;
+      tab-size: 4;
+      -moz-tab-size: 4;
     }
 
     .detail-card button,
@@ -4788,7 +4796,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.11';
+      window.APP_VERSION = 'v1.0.12';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -9174,7 +9182,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                     <tr style="height:100%;">
                       <th style="width:66px; background:#f1f5f9; padding:13px 6px; text-align:center; color:#475569; font-weight:700; border-right:1px solid #e2e8f0; white-space:nowrap; vertical-align:top; font-size:12.5px;">내용</th>
                       <td style="padding:0; vertical-align:top; height:100%; position:relative; background:#ffffff;">
-                        <div class="detail-memo-scroll-box" style="position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:13px 15px; line-height:1.65; word-break:break-all; font-size:13.5px; color:#0f172a;">${memoHtml}</div>
+                        <div class="detail-memo-scroll-box" style="position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:13px 15px; line-height:1.65; word-break:break-all; white-space:pre-wrap; tab-size:4; font-size:13.5px; color:#0f172a;">${memoHtml}</div>
                       </td>
                     </tr>
                   </tbody>
@@ -9261,7 +9269,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
     .info-table th, .info-table td { border: 1px solid #cbd5e1; padding: 10px 14px; font-size: 13.5px; }
     .info-table th { background: #f1f5f9; font-weight: 700; width: 64px; min-width: 64px; max-width: 68px; color: #334155; text-align: center; white-space: nowrap; padding: 10px 6px; vertical-align: top; }
     .info-table td { text-align: left; }
-    .memo-box { min-height: 150px; line-height: 1.65; word-break: break-word; }
+    .memo-box { min-height: 150px; line-height: 1.65; word-break: break-word; white-space: pre-wrap; tab-size: 4; }
     .memo-box h1, .memo-box .md-h1 { font-size: 16px; font-weight: 800; margin: 6px 0 3px 0; }
     .memo-box h2, .memo-box .md-h2 { font-size: 14.5px; font-weight: 800; margin: 5px 0 2px 0; }
     .memo-box h3, .memo-box .md-h3 { font-size: 13.5px; font-weight: 700; margin: 4px 0 2px 0; }
@@ -10775,7 +10783,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.11</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.12</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -15563,6 +15571,7 @@ function getRandomAppQuote() {
     .md-h1 { font-size: 16px; font-weight: 800; color: #0f172a; margin: 6px 0 3px 0; line-height: 1.35; }
     .md-h2 { font-size: 14.5px; font-weight: 800; color: #1e293b; margin: 5px 0 2px 0; line-height: 1.35; }
     .md-h3 { font-size: 13.5px; font-weight: 800; color: #334155; margin: 4px 0 2px 0; line-height: 1.35; }
+    .detail-memo-scroll-box { white-space: pre-wrap; tab-size: 4; }
     .detail-memo-scroll-box mark { background: #fef08a; color: #854d0e; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
     .detail-memo-scroll-box code.memo-code { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #e11d48; }
     .detail-memo-scroll-box del { text-decoration: line-through; opacity: 0.7; }
@@ -15660,7 +15669,7 @@ function getRandomAppQuote() {
                 '<tr style="height:100%;">' +
                   '<th style="width:66px; background:#f1f5f9; padding:13px 6px; text-align:center; color:#475569; font-weight:700; border-right:1px solid #e2e8f0; white-space:nowrap; vertical-align:top; font-size:12.5px;">내용</th>' +
                   '<td style="padding:0; vertical-align:top; height:100%; position:relative; background:#ffffff;">' +
-                    '<div class="detail-memo-scroll-box" style="position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:13px 15px; line-height:1.65; word-break:break-all; font-size:13.5px; color:#0f172a;">' + memoHtml + '</div>' +
+                    '<div class="detail-memo-scroll-box" style="position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:13px 15px; line-height:1.65; word-break:break-all; white-space:pre-wrap; tab-size:4; font-size:13.5px; color:#0f172a;">' + memoHtml + '</div>' +
                   '</td>' +
                 '</tr>' +
               '</tbody>' +
