@@ -4796,7 +4796,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.13';
+      window.APP_VERSION = 'v1.0.14';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -7037,6 +7037,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         const modal = $('linkInputModal');
         if (!modal) return;
         const needsText = !selText;
+        const isDesktopWebView = !!(window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function');
         modal.innerHTML = `
           <form id="linkInputForm" class="modal-frame" style="width:100%; box-sizing:border-box; background:#ffffff; border-radius:12px; overflow:hidden;">
             <div class="modal-head" style="padding:12px 16px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
@@ -7053,7 +7054,14 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 선택 텍스트: <strong style="color:#0f172a;">${esc(selText)}</strong>
               </div>`}
               <div class="field" style="margin:0;">
-                <label style="font-size:12px; font-weight:700; color:#475569; margin-bottom:4px; display:block;">연결할 주소 또는 폴더/파일 경로</label>
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px;">
+                  <label style="font-size:12px; font-weight:700; color:#475569; margin:0;">연결할 주소 또는 폴더/파일 경로</label>
+                  ${isDesktopWebView ? `
+                  <div style="display:inline-flex; gap:4px; flex-shrink:0;">
+                    <button type="button" class="btn" id="pickLinkFileBtn" style="height:24px; padding:0 9px; font-size:11.5px; font-weight:600; color:#334155; border:1px solid #cbd5e1; border-radius:7px; background:#ffffff; cursor:pointer; display:inline-flex; align-items:center; gap:3px;" title="PC 파일 찾아보기">📄 파일</button>
+                    <button type="button" class="btn" id="pickLinkFolderBtn" style="height:24px; padding:0 9px; font-size:11.5px; font-weight:600; color:#334155; border:1px solid #cbd5e1; border-radius:7px; background:#ffffff; cursor:pointer; display:inline-flex; align-items:center; gap:3px;" title="PC 폴더 찾아보기">📁 폴더</button>
+                  </div>` : ''}
+                </div>
                 <input type="text" id="linkUrlInput" class="control" value="" placeholder="https://" autocomplete="off" style="height:34px; font-size:13px; width:100%; box-sizing:border-box;">
                 <div style="font-size:11px; color:#64748b; margin-top:4px; line-height:1.35;">
                   ※ 웹 주소(https://...), 폴더 경로(C:\\...), 파일 경로(D:\\문서.hwp) 모두 지원
@@ -7066,6 +7074,13 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             </div>
           </form>
         `;
+
+        if (isDesktopWebView) {
+          const fileBtn = $('pickLinkFileBtn');
+          const folderBtn = $('pickLinkFolderBtn');
+          if (fileBtn) fileBtn.onclick = () => window.chrome.webview.postMessage(JSON.stringify({ type: 'pickLinkFile' }));
+          if (folderBtn) folderBtn.onclick = () => window.chrome.webview.postMessage(JSON.stringify({ type: 'pickLinkFolder' }));
+        }
 
         const closeDialog = () => {
           if (modal.open) modal.close();
@@ -10996,7 +11011,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.13</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.14</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -17987,6 +18002,10 @@ function getRandomAppQuote() {
             e.preventDefault();
             e.stopPropagation();
             window.chrome.webview.postMessage(JSON.stringify({ type: 'openExternal', url: rawHref }));
+          } else if (typeof isLocalOrUncPath === 'function' && isLocalOrUncPath(rawHref)) {
+            e.preventDefault();
+            e.stopPropagation();
+            toast('PC 로컬 파일/폴더 경로는 데스크톱 설치 앱에서 열 수 있습니다.');
           }
         }, true);
 
@@ -17996,6 +18015,23 @@ function getRandomAppQuote() {
             try {
               const data = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
               if (!data) return;
+              if (data.type === 'pickedLinkPath' && data.path) {
+                const urlInp = $('linkUrlInput');
+                const txtInp = $('linkTextInput');
+                if (urlInp) {
+                  urlInp.value = data.path;
+                  urlInp.focus();
+                }
+                if (txtInp && !txtInp.value.trim()) {
+                  const baseName = String(data.path).split(/[\\/]/).filter(Boolean).pop() || '';
+                  if (baseName) txtInp.value = baseName;
+                }
+                return;
+              }
+              if (data.type === 'openExternalError' && data.message) {
+                toast(data.message);
+                return;
+              }
               if (data.type === 'windowStateUpdate') {
                 if (typeof data.isWidgetMode === 'boolean') {
                   desktopWidgetState.isWidgetMode = data.isWidgetMode;
