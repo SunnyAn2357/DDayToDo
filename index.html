@@ -4796,7 +4796,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.14';
+      window.APP_VERSION = 'v1.0.15';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -9588,33 +9588,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
               </div>
 
-              <!-- 5. D-Day 기준 (괄호 설명 제거 및 1줄 깔끔 표출) -->
-              <div class="field" id="fieldDdayMode" style="margin-bottom:6px;">
-                <label>D-Day 기준</label>
-                <div style="display:flex; gap:16px; align-items:center; padding:2px 0;">
-                  <label class="options-chip" style="cursor:pointer;">
-                    <input type="radio" name="modalDdayMode" value="workday" ${editTarget.ddayMode !== 'calendar' ? 'checked' : ''}> 근무일 기준
-                  </label>
-                  <label class="options-chip" style="cursor:pointer;">
-                    <input type="radio" name="modalDdayMode" value="calendar" ${editTarget.ddayMode === 'calendar' ? 'checked' : ''}> 달력일 기준
-                  </label>
-                </div>
-              </div>
-
-              <!-- 6. 기간 (시작일 ~ 마감일) -->
-              <div class="field" id="fieldDateRange" style="margin-bottom:6px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
-                  <button type="button" class="label-addon-btn primary" id="modalResetPeriodBtn">기간리셋</button>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <input type="date" id="modalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.startDate || editTarget.dueDate || today()}" required style="flex:1;">
-                  <span style="color:var(--text-sub); font-weight:700;">~</span>
-                  <input type="date" id="modalDueDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.dueDate || editTarget.startDate || today()}" required style="flex:1;">
-                </div>
-              </div>
-
-              <!-- 7. 알림 주기 [V1.6.0: 일자별 알림 및 시간별 당일 알림 2행 구조] -->
+              <!-- 5. 알림 주기 [V1.6.0: 일자별 알림 및 시간별 당일 알림 2행 구조] -->
               <div class="field" id="fieldReminders" style="margin-bottom:6px;">
                 <label>알림 주기</label>
                 <div class="options-card" style="display:flex; flex-direction:column; gap:8px; align-items:stretch; padding:8px 12px; box-sizing:border-box;">
@@ -9636,7 +9610,20 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
               </div>
 
-              <!-- 8. 반복 주기 -->
+              <!-- 6. 기간 (시작일 ~ 마감일) -->
+              <div class="field" id="fieldDateRange" style="margin-bottom:6px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
+                  <button type="button" class="label-addon-btn primary" id="modalResetPeriodBtn">기간리셋</button>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="date" id="modalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.startDate || editTarget.dueDate || today()}" required style="flex:1;">
+                  <span style="color:var(--text-sub); font-weight:700;">~</span>
+                  <input type="date" id="modalDueDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.dueDate || editTarget.startDate || today()}" required style="flex:1;">
+                </div>
+              </div>
+
+              <!-- 7. 반복 주기 -->
               <div class="field" id="fieldRecurrence" style="margin-bottom:6px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:8px;">
                   <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -9653,6 +9640,19 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                   <input type="text" id="modalCustomRec" class="control inline-input" placeholder="일 수(예: 15)" value="${esc(customRecVal)}">
                   <label class="label-addon-btn" style="cursor:pointer; margin-left:auto;">
                     <input type="checkbox" id="modalIsLunar" ${editTarget.isLunar ? 'checked' : ''} style="margin:0; width:14px; height:14px; accent-color:#4f46e5;"> 음력
+                  </label>
+                </div>
+              </div>
+
+              <!-- 8. D-Day 기준 (1줄 컴팩트 표출) -->
+              <div class="field" id="fieldDdayMode" style="margin-bottom:6px; display:flex; flex-direction:row; align-items:center; gap:16px; flex-wrap:wrap; padding:2px 0;">
+                <label style="margin-bottom:0;">D-Day 기준</label>
+                <div style="display:flex; gap:16px; align-items:center;">
+                  <label class="options-chip" style="cursor:pointer;">
+                    <input type="radio" name="modalDdayMode" value="workday" ${editTarget.ddayMode !== 'calendar' ? 'checked' : ''}> 근무일 기준
+                  </label>
+                  <label class="options-chip" style="cursor:pointer;">
+                    <input type="radio" name="modalDdayMode" value="calendar" ${editTarget.ddayMode === 'calendar' ? 'checked' : ''}> 달력일 기준
                   </label>
                 </div>
               </div>
@@ -10405,33 +10405,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
               </div>
 
-              <!-- 5. D-Day 기준 (괄호 설명 제거 및 1줄 깔끔 표출) -->
-              <div class="field" id="recFieldDdayMode">
-                <label>D-Day 기준</label>
-                <div style="display:flex; gap:16px; align-items:center; padding:2px 0;">
-                  <label class="options-chip" style="cursor:pointer;">
-                    <input type="radio" name="recModalDdayMode" value="workday" ${editingRule.ddayMode !== 'calendar' ? 'checked' : ''}> 근무일 기준
-                  </label>
-                  <label class="options-chip" style="cursor:pointer;">
-                    <input type="radio" name="recModalDdayMode" value="calendar" ${editingRule.ddayMode === 'calendar' ? 'checked' : ''}> 달력일 기준
-                  </label>
-                </div>
-              </div>
-
-              <!-- 6. 기간 (시작일 ~ 종료일) -->
-              <div class="field">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
-                  <button type="button" class="label-addon-btn primary" id="recModalResetPeriodBtn">기간리셋</button>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <input type="date" id="recModalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editingRule.startDate || editingRule.dueDate}" required style="flex:1;">
-                  <span style="color:var(--text-sub); font-weight:700;">~</span>
-                  <input type="date" id="recModalEndDate" class="control" min="1900-01-01" max="2099-12-31" value="${editingRule.endDate || ''}" placeholder="종료일(선택)" style="flex:1;">
-                </div>
-              </div>
-
-              <!-- 7. 알림 주기 [V1.6.0: 일자별 알림 및 시간별 당일 알림 2행 구조] -->
+              <!-- 5. 알림 주기 [V1.6.0: 일자별 알림 및 시간별 당일 알림 2행 구조] -->
               <div class="field">
                 <label>알림 주기</label>
                 <div class="options-card" style="display:flex; flex-direction:column; gap:8px; align-items:stretch; padding:8px 12px; box-sizing:border-box;">
@@ -10453,7 +10427,20 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
               </div>
 
-              <!-- 8. 반복 주기 -->
+              <!-- 6. 기간 (시작일 ~ 종료일) -->
+              <div class="field">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
+                  <button type="button" class="label-addon-btn primary" id="recModalResetPeriodBtn">기간리셋</button>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="date" id="recModalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editingRule.startDate || editingRule.dueDate}" required style="flex:1;">
+                  <span style="color:var(--text-sub); font-weight:700;">~</span>
+                  <input type="date" id="recModalEndDate" class="control" min="1900-01-01" max="2099-12-31" value="${editingRule.endDate || ''}" placeholder="종료일(선택)" style="flex:1;">
+                </div>
+              </div>
+
+              <!-- 7. 반복 주기 -->
               <div class="field">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                   <label style="margin-bottom:0;">반복 주기 <span class="req">*</span></label>
@@ -10467,6 +10454,19 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                   <input type="text" id="recModalCustomRec" class="control inline-input" placeholder="일 수(예: 15)" value="${esc(customRecVal)}">
                   <label class="label-addon-btn" style="cursor:pointer; margin-left:auto;">
                     <input type="checkbox" id="recModalIsLunar" ${editingRule.isLunar ? 'checked' : ''} style="margin:0; width:14px; height:14px; accent-color:#4f46e5;"> 음력
+                  </label>
+                </div>
+              </div>
+
+              <!-- 8. D-Day 기준 (1줄 컴팩트 표출) -->
+              <div class="field" id="recFieldDdayMode" style="margin-bottom:6px; display:flex; flex-direction:row; align-items:center; gap:16px; flex-wrap:wrap; padding:2px 0;">
+                <label style="margin-bottom:0;">D-Day 기준</label>
+                <div style="display:flex; gap:16px; align-items:center;">
+                  <label class="options-chip" style="cursor:pointer;">
+                    <input type="radio" name="recModalDdayMode" value="workday" ${editingRule.ddayMode !== 'calendar' ? 'checked' : ''}> 근무일 기준
+                  </label>
+                  <label class="options-chip" style="cursor:pointer;">
+                    <input type="radio" name="recModalDdayMode" value="calendar" ${editingRule.ddayMode === 'calendar' ? 'checked' : ''}> 달력일 기준
                   </label>
                 </div>
               </div>
@@ -11011,7 +11011,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.14</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.15</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
