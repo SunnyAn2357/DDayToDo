@@ -4796,7 +4796,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.18';
+      window.APP_VERSION = 'v1.0.19';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -7048,7 +7048,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               ${needsText ? `
               <div class="field" style="margin:0;">
                 <label style="font-size:12px; font-weight:700; color:#475569; margin-bottom:4px; display:block;">표시할 텍스트</label>
-                <input type="text" id="linkTextInput" class="control" value="" placeholder="링크 텍스트 (미입력 시 주소 표시)" autocomplete="off" style="height:34px; font-size:13px; width:100%; box-sizing:border-box;">
+                <input type="text" id="linkTextInput" class="control" value="" placeholder="미입력시 주소, 폴더명 또는 파일명 표시됨." autocomplete="off" style="height:34px; font-size:13px; width:100%; box-sizing:border-box;">
               </div>` : `
               <div style="font-size:12px; color:#475569; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:6px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                 선택 텍스트: <strong style="color:#0f172a;">${esc(selText)}</strong>
@@ -7124,8 +7124,8 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         modal.showModal();
         setTimeout(() => {
-          const urlInp = $('linkUrlInput');
-          if (urlInp) urlInp.focus();
+          const focusTarget = $('linkTextInput') || $('linkUrlInput');
+          if (focusTarget) focusTarget.focus();
         }, 30);
       }
 
@@ -11011,7 +11011,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.18</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.19</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
