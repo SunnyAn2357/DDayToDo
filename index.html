@@ -4796,7 +4796,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.17';
+      window.APP_VERSION = 'v1.0.18';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -9282,7 +9282,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <button type="button" class="btn icon" data-action="closeReportModal" title="닫기 (단축키: Esc)" aria-label="닫기" style="color:#64748b; background:transparent; border:none; width:26px; height:26px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer;">${icon('close')}</button>
             </div>
             <div class="modal-body" style="padding:12px 18px 14px 18px; flex:1; min-height:0; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; background:#ffffff; gap:10px;">
-              <div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-left:3.5px solid #4f46e5; border-radius:8px; flex-shrink:0;">
+              <div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; flex-shrink:0;">
                 <h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; line-height:1.35; word-break:break-all;">${esc(t.title || '일정 상세')}</h3>
               </div>
               
@@ -11011,7 +11011,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.17</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.18</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -15988,7 +15988,7 @@ function getRandomAppQuote() {
           '<button type="button" data-action="closeAlertModal" style="color:#64748b; background:transparent; border:none; width:26px; height:26px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="닫기 (단축키: Esc)" aria-label="닫기">✕</button>' +
         '</div>' +
         '<div style="flex:1; min-height:0; display:flex; flex-direction:column; padding:12px 18px 14px 18px; box-sizing:border-box; overflow:hidden; gap:10px;">' +
-          '<div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-left:3.5px solid #4f46e5; border-radius:8px; flex-shrink:0;">' +
+          '<div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; flex-shrink:0;">' +
             '<h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; line-height:1.35; word-break:break-all;">' + (item.title || '일정 상세') + '</h3>' +
           '</div>' +
           '<div style="flex:1; min-height:0; display:flex; flex-direction:column; border:1px solid #cbd5e1; border-radius:9px; overflow:hidden; background:#ffffff; box-shadow:0 1px 2px rgba(15,23,42,0.03);">' +
@@ -16185,7 +16185,7 @@ function getRandomAppQuote() {
                 </div>
               </div>
               
-              <div class="briefing-quote-card" style="margin-top:10px; padding:8.5px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-left:3.5px solid #4f46e5; border-radius:7px; color:#334155; font-size:12px; line-height:1.5; word-break:keep-all;">
+              <div class="briefing-quote-card" style="margin-top:10px; padding:8.5px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:7px; color:#334155; font-size:12px; line-height:1.5; word-break:keep-all;">
                 <span style="font-weight:600; color:#1e293b;">“${esc(quote.text)}”</span>
                 ${quote.author ? `<span style="font-size:11px; color:#64748b; margin-left:6px; font-weight:500; white-space:nowrap;">— ${esc(quote.author)}</span>` : ''}
               </div>
@@ -16314,28 +16314,30 @@ function getRandomAppQuote() {
         const container = $('urgentAlertContainer');
         if (!modal || !container || !task) return;
 
-        const timeLabel = minutesBefore >= 60 && minutesBefore % 60 === 0
-          ? `${minutesBefore / 60}시간 전`
-          : `${minutesBefore}분 전`;
+        const nowDt = new Date();
+        const nowTimeStr = String(nowDt.getHours()).padStart(2, '0') + ':' + String(nowDt.getMinutes()).padStart(2, '0');
+        const remainText = minutesBefore >= 60 && minutesBefore % 60 === 0
+          ? `${minutesBefore / 60}시간`
+          : `${minutesBefore}분`;
+        const memoHtml = (task.memo && task.memo.trim()) ? parseMemoMarkdown(task.memo) : '';
 
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box;">
             <!-- 상단 앰버 골드 하이라이트 배너 -->
             <div class="briefing-drag-header" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-bottom:1px solid #fde68a; padding:18px 20px 14px; flex-shrink:0; cursor:move; user-select:none;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <span style="display:inline-flex; align-items:center; gap:5px; background:#b45309; color:#ffffff; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:20px;">
-                  ⏰ 일정 시작 ${timeLabel} 안내
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="display:inline-flex; align-items:center; gap:5px; background:#b45309; color:#ffffff; font-size:11.5px; font-weight:700; padding:2px 10px; border-radius:20px;">
+                  현재 시간 ${nowTimeStr}
                 </span>
                 <span style="font-size:12px; font-weight:700; color:#b45309;">${today()}</span>
               </div>
               <div style="display:flex; align-items:baseline; gap:8px;">
-                <span style="font-size:26px; font-weight:800; color:#92400e; font-feature-settings:'tnum';">${esc(task.time || '지정 시간')}</span>
-                <span style="font-size:13.5px; font-weight:700; color:#b45309;">(${timeLabel})</span>
+                <span style="font-size:19px; font-weight:800; color:#92400e; font-feature-settings:'tnum'; letter-spacing:-0.01em;">${esc(task.time || '지정 시간')} 일정까지 ${remainText} 남았습니다.</span>
               </div>
             </div>
 
             <!-- 일정 상세 정보 카드 -->
-            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:16px 20px; gap:10px; background:#ffffff; box-sizing:border-box;">
+            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:12px; background:#ffffff; box-sizing:border-box;">
               <div style="font-size:17px; font-weight:800; color:#0f172a; line-height:1.45; word-break:break-all;">
                 ${esc(task.title)}
               </div>
@@ -16344,10 +16346,8 @@ function getRandomAppQuote() {
                   <span>📍 장소:</span> <span>${esc(task.location)}</span>
                 </div>
               ` : ''}
-              ${task.memo ? `
-                <div style="background:#f8fafc; border-left:3px solid #f59e0b; padding:8px 12px; font-size:12px; color:#475569; line-height:1.55; border-radius:0 6px 6px 0; max-height:90px; overflow-y:auto; word-break:break-all;">
-                  ${esc(task.memo.slice(0, 160))}${task.memo.length > 160 ? '...' : ''}
-                </div>
+              ${memoHtml ? `
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px 14px; font-size:13px; color:#0f172a; line-height:1.65; border-radius:8px; max-height:140px; overflow-y:auto; word-break:break-all; white-space:pre-wrap; tab-size:4;">${memoHtml}</div>
               ` : ''}
             </div>
 
@@ -16374,11 +16374,11 @@ function getRandomAppQuote() {
 
         // [V1.10.0] 데스크톱 환경에서는 1번 모니터 정중앙 독립 최상단 팝업 창으로 분리 호출
         if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
-          const fullHtml = buildIndependentAlertHtml(`⏰ 일정 시작 ${timeLabel} 안내`, container.innerHTML, [task]);
+          const fullHtml = buildIndependentAlertHtml(`일정 시작 ${remainText} 전 안내`, container.innerHTML, [task]);
           window.chrome.webview.postMessage(JSON.stringify({
             type: 'openIndependentAlert',
             alertType: 'urgent_' + safeWindowKey(task.id) + '_' + minutesBefore,
-            title: `⏰ 일정 시작 ${timeLabel} 안내`,
+            title: `일정 시작 ${remainText} 전 안내`,
             html: fullHtml,
             width: 520,
             height: 460
@@ -16520,7 +16520,7 @@ function getRandomAppQuote() {
 
             <!-- 안내 본문 카드 (균형 잡힌 황금비율 여백 및 정갈한 불릿 리스트) -->
             <div class="modal-body overtime-modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:20px 22px; display:flex; flex-direction:column; justify-content:center; gap:16px; background:#ffffff; box-sizing:border-box;">
-              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #4f46e5; padding:18px 20px; border-radius:0 10px 10px 0; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:18px 20px; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
                 <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
                   <span>📋</span> <span>초과근무 확인 및 등록 요청</span>
                 </div>
@@ -16634,7 +16634,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 일정 정보 -->
-            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:16px 20px; gap:10px; background:#ffffff; box-sizing:border-box;">
+            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:12px; background:#ffffff; box-sizing:border-box;">
               <div style="font-size:17px; font-weight:800; color:#0f172a; line-height:1.45; word-break:break-all;">
                 ${esc(task.title)}
               </div>
@@ -16643,10 +16643,8 @@ function getRandomAppQuote() {
                   <span>📍 장소:</span> <span>${esc(task.location)}</span>
                 </div>
               ` : ''}
-              ${task.memo ? `
-                <div style="background:#f8fafc; border-left:3px solid #3b82f6; padding:8px 12px; font-size:12px; color:#475569; line-height:1.55; border-radius:0 6px 6px 0; max-height:90px; overflow-y:auto; word-break:break-all;">
-                  ${esc(task.memo.slice(0, 160))}${task.memo.length > 160 ? '...' : ''}
-                </div>
+              ${(task.memo && task.memo.trim()) ? `
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px 14px; font-size:13px; color:#0f172a; line-height:1.65; border-radius:8px; max-height:140px; overflow-y:auto; word-break:break-all; white-space:pre-wrap; tab-size:4;">${parseMemoMarkdown(task.memo)}</div>
               ` : ''}
             </div>
 
@@ -16936,7 +16934,7 @@ function getRandomAppQuote() {
               return;
             }
 
-            if (Math.abs(diffMin - m) <= 1 && !triggeredAlertsInSession.has(key)) {
+            if (diffMin === m && !triggeredAlertsInSession.has(key)) {
               triggeredAlertsInSession.add(key);
               openUrgentAlertModal(t, m);
             }
@@ -18512,7 +18510,7 @@ function getRandomAppQuote() {
           else { lastTap = { date: d, t: now }; }
         });
       })();
-      setInterval(checkSmartAlerts, 60000);
+      setInterval(checkSmartAlerts, 30000);
       }
 
       init();
