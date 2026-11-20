@@ -883,6 +883,11 @@
       align-items: center;
       margin-bottom: 3px;
       height: 22px;
+      min-height: 22px;
+      max-height: 22px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .day-number {
@@ -940,6 +945,7 @@
       border: none;
       color: #334155;
       transition: opacity 0.1s ease;
+      flex-shrink: 0;
     }
 
     .calendar-grid .chip,
@@ -1034,6 +1040,7 @@
       font-weight: 600;
       text-align: left;
       cursor: pointer;
+      flex-shrink: 0;
     }
 
     .more:hover {
@@ -2682,7 +2689,7 @@
         background: #94a3b8;
       }
       .period-progress-fill.done {
-        background: #10b981;
+        background: #94a3b8;
       }
       .period-progress-fill.overdue {
         background: #ef4444;
@@ -2694,7 +2701,7 @@
         white-space: nowrap;
       }
       .period-progress-text.done {
-        color: #059669;
+        color: #64748b;
       }
       .period-progress-text.overdue {
         color: #dc2626;
@@ -2740,6 +2747,8 @@
       .period-track-row {
         height: 18px;
         min-height: 18px;
+        max-height: 18px;
+        flex-shrink: 0;
         display: flex;
         align-items: center;
         position: relative;
@@ -2751,6 +2760,10 @@
         background: transparent !important;
         border: none !important;
         box-sizing: border-box;
+      }
+      .period-track-row.spacer {
+        visibility: hidden;
+        pointer-events: none;
       }
       .period-track-row.mid {
         margin-left: -7px;
@@ -2788,6 +2801,94 @@
         flex: none;
         padding: 0 1px;
         font-family: inherit;
+      }
+      /* [V1.0.20] 완료된 일정 전 영역 회색 통일 (기간 일정 트랙, 진척도 바, 목록/상세 뷰, 다크 모드 포함) */
+      .period-track-row.done .period-track-arrow {
+        color: #94a3b8 !important;
+      }
+      .period-track-row.done .period-track-text {
+        color: #64748b !important;
+        text-decoration: line-through;
+        text-decoration-color: #94a3b8;
+        opacity: 0.85;
+        font-weight: 600;
+      }
+      .period-track-row.done .period-track-line {
+        background: #94a3b8 !important;
+        opacity: 0.7;
+      }
+      .task-row.done .task-date-prefix,
+      .task-row.done .task-meta,
+      .task-row.done .task-meta span {
+        color: #94a3b8 !important;
+      }
+      .detail-card.is-completed .detail-title,
+      .schedule-detail-view.is-completed .report-title {
+        color: #64748b !important;
+        text-decoration: line-through;
+        text-decoration-color: #94a3b8;
+      }
+      .schedule-detail-view.is-completed .report-accent-bar {
+        background: #94a3b8 !important;
+      }
+      .detail-card.is-completed .detail-body,
+      .detail-card.is-completed .detail-body *,
+      .schedule-detail-view.is-completed table,
+      .schedule-detail-view.is-completed table * {
+        color: #64748b !important;
+      }
+      .detail-card.is-completed .detail-memo mark,
+      .detail-card.is-completed .detail-memo span[style*="background"],
+      .schedule-detail-view.is-completed .detail-memo-scroll-box mark,
+      .schedule-detail-view.is-completed .detail-memo-scroll-box span[style*="background"] {
+        background-color: #f1f5f9 !important;
+        background: #f1f5f9 !important;
+      }
+      [data-theme="dark"] .chip.done,
+      [data-theme="dark"] .task-name.done {
+        color: #94a3b8 !important;
+        text-decoration-color: #64748b;
+      }
+      [data-theme="dark"] .period-track-row.done .period-track-arrow {
+        color: #64748b !important;
+      }
+      [data-theme="dark"] .period-track-row.done .period-track-text {
+        color: #94a3b8 !important;
+        text-decoration-color: #64748b;
+      }
+      [data-theme="dark"] .period-track-row.done .period-track-line {
+        background: #64748b !important;
+        opacity: 0.75;
+      }
+      [data-theme="dark"] .period-progress-fill.done {
+        background: #64748b;
+      }
+      [data-theme="dark"] .period-progress-text.done {
+        color: #94a3b8;
+      }
+      [data-theme="dark"] .dday-badge.done {
+        background: #262b35;
+        color: #94a3b8;
+        border-color: #3e4758;
+      }
+      [data-theme="dark"] .task-row.done {
+        background: #222630;
+        border-color: #333945;
+      }
+      [data-theme="dark"] .detail-card.is-completed .detail-title,
+      [data-theme="dark"] .schedule-detail-view.is-completed .report-title,
+      [data-theme="dark"] .detail-card.is-completed .detail-body,
+      [data-theme="dark"] .detail-card.is-completed .detail-body *,
+      [data-theme="dark"] .schedule-detail-view.is-completed table,
+      [data-theme="dark"] .schedule-detail-view.is-completed table * {
+        color: #94a3b8 !important;
+      }
+      [data-theme="dark"] .detail-card.is-completed .detail-memo mark,
+      [data-theme="dark"] .detail-card.is-completed .detail-memo span[style*="background"],
+      [data-theme="dark"] .schedule-detail-view.is-completed .detail-memo-scroll-box mark,
+      [data-theme="dark"] .schedule-detail-view.is-completed .detail-memo-scroll-box span[style*="background"] {
+        background-color: #2f3542 !important;
+        background: #2f3542 !important;
       }
       @media (max-width: 768px) {
         .period-track-row.mid {
@@ -4419,6 +4520,9 @@
       }
       .day-header {
         height: 20px !important;
+        min-height: 20px !important;
+        max-height: 20px !important;
+        flex-shrink: 0 !important;
         margin-bottom: 2px !important;
         justify-content: flex-start !important;
         gap: 1px !important;
@@ -4796,7 +4900,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.19';
+      window.APP_VERSION = 'v1.0.20';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -8707,11 +8811,57 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           }
         }
 
-        let html = '';
+        const cellDates = [];
         for (let i = 0; i < 42; i++) {
           const d = new Date(first);
           d.setDate(first.getDate() + i);
-          const s = dateStr(d);
+          cellDates.push({ d, s: dateStr(d) });
+        }
+
+        const allMultiTasks = data.tasks.filter(t => t.startDate && t.dueDate && t.startDate < t.dueDate);
+        const dayLanesByIdx = Array.from({ length: 42 }, () => []);
+        for (let w = 0; w < 6; w++) {
+          const wStart = cellDates[w * 7].s;
+          const wEnd = cellDates[w * 7 + 6].s;
+          const weekMulti = allMultiTasks.filter(t => !(ui.hideCompleted && t.completed) && t.startDate <= wEnd && t.dueDate >= wStart);
+          weekMulti.sort((a, b) => {
+            const aS = a.startDate < wStart ? wStart : a.startDate;
+            const bS = b.startDate < wStart ? wStart : b.startDate;
+            if (aS !== bS) return aS < bS ? -1 : 1;
+            const aE = a.dueDate > wEnd ? wEnd : a.dueDate;
+            const bE = b.dueDate > wEnd ? wEnd : b.dueDate;
+            const aSpan = dayDistance(aS, aE);
+            const bSpan = dayDistance(bS, bE);
+            if (aSpan !== bSpan) return bSpan - aSpan;
+            return allMultiTasks.indexOf(a) - allMultiTasks.indexOf(b);
+          });
+          const laneOcc = [];
+          for (const t of weekMulti) {
+            const cStartStr = t.startDate < wStart ? wStart : t.startDate;
+            const cEndStr = t.dueDate > wEnd ? wEnd : t.dueDate;
+            const c0 = Math.max(0, Math.min(6, dayDistance(wStart, cStartStr)));
+            const c1 = Math.max(c0, Math.min(6, dayDistance(wStart, cEndStr)));
+            let lane = 0;
+            while (true) {
+              if (!laneOcc[lane]) laneOcc[lane] = Array(7).fill(false);
+              let ok = true;
+              for (let c = c0; c <= c1; c++) {
+                if (laneOcc[lane][c]) { ok = false; break; }
+              }
+              if (ok) break;
+              lane++;
+            }
+            for (let c = c0; c <= c1; c++) {
+              laneOcc[lane][c] = true;
+              dayLanesByIdx[w * 7 + c][lane] = t;
+            }
+          }
+        }
+
+        let html = '';
+        for (let i = 0; i < 42; i++) {
+          const d = cellDates[i].d;
+          const s = cellDates[i].s;
           const tasks = (byDate.get(s) || []).sort(calendarTaskSort);
           const dayOfWeek = d.getDay();
           const isSunday = dayOfWeek === 0;
@@ -8756,67 +8906,80 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <div class="day-number">${d.getDate()}</div>
               ${extraHeaderText}
             </div>`;
-          /* [V1.1.2] 기간 일정 2px 슬림 연속 실선(박스 배경 제거) + 단일 일정 분리 렌더링 */
-          const multiList = tasks.filter(t => t.startDate && t.dueDate && t.startDate < t.dueDate);
+          /* [V1.1.2 / V1.0.20] 기간 일정 주간 고정 레인 2px 슬림 연속 실선 + 단일 일정 분리 렌더링 */
           const singleList = tasks.filter(t => !t.startDate || !t.dueDate || t.startDate >= t.dueDate);
-
-          const multiTasksInScope = data.tasks.filter(t => t.startDate && t.dueDate && t.startDate < t.dueDate);
-          multiList.sort((a, b) => multiTasksInScope.indexOf(a) - multiTasksInScope.indexOf(b));
-
-          let renderedCount = 0;
+          const lanesForDay = dayLanesByIdx[i] || [];
           const maxCellItems = 4;
+          let maxLane = -1;
+          for (let l = Math.min(lanesForDay.length, maxCellItems) - 1; l >= 0; l--) {
+            if (lanesForDay[l]) { maxLane = l; break; }
+          }
 
-          // 1. 기간 일정: 2px 슬림 연속 실선 렌더링 (박스 없음, 텍스트는 초일/말일만)
-          multiList.forEach(t => {
-            if (renderedCount >= maxCellItems) return;
-            const colorIdx = multiTasksInScope.indexOf(t);
+          let renderedSlots = 0;
+          let shownTaskCount = 0;
+
+          // 1. 기간 일정: 주간 고정 레인 기반 2px 슬림 연속 실선 렌더링 (빈 상단 레인은 스페이서로 정렬)
+          for (let lane = 0; lane <= maxLane && renderedSlots < maxCellItems; lane++) {
+            const t = lanesForDay[lane];
+            if (!t) {
+              html += `<div class="period-track-row spacer" aria-hidden="true"></div>`;
+              renderedSlots++;
+              continue;
+            }
+            const colorIdx = allMultiTasks.indexOf(t);
             const color = PERIOD_PALETTE[colorIdx >= 0 ? (colorIdx % PERIOD_PALETTE.length) : 0];
             const isStart = (s === t.startDate);
             const isEnd = (s === t.dueDate);
             const checkPrefix = t.completed ? '✓ ' : '';
+            const lineColor = t.completed ? '#94a3b8' : color.line;
+            const textColor = t.completed ? '#64748b' : color.line;
+            const doneCls = t.completed ? ' done' : '';
 
             if (isStart && isEnd) {
-              html += `<div class="period-track-row" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
-                <span class="period-track-arrow" style="color:${color.line};">&lt;</span>
-                <span class="period-track-text" style="color:${color.line};">${checkPrefix}${esc(t.title)}</span>
-                <span class="period-track-arrow" style="color:${color.line};">&gt;</span>
+              html += `<div class="period-track-row${doneCls}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+                <span class="period-track-arrow" style="color:${textColor};">&lt;</span>
+                <span class="period-track-text" style="color:${textColor};">${checkPrefix}${esc(t.title)}</span>
+                <span class="period-track-arrow" style="color:${textColor};">&gt;</span>
               </div>`;
             } else if (isStart) {
               // 초일: < + 제목 + 오른쪽 셀로 이어지는 2px 실선
-              html += `<div class="period-track-row start" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
-                <span class="period-track-arrow" style="color:${color.line};">&lt;</span>
-                <span class="period-track-text" style="color:${color.line};">${checkPrefix}[${t.dueDate.slice(5)}] ${esc(t.title)}</span>
-                <div class="period-track-line" style="background:${color.line};"></div>
+              html += `<div class="period-track-row start${doneCls}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+                <span class="period-track-arrow" style="color:${textColor};">&lt;</span>
+                <span class="period-track-text" style="color:${textColor};">${checkPrefix}[${t.dueDate.slice(5)}] ${esc(t.title)}</span>
+                <div class="period-track-line" style="background:${lineColor};"></div>
               </div>`;
             } else if (isEnd) {
               // 말일: 왼쪽 셀에서 이어지는 2px 실선 + 제목 + >
-              html += `<div class="period-track-row end" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
-                <div class="period-track-line" style="background:${color.line};"></div>
-                <span class="period-track-text" style="color:${color.line};">${checkPrefix}${esc(t.title)}</span>
-                <span class="period-track-arrow" style="color:${color.line};">&gt;</span>
+              html += `<div class="period-track-row end${doneCls}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+                <div class="period-track-line" style="background:${lineColor};"></div>
+                <span class="period-track-text" style="color:${textColor};">${checkPrefix}${esc(t.title)}</span>
+                <span class="period-track-arrow" style="color:${textColor};">&gt;</span>
               </div>`;
             } else {
               // 중간일: 텍스트 없이 셀 전체를 꽉 채워 다음 셀과 딱 붙는 2px 실선만!
-              html += `<div class="period-track-row mid" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
-                <div class="period-track-line" style="background:${color.line};"></div>
+              html += `<div class="period-track-row mid${doneCls}" title="${esc(t.title)} (${t.startDate}~${t.dueDate})">
+                <div class="period-track-line" style="background:${lineColor};"></div>
               </div>`;
             }
-            renderedCount++;
-          });
+            renderedSlots++;
+            shownTaskCount++;
+          }
 
           // 2. 단일 일정 칩 렌더링
           singleList.forEach(t => {
-            if (renderedCount >= maxCellItems) return;
+            if (renderedSlots >= maxCellItems) return;
             const isHol = !isWork(t);
             const priClass = isHol ? 'pri-holiday' : `pri-${t.priority || 'normal'}`;
             const checkPrefix = t.completed ? '✓ ' : '';
             const prefixTags = renderTaskPrefixTags(t);
-            html += `<div class="chip ${priClass} ${t.completed ? 'done' : ''}" data-action="edit" data-id="${t.id}" title="${esc(window.chipLabel(t))}" style="${t.titleColor ? `color:${t.titleColor} !important;` : ''}">${checkPrefix}${prefixTags}${esc(window.chipLabel(t))}</div>`;
-            renderedCount++;
+            html += `<div class="chip ${priClass} ${t.completed ? 'done' : ''}" data-action="edit" data-id="${t.id}" title="${esc(window.chipLabel(t))}" style="${(!t.completed && t.titleColor) ? `color:${t.titleColor} !important;` : ''}">${checkPrefix}${prefixTags}${esc(window.chipLabel(t))}</div>`;
+            renderedSlots++;
+            shownTaskCount++;
           });
 
-          if (tasks.length > maxCellItems) {
-            html += `<div class="more" data-action="openDayMore" data-date="${s}">+${tasks.length - maxCellItems}개 더보기</div>`;
+          const hiddenCount = tasks.length - shownTaskCount;
+          if (hiddenCount > 0) {
+            html += `<div class="more" data-action="openDayMore" data-date="${s}">+${hiddenCount}개 더보기</div>`;
           }
           html += `</div>`;
         }
@@ -8913,7 +9076,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 const periodStr = (t.startDate || t.dueDate || '-') + (t.endDate ? ` ~ ${t.endDate}` : '');
                 const recText = `${t.isLunar ? '[음력] ' : ''}${RECURRENCE[t.recurrence] || (t.recurrence + '일 마다')}`;
                 $('listDetailContent').innerHTML = `
-                  <div class="detail-card" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+                  <div class="detail-card${t.completed ? ' is-completed' : ''}" style="display:flex; flex-direction:column; flex:1; min-height:0;">
                     <div class="detail-head" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid #e2e8f0;">
                       <h3 class="detail-title" style="margin:0; font-size:15.5px; font-weight:800; color:#0f172a;">${esc(t.title)}</h3>
                       <button type="button" class="memo-tool-btn" data-action="printDetailMemo" data-id="${t.id}" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc; flex-shrink:0;" title="내용 인쇄">
@@ -8948,7 +9111,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 const hasRec = t.recurrenceType || (t.recurrence && t.recurrence !== 'none');
                 const recLabel = hasRec ? ` (${t.isLunar ? '음력 ' : ''}${RECURRENCE[t.recurrenceType || t.recurrence] || ((t.recurrenceType || t.recurrence) + '일 마다')})` : '';
                 $('listDetailContent').innerHTML = `
-                  <div class="detail-card" style="display:flex; flex-direction:column; flex:1; min-height:0;">
+                  <div class="detail-card${t.completed ? ' is-completed' : ''}" style="display:flex; flex-direction:column; flex:1; min-height:0;">
                     <div class="detail-head" style="display:flex; justify-content:space-between; align-items:center; padding-bottom:10px; border-bottom:1px solid #e2e8f0;">
                       <h3 class="detail-title" style="margin:0; font-size:15.5px; font-weight:800; color:#0f172a;">${esc(t.title)}</h3>
                       <button type="button" class="memo-tool-btn" data-action="printDetailMemo" data-id="${t.id}" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc; flex-shrink:0;" title="내용 인쇄">
@@ -9040,9 +9203,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         return `<div class="task-row ${g}" draggable="${canDrag ? 'true' : 'false'}" data-priority="${t.priority || 'normal'}" data-id="${t.id}" ${inList ? `data-action="selectListTask" style="cursor:pointer; background:${isSelected ? '#f1f5f9' : 'transparent'};"` : ''}>
           ${!isWork(t) ? '' : `<button type="button" class="check-small ${t.completed ? 'checked' : ''}" data-action="toggle" data-id="${t.id}" data-date="${t.dueDate}" aria-label="완료 토글">${t.completed ? icon('check') : ''}</button>`}
           <div class="task-open" ${!inList ? `data-action="viewDetailReport" data-id="${t.id}" style="cursor:pointer;"` : ''}>
-            <div class="task-name ${priClass} ${t.completed ? 'done' : ''}" style="${t.titleColor ? `color:${t.titleColor} !important;` : ''}">${prefixTags}${esc(t.title)}</div>
+            <div class="task-name ${priClass} ${t.completed ? 'done' : ''}" style="${(!t.completed && t.titleColor) ? `color:${t.titleColor} !important;` : ''}">${prefixTags}${esc(t.title)}</div>
             <div class="task-meta">
-              ${inList && listDateStr ? `<span class="task-date-prefix" style="font-weight:700; color:#475569; font-size:11px; letter-spacing:-0.02em; margin-right:1px;">${listDateStr}</span>` : ''}
+              ${inList && listDateStr ? `<span class="task-date-prefix" style="font-weight:700; color:${t.completed ? '#94a3b8' : '#475569'}; font-size:11px; letter-spacing:-0.02em; margin-right:1px;">${listDateStr}</span>` : ''}
               <span class="dday-badge ${g}">${dText}</span>
               ${!isWork(t) ? '' : `${(!inList && dateRangeStr) ? `<span>${dateRangeStr}</span>` : ''}<span>${priShort}</span>`}
             </div>
@@ -9273,17 +9436,17 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         const memoHtml = (t.memo && t.memo.trim()) ? parseMemoMarkdown(t.memo) : '<p style="color:#94a3b8; margin:0;">(내용 없음)</p>';
 
         container.innerHTML = `
-          <div class="modal-frame schedule-detail-view" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; background:#ffffff; overflow:hidden; border-radius:14px;">
+          <div class="modal-frame schedule-detail-view${t.completed ? ' is-completed' : ''}" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; background:#ffffff; overflow:hidden; border-radius:14px;">
             <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center; padding:11px 18px; border-bottom:1px solid #e2e8f0; background:#f8fafc; flex-shrink:0;">
               <div style="display:inline-flex; align-items:center; gap:6px;">
-                <span style="display:inline-block; width:3.5px; height:13px; border-radius:2px; background:#4f46e5;"></span>
+                <span class="report-accent-bar" style="display:inline-block; width:3.5px; height:13px; border-radius:2px; background:#4f46e5;"></span>
                 <span style="font-size:13px; font-weight:700; color:#475569; letter-spacing:-0.01em;">일정 상세 내용</span>
               </div>
               <button type="button" class="btn icon" data-action="closeReportModal" title="닫기 (단축키: Esc)" aria-label="닫기" style="color:#64748b; background:transparent; border:none; width:26px; height:26px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer;">${icon('close')}</button>
             </div>
             <div class="modal-body" style="padding:12px 18px 14px 18px; flex:1; min-height:0; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; background:#ffffff; gap:10px;">
               <div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; flex-shrink:0;">
-                <h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; line-height:1.35; word-break:break-all;">${esc(t.title || '일정 상세')}</h3>
+                <h3 class="report-title" style="font-size:16px; font-weight:800; color:#0f172a; margin:0; line-height:1.35; word-break:break-all;">${esc(t.title || '일정 상세')}</h3>
               </div>
               
               <div style="flex:1; min-height:0; display:flex; flex-direction:column; border:1px solid #cbd5e1; border-radius:9px; overflow:hidden; background:#ffffff; box-shadow:0 1px 2px rgba(15,23,42,0.03);">
@@ -11011,7 +11174,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.19</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.20</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
