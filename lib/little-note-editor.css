@@ -408,6 +408,10 @@
     white-space: normal !important;
 }
 
+.ql-editor.little-note-view > :first-child {
+    margin-top: 0 !important;
+}
+
 .ql-editor.little-note-view .ql-code-block-container {
     padding: 12px 16px !important;
 }

@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.0">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.1">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -1530,7 +1530,8 @@
     .detail-row {
       display: flex;
       align-items: flex-start;
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: 0;
       padding: 3.5px 0;
       border-bottom: 1px solid #f8fafc;
       font-size: 12.5px;
@@ -1544,14 +1545,17 @@
     .detail-label {
       color: #64748b;
       font-weight: 600;
-      width: 75px;
+      width: auto;
+      white-space: nowrap;
       flex-shrink: 0;
     }
 
     .detail-value {
       color: #0f172a;
       font-weight: 500;
-      text-align: right;
+      text-align: left;
+      flex: 1;
+      min-width: 0;
       word-break: break-all;
     }
 
@@ -1581,6 +1585,11 @@
       white-space: pre-wrap;
       tab-size: 4;
       -moz-tab-size: 4;
+    }
+
+    .detail-memo-full:has(.little-note-view),
+    .detail-memo-scroll-box:has(.little-note-view) {
+      white-space: normal !important;
     }
 
     .detail-actions {
@@ -2067,8 +2076,9 @@
     }
 
     dialog#settings {
-      width: 500px;
-      max-width: calc(100vw - 24px);
+      width: 540px;
+      max-width: calc(100vw - 32px);
+      border-radius: 14px;
     }
 
     /* [V1.1.0] 상세 보고서 모달 확대 고정 (표/이미지/긴 요약 쾌적 열람) */
@@ -5156,7 +5166,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.2.0"></script>
+  <script src="./lib/little-note-editor.js?v=1.2.1"></script>
 
   <script>
     (function () {
@@ -5165,7 +5175,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.0';
+      window.APP_VERSION = 'v1.2.1';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -8853,12 +8863,10 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                       </button>
                     </div>
                     <div class="detail-body" style="flex:1; min-height:0; display:flex; flex-direction:column; padding-top:8px;">
-                      <div class="detail-row"><span class="detail-label">반복 주기</span><div class="detail-value" style="color:#2563eb; font-weight:700;">${recText} (${periodStr})</div></div>
-                      ${t.location ? `<div class="detail-row"><span class="detail-label">장소</span><div class="detail-value">${esc(t.location)}</div></div>` : ''}
-                      ${(t.tags && t.tags.length) ? `<div class="detail-row"><span class="detail-label">태그</span><div class="detail-value">${esc(t.tags.join(', '))}</div></div>` : ''}
-                      <div class="detail-memo-full detail-memo" style="flex:1; overflow-y:auto; margin-top:8px; padding:10px 2px; border-bottom:none;">
-                        ${t.memo && t.memo.trim() ? parseMemoMarkdown(t.memo) : '<span style="color:#94a3b8; font-size:12.5px;">(상세 내용 없음)</span>'}
-                      </div>
+                      <div class="detail-row"><span class="detail-label">반복 주기:</span><div class="detail-value" style="color:#2563eb; font-weight:700;">&nbsp;&nbsp;${recText} (${periodStr})</div></div>
+                      ${t.location ? `<div class="detail-row"><span class="detail-label">장소:</span><div class="detail-value">&nbsp;&nbsp;${esc(t.location)}</div></div>` : ''}
+                      ${(t.tags && t.tags.length) ? `<div class="detail-row"><span class="detail-label">태그:</span><div class="detail-value">&nbsp;&nbsp;${esc(t.tags.join(', '))}</div></div>` : ''}
+                      <div class="detail-memo-full detail-memo" style="flex:1; overflow-y:auto; margin-top:4px; padding:4px 2px 8px; border-bottom:none;">${t.memo && t.memo.trim() ? parseMemoMarkdown(t.memo) : '<span style="color:#94a3b8; font-size:12.5px;">(상세 내용 없음)</span>'}</div>
                     </div>
                     <div class="detail-actions">
                       <button type="button" class="btn danger" data-action="deleteRecurringRule" data-id="${t.id}">
@@ -8888,12 +8896,10 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                       </button>
                     </div>
                     <div class="detail-body" style="flex:1; min-height:0; display:flex; flex-direction:column; padding-top:8px;">
-                      <div class="detail-row"><span class="detail-label">일시</span><div class="detail-value" style="font-weight:600;">${periodStr}${t.time ? ` <span style="color:#2563eb; font-weight:700; margin-left:4px;">${esc(t.time)}</span>` : ''}${recLabel}</div></div>
-                      ${t.location ? `<div class="detail-row"><span class="detail-label">장소</span><div class="detail-value">${esc(t.location)}</div></div>` : ''}
-                      ${(t.tags && t.tags.length) ? `<div class="detail-row"><span class="detail-label">태그</span><div class="detail-value">${esc(t.tags.join(', '))}</div></div>` : ''}
-                      <div class="detail-memo-full detail-memo" style="flex:1; overflow-y:auto; margin-top:8px; padding:10px 2px; border-bottom:none;">
-                        ${t.memo && t.memo.trim() ? parseMemoMarkdown(t.memo) : '<span style="color:#94a3b8; font-size:12.5px;">(상세 내용 없음)</span>'}
-                      </div>
+                      <div class="detail-row"><span class="detail-label">일시:</span><div class="detail-value" style="font-weight:600;">&nbsp;&nbsp;${periodStr}${t.time ? `&nbsp;&nbsp;<span style="color:#2563eb; font-weight:700;">${esc(t.time)}</span>` : ''}${recLabel}</div></div>
+                      ${t.location ? `<div class="detail-row"><span class="detail-label">장소:</span><div class="detail-value">&nbsp;&nbsp;${esc(t.location)}</div></div>` : ''}
+                      ${(t.tags && t.tags.length) ? `<div class="detail-row"><span class="detail-label">태그:</span><div class="detail-value">&nbsp;&nbsp;${esc(t.tags.join(', '))}</div></div>` : ''}
+                      <div class="detail-memo-full detail-memo" style="flex:1; overflow-y:auto; margin-top:4px; padding:4px 2px 8px; border-bottom:none;">${t.memo && t.memo.trim() ? parseMemoMarkdown(t.memo) : '<span style="color:#94a3b8; font-size:12.5px;">(상세 내용 없음)</span>'}</div>
                     </div>
                     <div class="detail-actions">
                       <button type="button" class="btn danger" data-action="deleteTask" data-id="${t.id}">
@@ -9292,7 +9298,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.0">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.1">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -10687,7 +10693,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         const modal = $('settings');
         modal.innerHTML = `
           <div class="modal-frame" style="width:100%; max-width:100%; box-sizing:border-box; overflow:hidden;">
-            <div class="modal-head" style="padding:10px 16px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+            <div class="modal-head" style="padding:16px 24px 14px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
               <div style="display:flex; align-items:center; gap:8px;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
                   <circle cx="12" cy="12" r="3"></circle>
@@ -10699,21 +10705,20 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             </div>
 
             <!-- 상단 2개 세그먼트 탭 -->
-            <div style="padding:8px 14px 0; background:#ffffff; border-bottom:1px solid #f1f5f9;">
+            <div style="padding:12px 24px 12px; background:#ffffff; border-bottom:1px solid #f1f5f9;">
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; background:#f1f5f9; padding:3px; border-radius:9px;">
                 <button type="button" class="settings-tab-btn" data-settings-tab="general" style="height:30px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; background:#ffffff; color:#4f46e5; box-shadow:0 1px 3px rgba(0,0,0,0.08); transition:all 0.15s ease;">알림 · 일반</button>
                 <button type="button" class="settings-tab-btn" data-settings-tab="data" style="height:30px; border:none; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; color:#64748b; transition:all 0.15s ease;">데이터 · 백업</button>
               </div>
-              <div style="height:8px;"></div>
             </div>
 
-            <div class="modal-body" style="padding:10px 14px; gap:8px; box-sizing:border-box; overflow-y:auto; width:100%;">
+            <div class="modal-body" style="padding:16px 24px 22px; gap:12px; box-sizing:border-box; overflow-y:auto; width:100%;">
               
               <!-- [TAB 1] 알림 · 일반 -->
-              <div id="settingsPaneGeneral" style="display:flex; flex-direction:column; gap:8px; width:100%;">
+              <div id="settingsPaneGeneral" style="display:flex; flex-direction:column; gap:11px; width:100%;">
 
                 <!-- 1-1. 전체 팝업 중지 -->
-                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid ${alertPrefs.allDisabled ? '#fca5a5' : '#e2e8f0'}; border-radius:10px; background:${alertPrefs.allDisabled ? '#fff7f7' : '#ffffff'}; transition:all 0.15s ease;">
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 16px; border:1px solid ${alertPrefs.allDisabled ? '#fca5a5' : '#e2e8f0'}; border-radius:11px; background:${alertPrefs.allDisabled ? '#fff7f7' : '#ffffff'}; transition:all 0.15s ease;">
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                     <div style="display:flex; align-items:center; gap:6px;">
                       <span style="color:${alertPrefs.allDisabled ? '#e11d48' : '#4f46e5'}; font-size:10px; line-height:1;">●</span>
@@ -10728,7 +10733,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
 
                 <!-- 1-2. 초과근무기록 팝업 & 시간 설정 -->
-                <div id="overtimeSettingsCard" class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff; opacity:${alertPrefs.allDisabled ? '0.52' : '1'}; pointer-events:${alertPrefs.allDisabled ? 'none' : 'auto'}; transition:opacity 0.15s ease;">
+                <div id="overtimeSettingsCard" class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 16px; border:1px solid #e2e8f0; border-radius:11px; background:#ffffff; opacity:${alertPrefs.allDisabled ? '0.52' : '1'}; pointer-events:${alertPrefs.allDisabled ? 'none' : 'auto'}; transition:opacity 0.15s ease;">
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                     <div style="display:flex; align-items:center; gap:6px;">
                       <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
@@ -10752,7 +10757,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
 
                 <!-- 1-3. 윈도우 시작 시 자동 실행 -->
-                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 16px; border:1px solid #e2e8f0; border-radius:11px; background:#ffffff;">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="display:flex; align-items:center; gap:6px;">
                       <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
@@ -10767,7 +10772,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
 
                 <!-- 1-4. 빠른 연결 -->
-                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 16px; border:1px solid #e2e8f0; border-radius:11px; background:#ffffff;">
                   <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
                     <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">빠른 연결</span>
@@ -10791,10 +10796,10 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               </div>
 
               <!-- [TAB 2] 데이터 · 백업 -->
-              <div id="settingsPaneData" style="display:none; flex-direction:column; gap:8px; width:100%;">
+              <div id="settingsPaneData" style="display:none; flex-direction:column; gap:11px; width:100%;">
 
                 <!-- 2-1. 일정 내보내기 -->
-                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 16px; border:1px solid #e2e8f0; border-radius:11px; background:#ffffff;">
                   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                     <div style="display:flex; align-items:center; gap:6px;">
                       <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
@@ -10813,7 +10818,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
 
                 <!-- 2-1B. 1시간 자동 전체 백업 -->
-                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 16px; border:1px solid #e2e8f0; border-radius:11px; background:#ffffff;">
                   <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
                     <div style="display:flex; align-items:center; gap:6px;">
                       <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
@@ -10846,7 +10851,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
 
                 <!-- 2-2. 일정 가져오기 -->
-                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 16px; border:1px solid #e2e8f0; border-radius:11px; background:#ffffff;">
                   <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
                     <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">일정 가져오기</span>
@@ -10861,7 +10866,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
 
                 <!-- 2-3. 데이터 관리 -->
-                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #fecdd3; border-radius:10px; background:#ffffff;">
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:13px 16px; border:1px solid #fecdd3; border-radius:11px; background:#ffffff;">
                   <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="display:flex; align-items:center; gap:6px;">
                       <span style="color:#e11d48; font-size:10px; line-height:1;">●</span>
@@ -10875,11 +10880,11 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               </div>
 
               <!-- 공통 하단: 앱 정보 및 [닫기] 버튼 -->
-              <div style="padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:2px; box-sizing:border-box; width:100%;">
+              <div style="padding:11px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:11px; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:6px; box-sizing:border-box; width:100%;">
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.0</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.1</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -15817,7 +15822,7 @@ function getRandomAppQuote() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.0">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.1">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -16975,7 +16980,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.2.0',
+          version: window.APP_VERSION || 'v1.2.1',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
