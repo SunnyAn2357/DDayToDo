@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>MY 일정관리 V1.2.4</title>
+  <title>MY 일정관리 V1.2.5</title>
   <!-- Favicon (Desktop & Browser Tab) -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.4">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.5">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -5166,7 +5166,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.2.4"></script>
+  <script src="./lib/little-note-editor.js?v=1.2.5"></script>
 
   <script>
     (function () {
@@ -5175,7 +5175,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.4';
+      window.APP_VERSION = 'v1.2.5';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -9303,7 +9303,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.4">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.5">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -10770,7 +10770,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                     </div>
                     <label class="toggle-switch" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none;">
                       <input type="checkbox" id="autoStartupCheckbox" data-action="toggleAutoStartup" ${isAutoStartup ? 'checked' : ''} style="width:16px; height:16px; cursor:pointer; accent-color:#4f46e5;">
-                      <span id="autoStartupStatusText" style="font-size:11.5px; font-weight:600; color:${isAutoStartup ? '#4f46e5' : '#64748b'};">${isAutoStartup ? '자동 실행 켜짐' : '자동 실행 꺼짐'}</span>
+                      <span id="autoStartupStatusText" style="font-size:11.5px; font-weight:600; color:${isAutoStartup ? '#2563eb' : '#64748b'};">${isAutoStartup ? '자동 실행 켜짐' : '자동 실행 꺼짐'}</span>
                     </label>
                   </div>
                   <p class="settings-desc" style="margin:4px 0 0; font-size:11px; color:#64748b; line-height:1.3;">PC 부팅 시 일정관리 위젯 및 알림을 백그라운드로 자동 실행합니다.</p>
@@ -10809,7 +10809,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                     <div style="display:flex; align-items:center; gap:6px;">
                       <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
                       <span style="font-size:12.5px; font-weight:700; color:#1e293b;">일정 내보내기</span>
-                      <span style="font-size:11.5px; color:#4f46e5; font-weight:600;">(${esc(activeStore.name)})</span>
+                      <span style="font-size:11.5px; color:#2563eb; font-weight:600;">(${esc(activeStore.name)})</span>
                     </div>
                     <button type="button" class="btn" data-action="exportAllBackup" style="height:26px; font-size:11.5px; padding:0 11px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; flex-shrink:0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">전체 백업</button>
                   </div>
@@ -10834,7 +10834,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                   </div>
                   ${isDesktopEnv ? `
                   <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:wrap;">
-                    <code style="font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:4px 8px; color:#334155; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">D:\\MY_Apps\\Backups\\mytodo\\</code>
+                    <code style="font-family:Consolas, 'Cascadia Mono', 'Courier New', monospace; font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:4px 8px; color:#334155; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">D:\\MY_Apps\\Backups\\mytodo\\</code>
                     <div style="display:flex; gap:5px; flex-shrink:0;">
                       <button type="button" class="btn" id="autoBackupOpenDirBtn" style="height:26px; font-size:11.5px; padding:0 10px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; cursor:pointer;">폴더 열기</button>
                       <button type="button" class="btn" id="autoBackupRunNowBtn" style="height:26px; font-size:11.5px; padding:0 10px; background:#f8fafc; border:1px solid #cbd5e1; color:#1e293b; font-weight:600; border-radius:6px; cursor:pointer;">지금 백업</button>
@@ -10851,7 +10851,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                       <button type="button" class="btn" id="autoBackupRunNowBtn" style="height:26px; font-size:11.5px; padding:0 10px; background:#f8fafc; border:1px solid #cbd5e1; color:#1e293b; font-weight:600; border-radius:6px; cursor:pointer;">지금 백업</button>
                     </div>
                   </div>
-                  <p class="settings-desc" style="margin:5px 0 0; font-size:11px; color:#64748b; line-height:1.3;">PC 브라우저에서 폴더(D:\\MY_Apps\\Backups\\mytodo 등)를 지정해 두면 변경 시 1시간 주기로 조용히 자동 백업됩니다.</p>
+                  <p class="settings-desc" style="margin:5px 0 0; font-size:11px; color:#64748b; line-height:1.3;">PC 브라우저에서 폴더(<span style="font-family:Consolas, 'Cascadia Mono', 'Courier New', monospace;">D:\\MY_Apps\\Backups\\mytodo</span> 등)를 지정해 두면 변경 시 1시간 주기로 조용히 자동 백업됩니다.</p>
                   `}
                 </div>
 
@@ -10889,7 +10889,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.4</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.5</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -15827,7 +15827,7 @@ function getRandomAppQuote() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.4">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.5">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -16985,7 +16985,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.2.4',
+          version: window.APP_VERSION || 'v1.2.5',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
