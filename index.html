@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>MY 일정관리 V1.2.8</title>
+  <title>MY 일정관리 V1.2.9</title>
   <!-- Favicon (Desktop & Browser Tab) -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.8">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.9">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -1588,7 +1588,8 @@
     }
 
     .detail-memo-full:has(.little-note-view),
-    .detail-memo-scroll-box:has(.little-note-view) {
+    .detail-memo-scroll-box:has(.little-note-view),
+    .alert-memo-box:has(.little-note-view) {
       white-space: normal !important;
     }
 
@@ -5172,7 +5173,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.2.8"></script>
+  <script src="./lib/little-note-editor.js?v=1.2.9"></script>
 
   <script>
     (function () {
@@ -5181,7 +5182,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.8';
+      window.APP_VERSION = 'v1.2.9';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -6685,7 +6686,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             if (typeof rebuildHolidays === 'function') rebuildHolidays();
             if (typeof renderCalendar === 'function' && ui && String(ui.year) === y) renderCalendar();
             if (typeof renderSide === 'function') renderSide();
-            if (typeof renderClock === 'function') renderClock();
+            if (typeof updateClock === 'function') updateClock();
           }
         } catch (e) {
         } finally {
@@ -6835,10 +6836,25 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           }
         });
 
+        const getUpdatedAt = (raw) => {
+          try {
+            const obj = JSON.parse(raw);
+            return (obj && typeof obj.updatedAt === 'string') ? obj.updatedAt : '';
+          } catch (e) { return ''; }
+        };
+
         for (const [k, v] of legacyMap.entries()) {
           if (!idbMap.has(k)) {
             memStorage.set(k, v);
             await idbPutKv(k, v);
+          } else if (k.startsWith('todoCalendar.work.v1')) {
+            const idbVal = idbMap.get(k);
+            const legacyTs = getUpdatedAt(v);
+            const idbTs = getUpdatedAt(idbVal);
+            if (legacyTs && (!idbTs || legacyTs > idbTs)) {
+              memStorage.set(k, v);
+              await idbPutKv(k, v);
+            }
           }
         }
         storageHydrated = true;
@@ -7671,6 +7687,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         const closeDialog = () => {
           if (modal.open) modal.close();
+          safeHistoryBack('linkInputModal');
           if (isQuill && window.LittleNoteEditor) {
             window.LittleNoteEditor.cancelLinkFromModal();
             return;
@@ -7683,6 +7700,11 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             }
           }
         };
+        modal._closeHandler = closeDialog;
+        modal.oncancel = (ev) => {
+          ev.preventDefault();
+          closeDialog();
+        };
 
         $('closeLinkInputBtn').onclick = closeDialog;
         $('cancelLinkInputBtn').onclick = closeDialog;
@@ -7690,6 +7712,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         if (unlinkBtn) {
           unlinkBtn.onclick = () => {
             if (modal.open) modal.close();
+            safeHistoryBack('linkInputModal');
             if (isQuill && window.LittleNoteEditor) {
               window.LittleNoteEditor.applyLinkFromModal({ remove: true });
             }
@@ -7706,6 +7729,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           const cleanUrl = normalizeSmartLinkUrl(rawUrl);
           const customText = needsText ? (($('linkTextInput')?.value || '').trim() || cleanUrl) : selText;
           if (modal.open) modal.close();
+          safeHistoryBack('linkInputModal');
 
           if (isQuill && window.LittleNoteEditor) {
             window.LittleNoteEditor.applyLinkFromModal({ url: rawUrl, text: customText });
@@ -7728,6 +7752,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         };
 
         modal.showModal();
+        safePushModalState('linkInputModal');
         setTimeout(() => {
           const focusTarget = $('linkTextInput') || $('linkUrlInput');
           if (focusTarget) focusTarget.focus();
@@ -7793,39 +7818,49 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         if (!raw || typeof raw !== 'object' || !Array.isArray(raw.tasks)) throw new Error('올바르지 않은 데이터 형식');
         const out = Object.assign(blank(), raw), ids = new Set();
 
-        out.recurrings = Array.isArray(raw.recurrings) ? raw.recurrings.map(r => ({
-          id: typeof r.id === 'string' && r.id ? r.id : uid(),
-          title: String(r.title || '제목 없는 반복 일정'),
-          time: String(r.time || ''),
-          location: String(r.location || ''),
-          memo: String(r.memo || ''),
-          tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
-          startDate: validDate(r.startDate) ? r.startDate : (validDate(r.dueDate) ? r.dueDate : today()),
-          dueDate: validDate(r.dueDate) ? r.dueDate : (validDate(r.startDate) ? r.startDate : today()),
-          endDate: validDate(r.endDate) ? r.endDate : '',
-          dueTime: String(r.dueTime || ''),
-          ddayMode: r.ddayMode === 'calendar' ? 'calendar' : 'workday',
-          priority: Object.hasOwn(PRIORITY, r.priority) ? r.priority : 'normal',
-          recurrence: (['weekly', 'monthly', 'yearly'].includes(r.recurrence) || (!isNaN(Number(r.recurrence)) && Number(r.recurrence) > 0)) ? r.recurrence : 'weekly',
-          isLunar: !!r.isLunar,
-          reminders: Array.isArray(r.reminders) ? [...new Set([0, ...r.reminders.map(Number)])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b) : [0, 3],
-          sameDayAlert: !!r.sameDayAlert,
-          hourReminders: Array.isArray(r.hourReminders) ? [...new Set(r.hourReminders.map(Number))].filter(n => !isNaN(n) && n > 0).sort((a, b) => b - a) : [120, 60],
-          isHoliday: !!r.isHoliday,
-          holidayHasTask: !!r.holidayHasTask,
-          deletedDates: Array.isArray(r.deletedDates) ? [...new Set(r.deletedDates.map(String))].filter(validDate) : [],
-          createdAt: r.createdAt || iso(),
-          updatedAt: r.updatedAt || iso()
-        })) : [];
+        out.recurrings = Array.isArray(raw.recurrings) ? raw.recurrings.map(r => {
+          const priKey = typeof r.priority === 'string' ? r.priority.trim().toLowerCase() : '';
+          const parsedRems = splitMixedReminders(r.reminders, r.hourReminders, [120, 60]);
+          return {
+            id: typeof r.id === 'string' && r.id ? r.id : uid(),
+            title: String(r.title || '제목 없는 반복 일정'),
+            titleColor: typeof r.titleColor === 'string' ? r.titleColor : '',
+            time: String(r.time || ''),
+            location: String(r.location || ''),
+            memo: String(r.memo || ''),
+            tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
+            startDate: validDate(r.startDate) ? r.startDate : (validDate(r.dueDate) ? r.dueDate : today()),
+            dueDate: validDate(r.dueDate) ? r.dueDate : (validDate(r.startDate) ? r.startDate : today()),
+            endDate: validDate(r.endDate) ? r.endDate : '',
+            dueTime: String(r.dueTime || ''),
+            ddayMode: r.ddayMode === 'calendar' ? 'calendar' : 'workday',
+            priority: Object.hasOwn(PRIORITY, priKey) ? priKey : 'normal',
+            recurrence: (['weekly', 'monthly', 'yearly'].includes(r.recurrence) || (!isNaN(Number(r.recurrence)) && Number(r.recurrence) > 0)) ? r.recurrence : 'weekly',
+            isLunar: !!r.isLunar,
+            reminders: parsedRems.reminders,
+            sameDayAlert: !!r.sameDayAlert,
+            hourReminders: parsedRems.hourReminders,
+            isHoliday: !!r.isHoliday,
+            holidayHasTask: !!r.holidayHasTask,
+            deletedDates: Array.isArray(r.deletedDates) ? [...new Set(r.deletedDates.map(String))].filter(validDate) : [],
+            createdAt: r.createdAt || iso(),
+            updatedAt: r.updatedAt || iso()
+          };
+        }) : [];
 
         // Legacy migration: if any raw task has recurrence and not yet in recurrings
         raw.tasks.forEach(r => {
           if (r && r.recurrence && r.recurrence !== 'none' && !r.recurringId) {
             let found = out.recurrings.find(x => x.title === r.title && x.recurrence === r.recurrence);
             if (!found) {
+              const priKey = typeof r.priority === 'string' ? r.priority.trim().toLowerCase() : '';
+              const parsedRems = splitMixedReminders(r.reminders, r.hourReminders, [120, 60]);
               found = {
                 id: uid(),
                 title: String(r.title || '반복 일정'),
+                titleColor: typeof r.titleColor === 'string' ? r.titleColor : '',
+                time: String(r.time || ''),
+                location: String(r.location || ''),
                 memo: String(r.memo || ''),
                 tags: Array.isArray(r.tags) ? r.tags.map(String) : [],
                 startDate: validDate(r.startDate) ? r.startDate : (validDate(r.dueDate) ? r.dueDate : today()),
@@ -7833,12 +7868,12 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 endDate: '',
                 dueTime: String(r.dueTime || ''),
                 ddayMode: r.ddayMode === 'calendar' ? 'calendar' : 'workday',
-                priority: Object.hasOwn(PRIORITY, r.priority) ? r.priority : 'normal',
+                priority: Object.hasOwn(PRIORITY, priKey) ? priKey : 'normal',
                 recurrence: ['weekly', 'monthly', 'yearly'].includes(r.recurrence) ? r.recurrence : 'weekly',
                 isLunar: !!r.isLunar,
-                reminders: Array.isArray(r.reminders) ? [...new Set([0, ...r.reminders.map(Number)])].filter(n => !isNaN(n) && n >= 0).sort((a, b) => a - b) : [0, 3],
-          sameDayAlert: !!r.sameDayAlert,
-          hourReminders: Array.isArray(r.hourReminders) ? [...new Set(r.hourReminders.map(Number))].filter(n => !isNaN(n) && n > 0).sort((a, b) => b - a) : [120, 60],
+                reminders: parsedRems.reminders,
+                sameDayAlert: !!r.sameDayAlert,
+                hourReminders: parsedRems.hourReminders,
                 isHoliday: !!r.isHoliday,
                 holidayHasTask: !!r.holidayHasTask,
                 deletedDates: [],
@@ -8029,6 +8064,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 recurrenceType: rule.recurrence,
                 recurrence: 'none',
                 title: rule.title,
+                titleColor: rule.titleColor || '',
+                time: rule.time || '',
+                location: rule.location || '',
                 memo: rule.memo,
                 startDate: dStr,
                 dueDate: targetDue,
@@ -8042,6 +8080,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 isLunar: !!rule.isLunar,
                 reminders: [...(rule.reminders || [0])],
                 sameDayAlert: !!rule.sameDayAlert,
+                hourReminders: Array.isArray(rule.hourReminders) ? [...rule.hourReminders] : [120, 60],
                 isHoliday: !!rule.isHoliday,
                 holidayHasTask: !!rule.holidayHasTask,
                 createdAt: iso(),
@@ -8272,6 +8311,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           }, 250);
         }, 3200);
       }
+      window.toast = toast;
 
       function commit(next, silent = false) {
         next.updatedAt = iso();
@@ -9252,13 +9292,44 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
       let editTarget = null;
       let holidayHasTask = false;
+      function findTaskAcrossStores(taskId) {
+        const idStr = String(taskId);
+        const activeId = (typeof getActiveStoreId === 'function') ? getActiveStoreId() : 'default';
+        if (typeof data !== 'undefined' && data) {
+          const t = (data.tasks || []).find(x => String(x.id) === idStr);
+          if (t) return { storeId: activeId, isActive: true, task: t, recurring: null };
+          const r = (data.recurrings || []).find(x => String(x.id) === idStr);
+          if (r) return { storeId: activeId, isActive: true, task: null, recurring: r };
+        }
+        try {
+          const list = (typeof getStoreList === 'function') ? getStoreList() : [];
+          for (const store of list) {
+            if (String(store.id) === String(activeId)) continue;
+            try {
+              const key = (typeof getStoreKey === 'function') ? getStoreKey(store.id) : `todoCalendar.work.v1_${store.id}`;
+              const raw = storageGet(key);
+              if (!raw) continue;
+              const storeData = (typeof normalize === 'function') ? normalize(JSON.parse(raw)) : JSON.parse(raw);
+              if (storeData && Array.isArray(storeData.tasks)) {
+                const t = storeData.tasks.find(x => String(x.id) === idStr);
+                if (t) return { storeId: store.id, isActive: false, task: t, recurring: null };
+              }
+              if (storeData && Array.isArray(storeData.recurrings)) {
+                const r = storeData.recurrings.find(x => String(x.id) === idStr);
+                if (r) return { storeId: store.id, isActive: false, task: null, recurring: r };
+              }
+            } catch (e) {}
+          }
+        } catch (e) {}
+        return null;
+      }
+
       /* =====================================================================
        * [V1.5.4] 단정하고 격식 있는 일정 상세 보고서 팝업 & 단일 통합 인쇄 함수
        * ===================================================================== */
       function openDetailReport(taskId) {
-        const { tasks: allTasks, recurrings: allRecs } = (typeof getAllStoresTasks === 'function') ? getAllStoresTasks() : { tasks: (data && data.tasks) || [], recurrings: (data && data.recurrings) || [] };
-        const t = (allTasks || []).find(x => String(x.id) === String(taskId)) || 
-          (allRecs || []).find(x => String(x.id) === String(taskId)) ||
+        const found = findTaskAcrossStores(taskId);
+        const t = (found && (found.task || found.recurring)) ||
           ((typeof getTodayScheduleItems === 'function') ? getTodayScheduleItems().find(x => String(x.id) === String(taskId)) : null);
         if (!t) return;
 
@@ -9344,7 +9415,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
       function printDetailReport(taskOrInput) {
         let t = null;
         if (typeof taskOrInput === 'string') {
-          t = (data.tasks || []).find(x => x.id === taskOrInput) || (data.recurrings || []).find(x => x.id === taskOrInput);
+          const found = findTaskAcrossStores(taskOrInput);
+          t = (found && (found.task || found.recurring)) ||
+            ((typeof getTodayScheduleItems === 'function') ? getTodayScheduleItems().find(x => String(x.id) === String(taskOrInput)) : null);
         } else if (taskOrInput && typeof taskOrInput === 'object') {
           t = taskOrInput;
         }
@@ -9367,7 +9440,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.8">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.9">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -9408,6 +9481,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
     .info-table th { background: #f1f5f9; font-weight: 700; width: 64px; min-width: 64px; max-width: 68px; color: #334155; text-align: center; white-space: nowrap; padding: 10px 6px; vertical-align: top; }
     .info-table td { text-align: left; }
     .memo-box { min-height: 150px; line-height: 1.65; word-break: break-word; white-space: pre-wrap; tab-size: 4; }
+    .memo-box:has(.little-note-view) { white-space: normal !important; }
     .memo-box h1, .memo-box .md-h1 { font-size: 16px; font-weight: 800; margin: 6px 0 3px 0; }
     .memo-box h2, .memo-box .md-h2 { font-size: 14.5px; font-weight: 800; margin: 5px 0 2px 0; }
     .memo-box h3, .memo-box .md-h3 { font-size: 13.5px; font-weight: 700; margin: 4px 0 2px 0; }
@@ -9517,8 +9591,8 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         }, 3000);
       }
 
-      function openEditor(task = null) {
-        editTarget = task ? clone(task) : makeTask(ui.selected || today());
+      function openEditor(task = null, defaultDate = null) {
+        editTarget = task ? clone(task) : makeTask(defaultDate || ui.selected || today());
         const editing = !!task;
         holidayHasTask = !!editTarget.holidayHasTask;
 
@@ -9712,13 +9786,13 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           }
 
           const isPureHoliday = h && !holidayHasTask;
-          ['modalStartDate', 'modalDueDate', 'modalTags', 'modalPriority', 'modalCustomRem', 'modalCustomRec', 'modalCompleted', 'modalCompletedDate', 'modalIsLunar'].forEach(id => {
+          ['modalStartDate', 'modalDueDate', 'modalTags', 'modalPriority', 'modalCustomRem', 'modalCustomRemCheck', 'modalCustomHourRem', 'modalCustomHourRemCheck', 'modalCustomRec', 'modalCompleted', 'modalCompletedDate', 'modalIsLunar'].forEach(id => {
             const el = $(id);
             if (el) el.disabled = isPureHoliday;
           });
           if (window.LittleNoteEditor) window.LittleNoteEditor.setEnabled(!isPureHoliday);
           document.querySelectorAll('#editor input[name="modalDdayMode"]').forEach(el => el.disabled = isPureHoliday);
-          document.querySelectorAll('#editor .rem-check, #editor .rem-today-check').forEach(el => el.disabled = isPureHoliday);
+          document.querySelectorAll('#editor .rem-check, #editor .rem-today-check, #editor .rem-hour-check').forEach(el => el.disabled = isPureHoliday);
           document.querySelectorAll('#editor .rec-check').forEach(el => el.disabled = isPureHoliday);
 
           ['fieldMemo', 'fieldTags', 'fieldPriority', 'fieldDdayMode', 'fieldDateRange', 'fieldReminders', 'fieldRecurrence', 'fieldCompletion'].forEach(id => {
@@ -9920,6 +9994,8 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             editTarget.tags = [];
             editTarget.dueTime = '';
             editTarget.reminders = [];
+            editTarget.hourReminders = [];
+            editTarget.sameDayAlert = false;
             editTarget.priority = 'normal';
             editTarget.recurrence = 'none';
             editTarget.isLunar = false;
@@ -9985,6 +10061,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               rule = {
                 id: uid(),
                 title: editTarget.title,
+                titleColor: editTarget.titleColor || '',
+                time: editTarget.time || '',
+                location: editTarget.location || '',
                 memo: editTarget.memo,
                 tags: [...editTarget.tags],
                 startDate: editTarget.startDate,
@@ -9997,6 +10076,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 isLunar: !!editTarget.isLunar,
                 reminders: [...editTarget.reminders],
                 sameDayAlert: !!editTarget.sameDayAlert,
+                hourReminders: [...(editTarget.hourReminders || [])],
                 isHoliday: !!editTarget.isHoliday,
                 holidayHasTask: !!editTarget.holidayHasTask,
                 deletedDates: [],
@@ -10007,6 +10087,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               next.recurrings.push(rule);
             } else {
               rule.title = editTarget.title;
+              rule.titleColor = editTarget.titleColor || '';
+              rule.time = editTarget.time || '';
+              rule.location = editTarget.location || '';
               rule.memo = editTarget.memo;
               rule.tags = [...editTarget.tags];
               rule.startDate = editTarget.startDate;
@@ -10016,7 +10099,8 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               rule.recurrence = rec;
               rule.isLunar = !!editTarget.isLunar;
               rule.reminders = [...editTarget.reminders];
-            rule.sameDayAlert = !!editTarget.sameDayAlert;
+              rule.sameDayAlert = !!editTarget.sameDayAlert;
+              rule.hourReminders = [...(editTarget.hourReminders || [])];
               rule.isHoliday = !!editTarget.isHoliday;
               rule.holidayHasTask = !!editTarget.holidayHasTask;
               rule.updatedAt = iso();
@@ -10165,9 +10249,8 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         $('editor').showModal();
         safePushModalState('editor');
-        // [V1.5.3] 일정 추가/수정 창 오픈 시 제일 먼저 시간 입력란(#modalTime)으로 커서 이동
-        const focusFirstInput = () => {
-          // [V1.7.0] 제목 글자색 팔레트 연동
+
+        // [V1.7.0] 제목 글자색 팔레트 연동
         const titleColorBtn = $('modalTitleColorBtn');
         const titleColorPalette = $('modalTitleColorPalette');
         const titleColorIndicator = $('modalTitleColorIndicator');
@@ -10187,10 +10270,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               titleColorPalette.style.display = 'none';
             };
           });
-          document.addEventListener('click', function closeTitlePalette(e) {
+          $('taskForm')?.addEventListener('click', (e) => {
             if (!e.target.closest('#modalTitleColorBtn') && !e.target.closest('#modalTitleColorPalette')) {
-              if (titleColorPalette) titleColorPalette.style.display = 'none';
-              document.removeEventListener('click', closeTitlePalette);
+              titleColorPalette.style.display = 'none';
             }
           });
         }
@@ -10271,7 +10353,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           });
         }
 
-        const timeEl = $('modalTime');
+        // [V1.5.3] 일정 추가/수정 창 오픈 시 제일 먼저 시간 입력란(#modalTime)으로 커서 이동
+        const focusFirstInput = () => {
+          const timeEl = $('modalTime');
           if (timeEl && !timeEl.disabled) {
             timeEl.focus();
           } else {
@@ -10565,6 +10649,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           const r = (next.recurrings || []).find(x => x.id === editingRule.id);
           if (r) {
             r.title = title;
+            r.titleColor = editingRule.titleColor || '';
             r.memo = window.LittleNoteEditor ? window.LittleNoteEditor.getHtml() : '';
             r.tags = $('recModalTags').value.split(',').map(s => s.trim()).filter(Boolean);
             r.startDate = startDate;
@@ -10683,6 +10768,32 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         $('editor').showModal();
         safePushModalState('editor');
+
+        const recTitleColorBtn = $('recModalTitleColorBtn');
+        const recTitleColorPalette = $('recModalTitleColorPalette');
+        const recTitleColorIndicator = $('recModalTitleColorIndicator');
+        const recTitleInput = $('recModalTitle');
+        if (recTitleColorBtn && recTitleColorPalette) {
+          recTitleColorBtn.onclick = (e) => {
+            e.stopPropagation();
+            recTitleColorPalette.style.display = recTitleColorPalette.style.display === 'grid' ? 'none' : 'grid';
+          };
+          recTitleColorPalette.querySelectorAll('.memo-color-dot').forEach(dot => {
+            dot.onclick = (e) => {
+              e.stopPropagation();
+              const col = dot.dataset.color || '#0f172a';
+              editingRule.titleColor = col;
+              if (recTitleInput) recTitleInput.style.color = col;
+              if (recTitleColorIndicator) recTitleColorIndicator.style.borderBottomColor = col;
+              recTitleColorPalette.style.display = 'none';
+            };
+          });
+          $('recurringForm')?.addEventListener('click', (e) => {
+            if (!e.target.closest('#recModalTitleColorBtn') && !e.target.closest('#recModalTitleColorPalette')) {
+              recTitleColorPalette.style.display = 'none';
+            }
+          });
+        }
       }
 
       function getAlertPreferences() {
@@ -10953,7 +11064,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.8</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.9</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -15411,6 +15522,8 @@ function getRandomAppQuote() {
         });
 
         (allRecurrings || []).forEach(r => {
+          const deleted = new Set(r.deletedDates || []);
+          if (deleted.has(todayStr)) return;
           const dates = getDatesForRule(r, todayStr, todayStr);
           if (dates.includes(todayStr)) {
             const hasTask = (allTasks || []).some(t => t.recurringId === r.id && (t.startDate === todayStr || t.dueDate === todayStr));
@@ -15418,6 +15531,7 @@ function getRandomAppQuote() {
               items.push({
                 id: r.id,
                 title: r.title,
+                titleColor: r.titleColor || '',
                 time: r.time || '',
                 location: r.location || '',
                 memo: r.memo || '',
@@ -15875,7 +15989,10 @@ function getRandomAppQuote() {
       }
 
       function buildIndependentAlertHtml(title, innerCardHtml, itemsData = []) {
-        const itemsJsonStr = JSON.stringify(itemsData || []);
+        const itemsJsonStr = JSON.stringify(itemsData || [])
+          .replace(/</g, '\\u003c')
+          .replace(/\u2028/g, '\\u2028')
+          .replace(/\u2029/g, '\\u2029');
         const closeScriptTag = '<' + '/script>';
         const mdHelperScript = (typeof isLocalOrUncPath === 'function' ? isLocalOrUncPath.toString() : '') + '\n' +
                                (typeof normalizeSmartLinkUrl === 'function' ? normalizeSmartLinkUrl.toString() : '') + '\n' +
@@ -15889,9 +16006,9 @@ function getRandomAppQuote() {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
+  <title>${esc(title)}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.8">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.9">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -15933,6 +16050,8 @@ function getRandomAppQuote() {
     .md-h2 { font-size: 14.5px; font-weight: 800; color: #1e293b; margin: 5px 0 2px 0; line-height: 1.35; }
     .md-h3 { font-size: 13.5px; font-weight: 800; color: #334155; margin: 4px 0 2px 0; line-height: 1.35; }
     .detail-memo-scroll-box { white-space: pre-wrap; tab-size: 4; }
+    .detail-memo-scroll-box:has(.little-note-view),
+    .alert-memo-box:has(.little-note-view) { white-space: normal !important; }
     .detail-memo-scroll-box mark { background: #fef08a; color: #854d0e; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
     .detail-memo-scroll-box code.memo-code { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #e11d48; }
     .detail-memo-scroll-box del { text-decoration: line-through; opacity: 0.7; }
@@ -16009,7 +16128,7 @@ function getRandomAppQuote() {
         ? ('<tr style="height:1%; border-bottom:1px solid #e2e8f0;">' +
              '<th style="width:66px; background:#f1f5f9; padding:8.5px 6px; text-align:center; color:#475569; font-weight:700; border-right:1px solid #e2e8f0; white-space:nowrap; vertical-align:middle; font-size:12.5px;">태그</th>' +
              '<td style="padding:8.5px 14px; color:#475569; font-size:12px; vertical-align:middle; word-break:break-all;">' +
-               item.tags.map(function(tg){return '<span style="display:inline-block; background:#f1f5f9; border:1px solid #e2e8f0; padding:1px 7px; border-radius:5px; margin-right:4px; font-size:11.5px; font-weight:600;">#' + tg + '</span>';}).join('') +
+               item.tags.map(function(tg){return '<span style="display:inline-block; background:#f1f5f9; border:1px solid #e2e8f0; padding:1px 7px; border-radius:5px; margin-right:4px; font-size:11.5px; font-weight:600;">#' + esc(tg) + '</span>';}).join('') +
              '</td>' +
            '</tr>')
         : '';
@@ -16017,7 +16136,7 @@ function getRandomAppQuote() {
       var locRow = item.location
         ? ('<tr style="height:1%; border-bottom:1px solid #e2e8f0;">' +
              '<th style="width:66px; background:#f1f5f9; padding:8.5px 6px; text-align:center; color:#475569; font-weight:700; border-right:1px solid #e2e8f0; white-space:nowrap; vertical-align:middle; font-size:12.5px;">장소</th>' +
-             '<td style="padding:8.5px 14px; color:#1e293b; font-weight:500; font-size:13px; vertical-align:middle; word-break:break-all;">' + item.location + '</td>' +
+             '<td style="padding:8.5px 14px; color:#1e293b; font-weight:500; font-size:13px; vertical-align:middle; word-break:break-all;">' + esc(item.location) + '</td>' +
            '</tr>')
         : '';
 
@@ -16031,7 +16150,7 @@ function getRandomAppQuote() {
         '</div>' +
         '<div style="flex:1; min-height:0; display:flex; flex-direction:column; padding:12px 18px 14px 18px; box-sizing:border-box; overflow:hidden; gap:10px;">' +
           '<div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; flex-shrink:0;">' +
-            '<h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; line-height:1.35; word-break:break-all;">' + (item.title || '일정 상세') + '</h3>' +
+            '<h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; line-height:1.35; word-break:break-all;">' + esc(item.title || '일정 상세') + '</h3>' +
           '</div>' +
           '<div style="flex:1; min-height:0; display:flex; flex-direction:column; border:1px solid #cbd5e1; border-radius:9px; overflow:hidden; background:#ffffff; box-shadow:0 1px 2px rgba(15,23,42,0.03);">' +
             '<table style="width:100%; height:100%; border-collapse:collapse; table-layout:fixed;">' +
@@ -16039,7 +16158,7 @@ function getRandomAppQuote() {
               '<tbody>' +
                 '<tr style="height:1%; border-bottom:1px solid #e2e8f0;">' +
                   '<th style="width:66px; background:#f1f5f9; padding:8.5px 6px; text-align:center; color:#475569; font-weight:700; border-right:1px solid #e2e8f0; white-space:nowrap; vertical-align:middle; font-size:12.5px;">일시</th>' +
-                  '<td style="padding:8.5px 14px; color:#0f172a; font-weight:700; font-size:13px; vertical-align:middle; word-break:break-all;">' + dateStr + (item.time ? ' <span style="color:#2563eb; font-weight:700; margin-left:4px;">' + item.time + '</span>' : '') + '</td>' +
+                  '<td style="padding:8.5px 14px; color:#0f172a; font-weight:700; font-size:13px; vertical-align:middle; word-break:break-all;">' + esc(dateStr) + (item.time ? ' <span style="color:#2563eb; font-weight:700; margin-left:4px;">' + esc(item.time) + '</span>' : '') + '</td>' +
                 '</tr>' +
                 locRow +
                 tagRows +
@@ -16055,7 +16174,7 @@ function getRandomAppQuote() {
         '</div>' +
         '<div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:10px 18px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">' +
           '<button type="button" data-action="backToBriefingList" style="height:32px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; border-radius:9px; cursor:pointer; font-weight:600;">‹ 브리핑 목록</button>' +
-          '<button type="button" data-action="openInMainCalendar" data-id="' + item.id + '" style="height:32px; font-size:12.5px; padding:0 16px; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; font-weight:700; border-radius:9px; box-shadow:0 2px 6px rgba(79,70,229,0.25); cursor:pointer;">메인 캘린더에서 열기</button>' +
+          '<button type="button" data-action="openInMainCalendar" data-id="' + esc(item.id) + '" style="height:32px; font-size:12.5px; padding:0 16px; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; font-weight:700; border-radius:9px; box-shadow:0 2px 6px rgba(79,70,229,0.25); cursor:pointer;">메인 캘린더에서 열기</button>' +
         '</div>' +
       '</div>';
 
@@ -16237,7 +16356,9 @@ function getRandomAppQuote() {
             <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:14px 18px; gap:10px; background:#f8fafc; box-sizing:border-box;">
               ${items.length === 0 ? `
                 <div style="text-align:center; padding:40px 20px; background:#ffffff; border:1px dashed #cbd5e1; border-radius:12px; margin-top:14px;">
-                  <div style="font-size:30px; margin-bottom:8px;">☕</div>
+                  <div style="margin-bottom:10px; display:flex; justify-content:center; color:#94a3b8;">
+                    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="m9 14 2 2 4-4"></path></svg>
+                  </div>
                   <div style="font-size:14px; font-weight:700; color:#334155; margin-bottom:4px;">오늘 등록된 일정이 없습니다.</div>
                   <div style="font-size:12px; color:#64748b;">편안하고 여유로운 하루 되시기 바랍니다!</div>
                 </div>
@@ -16259,8 +16380,8 @@ function getRandomAppQuote() {
                             ${esc(t.title)}
                           </div>
                           ${t.location ? `
-                            <div style="font-size:10.5px; color:#64748b; font-weight:500; margin-top:1px; line-height:1.2; display:flex; align-items:center; gap:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                              <span style="font-size:10px;">📍</span><span>${esc(t.location)}</span>
+                            <div style="font-size:10.5px; color:#64748b; font-weight:500; margin-top:1px; line-height:1.2; display:flex; align-items:center; gap:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                              <span style="color:#94a3b8; font-weight:600;">장소:</span><span>${esc(t.location)}</span>
                             </div>
                           ` : ''}
                         </div>
@@ -16287,8 +16408,8 @@ function getRandomAppQuote() {
                             ${esc(t.title)}
                           </div>
                           ${t.location ? `
-                            <div style="font-size:10.5px; color:#64748b; font-weight:500; margin-top:1px; line-height:1.2; display:flex; align-items:center; gap:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                              <span style="font-size:10px;">📍</span><span>${esc(t.location)}</span>
+                            <div style="font-size:10.5px; color:#64748b; font-weight:500; margin-top:1px; line-height:1.2; display:flex; align-items:center; gap:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                              <span style="color:#94a3b8; font-weight:600;">장소:</span><span>${esc(t.location)}</span>
                             </div>
                           ` : ''}
                         </div>
@@ -16385,11 +16506,11 @@ function getRandomAppQuote() {
               </div>
               ${task.location ? `
                 <div style="display:inline-flex; align-items:center; gap:5px; background:#f1f5f9; border:1px solid #cbd5e1; padding:4px 10px; border-radius:6px; font-size:12.5px; font-weight:600; color:#334155; align-self:flex-start;">
-                  <span>📍 장소:</span> <span>${esc(task.location)}</span>
+                  <span>장소:</span> <span>${esc(task.location)}</span>
                 </div>
               ` : ''}
               ${memoHtml ? `
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px 14px; font-size:13px; color:#0f172a; line-height:1.65; border-radius:8px; max-height:140px; overflow-y:auto; word-break:break-all; white-space:pre-wrap; tab-size:4;">${memoHtml}</div>
+                <div class="alert-memo-box" style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px 14px; font-size:13px; color:#0f172a; line-height:1.65; border-radius:8px; max-height:140px; overflow-y:auto; word-break:break-all; white-space:pre-wrap; tab-size:4;">${memoHtml}</div>
               ` : ''}
             </div>
 
@@ -16452,7 +16573,7 @@ function getRandomAppQuote() {
             <div class="briefing-drag-header" style="background:linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); padding:20px 22px 18px; color:#ffffff; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:rgba(199, 210, 254, 0.2); border:1px solid rgba(199, 210, 254, 0.4); color:#e0e7ff; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:20px;">
-                  📅 D-Day 사전 예고 알림
+                  D-Day 사전 예고 알림
                 </span>
                 <span style="font-size:12px; color:#c7d2fe;">${periodGuideText}</span>
               </div>
@@ -16475,7 +16596,7 @@ function getRandomAppQuote() {
                           <div style="font-size:13.5px; font-weight:700; color:#0f172a; margin-bottom:3px;">${esc(a.task.title)}</div>
                           <div style="font-size:11.5px; color:#64748b; display:flex; gap:10px; align-items:center;">
                             <span>마감일: <strong>${a.task.dueDate || a.task.startDate}</strong></span>
-                            ${a.task.location ? `<span>📍 ${esc(a.task.location)}</span>` : ''}
+                            ${a.task.location ? `<span>장소: ${esc(a.task.location)}</span>` : ''}
                           </div>
                         </div>
                         <button type="button" class="btn briefing-detail-btn" style="height:26px; font-size:11px; padding:0 8px; background:#f8fafc; border:1px solid #cbd5e1; color:#475569; border-radius:10px; flex-shrink:0; cursor:pointer;">상세보기</button>
@@ -16497,11 +16618,11 @@ function getRandomAppQuote() {
 
         // [V1.10.0] 데스크톱 환경에서는 1번 모니터 정중앙 독립 최상단 팝업 창으로 분리 호출
         if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
-          const fullHtml = buildIndependentAlertHtml('📅 D-Day 사전 예고 알림', container.innerHTML, (alerts || []).map(a => a.task));
+          const fullHtml = buildIndependentAlertHtml('D-Day 사전 예고 알림', container.innerHTML, (alerts || []).map(a => a.task));
           window.chrome.webview.postMessage(JSON.stringify({
             type: 'openIndependentAlert',
             alertType: 'dday',
-            title: '📅 D-Day 사전 예고 알림',
+            title: 'D-Day 사전 예고 알림',
             html: fullHtml,
             width: 560,
             height: 580
@@ -16540,7 +16661,7 @@ function getRandomAppQuote() {
         const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         const todayStr = today();
 
-        const alertTitle = isRestDay ? '⏰ 인사랑 휴일 초과근무 기록 안내' : '⏰ 인사랑 초과근무 기록 안내';
+        const alertTitle = isRestDay ? '인사랑 휴일 초과근무 기록 안내' : '인사랑 초과근무 기록 안내';
         const alertTimeDesc = isRestDay
           ? '현재 휴일(토·일·공휴일) 초과근무 시간대입니다.'
           : '현재 초과근무 시간대(18:00 ~ 익일 09:00)입니다.';
@@ -16564,7 +16685,7 @@ function getRandomAppQuote() {
             <div class="modal-body overtime-modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:20px 22px; display:flex; flex-direction:column; justify-content:center; gap:16px; background:#ffffff; box-sizing:border-box;">
               <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:18px 20px; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
                 <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-                  <span>📋</span> <span>초과근무 확인 및 등록 요청</span>
+                  <span>초과근무 확인 및 등록 요청</span>
                 </div>
                 <div style="font-size:13px; color:#334155; line-height:1.6; margin-bottom:9px; font-weight:600; word-break:keep-all;">
                   ${alertTimeDesc}
@@ -16583,7 +16704,7 @@ function getRandomAppQuote() {
 
               <div style="display:flex; align-items:center; justify-content:space-between; background:#faf5ff; border:1px solid #f3e8ff; padding:12px 18px; border-radius:10px;">
                 <div style="font-size:12px; color:#6b21a8; font-weight:600; line-height:1.5; word-break:keep-all;">
-                  💡 당일 일정이 남아있는 경우 오늘 일정 브리핑도 함께 확인하세요.
+                  안내: 당일 일정이 남아있는 경우 오늘 일정 브리핑도 함께 확인하세요.
                 </div>
               </div>
             </div>
@@ -16665,7 +16786,7 @@ function getRandomAppQuote() {
             <div class="briefing-drag-header" style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-bottom:1px solid #bfdbfe; padding:18px 20px 14px; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:#1d4ed8; color:#ffffff; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:20px; white-space:nowrap;">
-                  📅 일정 ${headLabel}
+                  일정 ${headLabel}
                 </span>
                 <span style="font-size:12px; font-weight:700; color:#1d4ed8;">${today()}</span>
               </div>
@@ -16682,11 +16803,11 @@ function getRandomAppQuote() {
               </div>
               ${task.location ? `
                 <div style="display:inline-flex; align-items:center; gap:5px; background:#f1f5f9; border:1px solid #cbd5e1; padding:4px 10px; border-radius:6px; font-size:12.5px; font-weight:600; color:#334155; align-self:flex-start;">
-                  <span>📍 장소:</span> <span>${esc(task.location)}</span>
+                  <span>장소:</span> <span>${esc(task.location)}</span>
                 </div>
               ` : ''}
               ${(task.memo && task.memo.trim()) ? `
-                <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px 14px; font-size:13px; color:#0f172a; line-height:1.65; border-radius:8px; max-height:140px; overflow-y:auto; word-break:break-all; white-space:pre-wrap; tab-size:4;">${parseMemoMarkdown(task.memo)}</div>
+                <div class="alert-memo-box" style="background:#f8fafc; border:1px solid #e2e8f0; padding:10px 14px; font-size:13px; color:#0f172a; line-height:1.65; border-radius:8px; max-height:140px; overflow-y:auto; word-break:break-all; white-space:pre-wrap; tab-size:4;">${parseMemoMarkdown(task.memo)}</div>
               ` : ''}
             </div>
 
@@ -16700,11 +16821,11 @@ function getRandomAppQuote() {
 
         if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
           if (playSound) playChimeSound();
-          const fullHtml = buildIndependentAlertHtml(`📅 일정 ${headLabel}`, html, [task]);
+          const fullHtml = buildIndependentAlertHtml(`일정 ${headLabel}`, html, [task]);
           window.chrome.webview.postMessage(JSON.stringify({
             type: 'openIndependentAlert',
             alertType: `reminder_${safeWindowKey(task.id)}_${daysBefore}`,
-            title: `📅 일정 ${headLabel}`,
+            title: `일정 ${headLabel}`,
             html: fullHtml,
             width: 520,
             height: 420
@@ -17049,7 +17170,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.2.8',
+          version: window.APP_VERSION || 'v1.2.9',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
@@ -17095,11 +17216,8 @@ function getRandomAppQuote() {
           }
 
           if (isDesktop) {
-            window.chrome.webview.postMessage(JSON.stringify({ type: 'autoBackupSnapshot', payload: payloadJson }));
-            autoBackupDirty = false;
-            storageSet('todoCalendar.autoBackupLastHash', hash, { skipBackupDirty: true });
-            storageSet('todoCalendar.autoBackupLastAt', iso(), { skipBackupDirty: true });
-            return { ok: true, skipped: false, mode: 'desktop', hash };
+            window.chrome.webview.postMessage(JSON.stringify({ type: 'autoBackupSnapshot', payload: payloadJson, hash }));
+            return { ok: true, skipped: false, mode: 'desktop', pending: true, hash };
           }
 
           if (typeof window.showDirectoryPicker === 'function') {
@@ -17195,11 +17313,18 @@ function getRandomAppQuote() {
             cancelText: '취소'
           });
           if (!ok) return;
+          let validatedStores = [];
+          try {
+            validatedStores = storeEntries.map(([sId, sData]) => [sId, normalize(sData || blank())]);
+          } catch (normErr) {
+            console.error('Full backup validation failed:', normErr);
+            toast('전체 백업 파일 형식이 올바르지 않아 복원을 취소했습니다.');
+            return;
+          }
           if (Array.isArray(parsed.storeList) && parsed.storeList.length > 0) {
             saveStoreList(parsed.storeList);
           }
-          for (const [sId, sData] of storeEntries) {
-            const norm = normalize(sData || blank());
+          for (const [sId, norm] of validatedStores) {
             storageSet(getStoreKey(sId), JSON.stringify(norm));
           }
           if (parsed.quickConnect) {
@@ -17243,12 +17368,22 @@ function getRandomAppQuote() {
         let addedCount = 0;
 
         tasksToMerge.forEach(incoming => {
-          if (!incoming.title || !incoming.dueDate) return;
+          if (!incoming || !incoming.title || !validDate(incoming.dueDate)) return;
           const newTask = Object.assign(makeTask(incoming.dueDate), incoming);
+          const priKey = typeof incoming.priority === 'string' ? incoming.priority.trim().toLowerCase() : '';
+          newTask.priority = Object.hasOwn(PRIORITY, priKey) ? priKey : 'normal';
+          const parsedRems = splitMixedReminders(incoming.reminders, incoming.hourReminders, [120, 60]);
+          newTask.reminders = parsedRems.reminders;
+          newTask.hourReminders = parsedRems.hourReminders;
           newTask.id = uid();
           next.tasks.push(newTask);
           addedCount++;
         });
+
+        if (addedCount === 0) {
+          toast('유효한 일정이 없어 추가하지 않았습니다.');
+          return;
+        }
 
         if (commit(next)) {
           if ($('settings') && $('settings').open) $('settings').close();
@@ -17561,9 +17696,6 @@ function getRandomAppQuote() {
         else if (a === 'quickConnect') {
           handleBiLogoClick();
         }
-        else if (a === 'prev' || a === 'next') {
-          navMonth(a === 'next' ? 1 : -1);
-        }
         else if (a === 'settings') {
           openSettings();
         }
@@ -17581,11 +17713,11 @@ function getRandomAppQuote() {
           }
           const btnStartup = $('btnRegisterStartupApp');
           if (btnStartup) {
-            btnStartup.textContent = '✓ 시작앱 등록됨';
+            btnStartup.textContent = '시작앱에 등록됨';
             btnStartup.title = '현재 윈도우 시작 시 자동 실행으로 등록되어 있습니다';
-            btnStartup.style.color = '#15803d';
-            btnStartup.style.borderColor = '#86efac';
-            btnStartup.style.background = '#f0fdf4';
+            btnStartup.style.color = '#2563eb';
+            btnStartup.style.borderColor = '#bfdbfe';
+            btnStartup.style.background = '#eff6ff';
           }
           toast('윈도우 시작 앱에 성공적으로 등록되었습니다.');
         }
@@ -17670,29 +17802,52 @@ function getRandomAppQuote() {
             $('reportModal').close();
             safeHistoryBack('reportModal');
           }
-          const t = (data.tasks || []).find(x => x.id === taskId);
+          const found = findTaskAcrossStores(taskId);
+          if (!found) {
+            toast('일정을 찾을 수 없습니다.');
+            return;
+          }
+          if (!found.isActive && found.storeId) {
+            switchStore(found.storeId);
+          }
+          const t = (data.tasks || []).find(x => String(x.id) === String(taskId));
           if (t) {
             openEditor(t);
           } else {
-            const r = (data.recurrings || []).find(x => x.id === taskId);
+            const r = (data.recurrings || []).find(x => String(x.id) === String(taskId));
             if (r) openRecurringEditor(r);
           }
         }
         else if (a === 'deleteFromReport') {
           const taskId = b.dataset.id;
-          if (confirm('이 일정을 삭제하시겠습니까?')) {
+          const found = findTaskAcrossStores(taskId);
+          if (!found) {
+            if ($('reportModal') && $('reportModal').open) {
+              $('reportModal').close();
+              safeHistoryBack('reportModal');
+            }
+            toast('이미 삭제된 일정입니다.');
+            return;
+          }
+          if (!confirm('이 일정을 삭제하시겠습니까?')) return;
+
+          if (found.isActive) {
             const next = clone(data);
-            const t = (next.tasks || []).find(x => x.id === taskId);
-            if (t && t.recurringId && next.recurrings) {
-              const rule = next.recurrings.find(r => r.id === t.recurringId);
-              if (rule) {
-                rule.deletedDates = rule.deletedDates || [];
-                if (!rule.deletedDates.includes(t.dueDate)) {
-                  rule.deletedDates.push(t.dueDate);
+            const t = (next.tasks || []).find(x => String(x.id) === String(taskId));
+            if (t) {
+              if (t.recurringId && next.recurrings) {
+                const rule = next.recurrings.find(r => r.id === t.recurringId);
+                if (rule) {
+                  rule.deletedDates = rule.deletedDates || [];
+                  if (!rule.deletedDates.includes(t.dueDate)) {
+                    rule.deletedDates.push(t.dueDate);
+                  }
                 }
               }
+              next.tasks = (next.tasks || []).filter(x => String(x.id) !== String(taskId));
+            } else if (found.recurring) {
+              next.recurrings = (next.recurrings || []).filter(r => String(r.id) !== String(taskId));
             }
-            next.tasks = (next.tasks || []).filter(x => x.id !== taskId);
             if (commit(next)) {
               if ($('reportModal') && $('reportModal').open) {
                 $('reportModal').close();
@@ -17701,6 +17856,41 @@ function getRandomAppQuote() {
               ui.listSelectedTask = null;
               render();
               toast('일정이 삭제되었습니다.');
+            }
+          } else {
+            try {
+              const storeKey = getStoreKey(found.storeId);
+              const rawOther = storageGet(storeKey);
+              if (rawOther) {
+                const otherStore = normalize(JSON.parse(rawOther));
+                const t = (otherStore.tasks || []).find(x => String(x.id) === String(taskId));
+                if (t) {
+                  if (t.recurringId && otherStore.recurrings) {
+                    const rule = otherStore.recurrings.find(r => r.id === t.recurringId);
+                    if (rule) {
+                      rule.deletedDates = rule.deletedDates || [];
+                      if (!rule.deletedDates.includes(t.dueDate)) {
+                        rule.deletedDates.push(t.dueDate);
+                      }
+                    }
+                  }
+                  otherStore.tasks = (otherStore.tasks || []).filter(x => String(x.id) !== String(taskId));
+                } else if (found.recurring) {
+                  otherStore.recurrings = (otherStore.recurrings || []).filter(r => String(r.id) !== String(taskId));
+                }
+                otherStore.updatedAt = iso();
+                storageSet(storeKey, JSON.stringify(otherStore));
+                if (typeof markLocalCloudModified === 'function') markLocalCloudModified();
+                if ($('reportModal') && $('reportModal').open) {
+                  $('reportModal').close();
+                  safeHistoryBack('reportModal');
+                }
+                render();
+                toast('일정이 삭제되었습니다.');
+              }
+            } catch (err) {
+              console.error('deleteFromReport other store error:', err);
+              toast('일정 삭제 중 오류가 발생했습니다.');
             }
           }
         }
@@ -18100,6 +18290,8 @@ function getRandomAppQuote() {
                   }
                 } catch (subErr) {
                   console.warn('v2 subcollection read fallback:', subErr);
+                  syncStatus = 'error';
+                  return;
                 }
                 if (remoteMs) {
                   const localMs = buildMultiStoreSnapshot();
@@ -18118,6 +18310,7 @@ function getRandomAppQuote() {
                   }
                   return;
                 }
+                return;
               }
 
               if (remote.multiStorePayload) {
@@ -18217,6 +18410,8 @@ function getRandomAppQuote() {
                 activeStoreId: ms.activeStoreId,
                 quickConnect: ms.quickConnect || null,
                 storeIds: ms.storeList.map(x => String(x.id)),
+                payload: firebase.firestore.FieldValue.delete(),
+                multiStorePayload: firebase.firestore.FieldValue.delete(),
                 updatedAt: cloudUpdatedAt,
                 email: currentUser.email || '',
                 savedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -18389,7 +18584,7 @@ function getRandomAppQuote() {
           }
         };
 
-        // [V1.2.8] MY 노트 / ZenNotes '일정관리로 보내기' 원클릭 직접 등록 수신기
+        // [V1.2.9] MY 노트 '일정관리로 보내기' 원클릭 직접 등록 수신기
         window.__registerDirectTaskFromMyNotes = function(rawPayload) {
           try {
             const parsed = typeof rawPayload === 'string' ? JSON.parse(rawPayload) : rawPayload;
@@ -18402,7 +18597,7 @@ function getRandomAppQuote() {
             let lastAddedTask = null;
 
             tasksToAdd.forEach(incoming => {
-              if (!incoming || !incoming.title || !incoming.dueDate) return;
+              if (!incoming || !incoming.title || !validDate(incoming.dueDate)) return;
               const newTask = Object.assign(makeTask(incoming.dueDate), incoming);
               const priKey = typeof incoming.priority === 'string' ? incoming.priority.trim().toLowerCase() : '';
               newTask.priority = Object.hasOwn(PRIORITY, priKey) ? priKey : 'normal';
@@ -18419,6 +18614,11 @@ function getRandomAppQuote() {
               addedCount++;
             });
 
+            if (addedCount === 0) {
+              toast('유효한 일정이 없어 등록하지 않았습니다.');
+              return false;
+            }
+
             if (addedCount > 0 && commit(next)) {
               const targetDate = lastAddedTask ? (lastAddedTask.startDate || lastAddedTask.dueDate) : null;
               if (targetDate) {
@@ -18433,12 +18633,12 @@ function getRandomAppQuote() {
                 ui.listSelectedTask = lastAddedTask.id;
               }
               render();
-              toast(`ZenNotes에서 보낸 일정(${addedCount}건)이 등록되었습니다.`);
+              toast(`MY 노트에서 보낸 일정(${addedCount}건)이 등록되었습니다.`);
               return true;
             }
           } catch (err) {
             console.error('[DirectImportFromMyNotes Error]', err);
-            toast('일정 등록 중 오류가 발생했습니다.');
+            toast('MY 노트 일정 등록 중 오류가 발생했습니다.');
           }
           return false;
         };
@@ -18549,6 +18749,12 @@ function getRandomAppQuote() {
                     }
                   }
                 }
+              } else if (data.type === 'autoBackupResult') {
+                if (data.ok) {
+                  autoBackupDirty = false;
+                  if (data.hash) storageSet('todoCalendar.autoBackupLastHash', data.hash, { skipBackupDirty: true });
+                  storageSet('todoCalendar.autoBackupLastAt', iso(), { skipBackupDirty: true });
+                }
               } else if (data.type === 'openDetailFromBriefing') {
                 if (data.id) {
                   openDetailReport(data.id);
@@ -18564,6 +18770,23 @@ function getRandomAppQuote() {
         window.addEventListener('popstate', e => {
           if (isProgrammaticHistoryBack) {
             isProgrammaticHistoryBack = false;
+            return;
+          }
+          if ($('linkInputModal') && $('linkInputModal').open) {
+            if (typeof $('linkInputModal')._closeHandler === 'function') {
+              $('linkInputModal')._closeHandler();
+            } else {
+              $('linkInputModal').close();
+              if (window.LittleNoteEditor) window.LittleNoteEditor.cancelLinkFromModal();
+            }
+            return;
+          }
+          if ($('overtimeAlertModal') && $('overtimeAlertModal').open) {
+            $('overtimeAlertModal').close();
+            return;
+          }
+          if ($('reminderAlertModal') && $('reminderAlertModal').open) {
+            $('reminderAlertModal').close();
             return;
           }
           if ($('urgentAlertModal') && $('urgentAlertModal').open) {
@@ -18636,7 +18859,13 @@ function getRandomAppQuote() {
         $('editor')?.addEventListener('cancel', e => {
           if ($('linkInputModal') && $('linkInputModal').open) {
             e.preventDefault();
-            $('linkInputModal').close();
+            if (typeof $('linkInputModal')._closeHandler === 'function') {
+              $('linkInputModal')._closeHandler();
+            } else {
+              $('linkInputModal').close();
+              safeHistoryBack('linkInputModal');
+              if (window.LittleNoteEditor) window.LittleNoteEditor.cancelLinkFromModal();
+            }
             return;
           }
           if ($('specialCharModal') && $('specialCharModal').open) {
@@ -18672,6 +18901,7 @@ function getRandomAppQuote() {
         $('storeModal')?.addEventListener('cancel', () => { safeHistoryBack('storeModal'); });
         $('dailyBriefingModal')?.addEventListener('cancel', () => {});
         $('urgentAlertModal')?.addEventListener('cancel', () => {});
+        $('overtimeAlertModal')?.addEventListener('cancel', () => {});
         $('ddayAlertModal')?.addEventListener('cancel', () => {});
         $('reminderAlertModal')?.addEventListener('cancel', () => {});
         $('reminderAlertModal')?.addEventListener('close', () => { setTimeout(showNextReminderInBrowser, 150); });
@@ -18683,11 +18913,18 @@ function getRandomAppQuote() {
             if (isLinkModalOpen) {
               e.preventDefault();
               e.stopPropagation();
-              $('linkInputModal').close();
+              if (typeof $('linkInputModal')._closeHandler === 'function') {
+                $('linkInputModal')._closeHandler();
+              } else {
+                $('linkInputModal').close();
+                safeHistoryBack('linkInputModal');
+                if (window.LittleNoteEditor) window.LittleNoteEditor.cancelLinkFromModal();
+              }
               return;
             }
             const isSpecialCharOpen = $('specialCharModal') && $('specialCharModal').open;
             const isUrgentOpen = $('urgentAlertModal') && $('urgentAlertModal').open;
+            const isOvertimeOpen = $('overtimeAlertModal') && $('overtimeAlertModal').open;
             const isBriefingOpen = $('dailyBriefingModal') && $('dailyBriefingModal').open;
             const isDdayAlertOpen = $('ddayAlertModal') && $('ddayAlertModal').open;
             const isReminderOpen = $('reminderAlertModal') && $('reminderAlertModal').open;
@@ -18734,6 +18971,11 @@ function getRandomAppQuote() {
               return;
             }
 
+            if (isOvertimeOpen) {
+              e.preventDefault();
+              $('overtimeAlertModal').close();
+              return;
+            }
             if (isReminderOpen) {
               e.preventDefault();
               $('reminderAlertModal').close();
@@ -18793,8 +19035,10 @@ function getRandomAppQuote() {
           const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
           if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
 
-          const anyModalOpen = ($('specialCharModal') && $('specialCharModal').open) ||
+          const anyModalOpen = ($('linkInputModal') && $('linkInputModal').open) ||
+                               ($('specialCharModal') && $('specialCharModal').open) ||
                                ($('urgentAlertModal') && $('urgentAlertModal').open) ||
+                               ($('overtimeAlertModal') && $('overtimeAlertModal').open) ||
                                ($('dailyBriefingModal') && $('dailyBriefingModal').open) ||
                                ($('ddayAlertModal') && $('ddayAlertModal').open) ||
                                ($('reminderAlertModal') && $('reminderAlertModal').open) ||
@@ -18902,6 +19146,7 @@ function getRandomAppQuote() {
           if (e.key !== getCurrentKey() || storageBlocked) return;
           if (!e.newValue) return;
           try {
+            memStorage.set(e.key, e.newValue);
             data = normalize(JSON.parse(e.newValue));
             rebuildHolidays();
             render();

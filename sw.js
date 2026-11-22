@@ -1,8 +1,8 @@
 /* =====================================================================
  * PWA Service Worker for D-Day 일정관리 (PWA Icon & Maskable Support)
  * ===================================================================== */
-const APP_VERSION = '1.2.8';
-const CACHE_NAME = 'todo-pwa-v1.2.8';
+const APP_VERSION = '1.2.9';
+const CACHE_NAME = 'todo-pwa-v1.2.9';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -102,7 +102,7 @@ self.addEventListener('fetch', (event) => {
       }).catch(() => {
         // 오프라인 폴백: 탐색 요청(HTML)일 경우 루트 index.html, 기타 에셋은 쿼리스트링 무시 매칭 반환
         if (req.mode === 'navigate') {
-          return caches.match('./index.html') || caches.match('./');
+          return caches.match('./index.html').then((r) => r || caches.match('./'));
         }
         return caches.match(req, { ignoreSearch: true });
       });
