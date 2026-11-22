@@ -1793,6 +1793,239 @@
       font-weight: 600;
     }
 
+    /* [V1.1.0] MY 노트 통합 마크다운 표현 양식 (표·인용구·구분선·목록·체크리스트·코드블록·이미지) */
+    .memo-md-toolbar {
+      flex-wrap: wrap;
+      gap: 2px;
+      padding: 3px 5px;
+    }
+    .memo-editor .md-list,
+    .detail-memo .md-list,
+    .detail-memo-scroll-box .md-list,
+    .memo-editor ul,
+    .memo-editor ol,
+    .detail-memo ul,
+    .detail-memo ol,
+    .detail-memo-scroll-box ul,
+    .detail-memo-scroll-box ol {
+      margin: 4px 0;
+      padding-left: 22px;
+      white-space: normal;
+    }
+    .memo-editor li,
+    .detail-memo li,
+    .detail-memo-scroll-box li {
+      margin: 2px 0;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+    .md-check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 7px;
+      margin: 2px 0;
+      margin-left: calc(var(--md-indent, 0) * 18px);
+      line-height: 1.55;
+      white-space: normal;
+    }
+    .md-check-input {
+      width: 14px;
+      height: 14px;
+      margin: 3px 0 0 0;
+      accent-color: #4f46e5;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .md-check-box {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      margin-top: 3px;
+      border-radius: 4px;
+      border: 1.5px solid #94a3b8;
+      background: #ffffff;
+      color: #ffffff;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+    .md-check-item.is-checked .md-check-box {
+      background: #4f46e5;
+      border-color: #4f46e5;
+    }
+    .md-check-text {
+      flex: 1;
+      min-width: 0;
+      white-space: pre-wrap;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+    }
+    .md-check-item.is-checked .md-check-text {
+      text-decoration: line-through;
+      color: #94a3b8;
+    }
+    .memo-editor blockquote,
+    .detail-memo blockquote,
+    .detail-memo-scroll-box blockquote,
+    blockquote.md-quote {
+      border-left: 3.5px solid #94a3b8;
+      background: #f8fafc;
+      color: #334155;
+      padding: 6px 12px;
+      margin: 6px 0;
+      border-radius: 0 7px 7px 0;
+      white-space: normal;
+      line-height: 1.55;
+    }
+    .memo-editor hr,
+    .detail-memo hr,
+    .detail-memo-scroll-box hr,
+    hr.md-hr {
+      border: none;
+      border-bottom: 1.5px solid #cbd5e1;
+      margin: 10px 0;
+      white-space: normal;
+    }
+    .md-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin: 6px 0;
+      white-space: normal;
+    }
+    table.md-table,
+    .memo-editor table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 4px 0;
+      font-size: 12.5px;
+      background: #ffffff;
+      white-space: normal;
+      table-layout: auto;
+    }
+    table.md-table th,
+    table.md-table td,
+    .memo-editor table th,
+    .memo-editor table td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 10px;
+      text-align: left;
+      vertical-align: top;
+      min-width: 56px;
+      white-space: pre-wrap;
+      word-break: keep-all;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+      color: #0f172a;
+    }
+    table.md-table th,
+    .memo-editor table th {
+      background: #f1f5f9;
+      font-weight: 700;
+      color: #334155;
+    }
+    .md-code-wrap {
+      margin: 6px 0;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #1e293b;
+      white-space: normal;
+    }
+    .md-code-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 10px;
+      background: #0f172a;
+      border-bottom: 1px solid #334155;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    pre.md-code-block,
+    .memo-editor pre.md-code-block {
+      margin: 0;
+      padding: 10px 12px;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      overflow-x: auto;
+      white-space: pre;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    .md-code-wrap pre.md-code-block {
+      border: none;
+      border-radius: 0;
+    }
+    pre.md-code-block code {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      color: inherit !important;
+      font-size: inherit !important;
+      white-space: pre !important;
+    }
+    img.md-img,
+    .memo-editor img,
+    .detail-memo img,
+    .detail-memo-scroll-box img {
+      display: block;
+      max-width: 100%;
+      max-height: 360px;
+      height: auto;
+      margin: 6px 0;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      object-fit: contain;
+    }
+
+    /* 다크모드 우측 목록 미리보기 마크다운 대응 */
+    [data-theme="dark"] .detail-card .md-quote,
+    [data-theme="dark"] .detail-card blockquote {
+      background: #232833;
+      border-left-color: #64748b;
+      color: #cbd5e1;
+    }
+    [data-theme="dark"] .detail-card .md-hr,
+    [data-theme="dark"] .detail-card hr {
+      border-bottom-color: #384252;
+    }
+    [data-theme="dark"] .detail-card .md-check-box {
+      background: #1a1e24;
+      border-color: #64748b;
+    }
+    [data-theme="dark"] .detail-card .md-check-item.is-checked .md-check-box {
+      background: #4f46e5;
+      border-color: #6366f1;
+    }
+    [data-theme="dark"] .detail-card .md-check-item.is-checked .md-check-text {
+      color: #64748b;
+    }
+    [data-theme="dark"] .detail-card table.md-table {
+      background: #1e232c;
+    }
+    [data-theme="dark"] .detail-card table.md-table th {
+      background: #262b35;
+      color: #e2e8f0;
+      border-color: #384252;
+    }
+    [data-theme="dark"] .detail-card table.md-table td {
+      color: #cbd5e1;
+      border-color: #384252;
+    }
+    [data-theme="dark"] .detail-card .md-img {
+      border-color: #384252;
+    }
+
     /* MODAL DIALOGS (ELEGANT FLOATING SQUIRCLE) */
     dialog::backdrop {
       background: rgba(15, 23, 42, 0.12);
@@ -1814,17 +2047,31 @@
       animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    dialog#editor {
+      width: 740px;
+      max-width: calc(100vw - 24px);
+      max-height: 92vh;
+    }
+
+    dialog#editor .memo-editor {
+      min-height: 180px;
+      max-height: 52vh;
+      padding: 10px 12px;
+      font-size: 13.5px;
+      line-height: 1.65;
+    }
+
     dialog#settings {
       width: 500px;
       max-width: calc(100vw - 24px);
     }
 
-    /* [V1.6.0] 상세 보고서 모달 틀 크기 고정 (텍스트 길이에 따른 출렁임 방지) */
+    /* [V1.1.0] 상세 보고서 모달 확대 고정 (표/이미지/긴 요약 쾌적 열람) */
     dialog#reportModal {
-      width: 520px;
+      width: 680px;
       max-width: calc(100vw - 24px);
-      height: 580px;
-      max-height: 85vh;
+      height: 660px;
+      max-height: 88vh;
       box-sizing: border-box;
       overflow: hidden;
       padding: 0;
@@ -1840,9 +2087,9 @@
     /* [V1.6.0] 프로페셔널 독립 알림 팝업 3종 스타일 */
     dialog#dailyBriefingModal,
     dialog#ddayAlertModal {
-      width: 520px;
+      width: 560px;
       max-width: calc(100vw - 24px);
-      height: 600px;
+      height: 620px;
       max-height: 88vh;
       box-sizing: border-box;
       overflow: hidden;
@@ -4591,9 +4838,17 @@
       }
       dialog#reportModal {
         width: calc(100vw - 20px) !important;
-        max-width: 480px !important;
-        height: 84vh !important;
+        max-width: 520px !important;
+        height: 86vh !important;
         border-radius: 12px !important;
+      }
+      dialog#editor {
+        width: calc(100vw - 16px) !important;
+        max-width: none !important;
+        border-radius: 12px !important;
+      }
+      dialog#editor .memo-editor {
+        min-height: 130px !important;
       }
     }
   
@@ -4900,7 +5155,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.0.20';
+      window.APP_VERSION = 'v1.1.0';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -6420,21 +6675,150 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
       
       /* =====================================================================
-       * [V1.5.2] 안전 스토리지 래퍼 (LocalStorage + In-Memory + WebView2 파일 동기화)
+       * [V1.1.0] 통합 무제한 스토리지 엔진 (IndexedDB + In-Memory + WebView2 파일 동기화)
        * ===================================================================== */
       const memStorage = new Map();
+      let storageHydrated = false;
+      let autoBackupDirty = false;
+      let syncHostTimer = null;
+      const MYTODO_IDB_NAME = 'MyTodoDB_V1';
+      let myTodoIdbPromise = null;
+
       if (window.__desktopStorageInit && typeof window.__desktopStorageInit === 'object') {
         Object.entries(window.__desktopStorageInit).forEach(([k, v]) => {
           if (typeof v === 'string') {
             memStorage.set(k, v);
-            try {
-              if (!localStorage.getItem(k)) localStorage.setItem(k, v);
-            } catch (e) {}
           }
         });
       }
 
-      function syncToDesktopHost() {
+      function openMyTodoIdb() {
+        if (myTodoIdbPromise) return myTodoIdbPromise;
+        myTodoIdbPromise = new Promise((resolve) => {
+          if (typeof indexedDB === 'undefined') { resolve(null); return; }
+          try {
+            const req = indexedDB.open(MYTODO_IDB_NAME, 1);
+            req.onupgradeneeded = (e) => {
+              const idb = e.target.result;
+              if (!idb.objectStoreNames.contains('kv')) idb.createObjectStore('kv', { keyPath: 'key' });
+              if (!idb.objectStoreNames.contains('handles')) idb.createObjectStore('handles', { keyPath: 'key' });
+            };
+            req.onsuccess = (e) => resolve(e.target.result);
+            req.onerror = () => resolve(null);
+          } catch (e) { resolve(null); }
+        });
+        return myTodoIdbPromise;
+      }
+
+      function idbPutKv(key, value) {
+        return openMyTodoIdb().then((idb) => {
+          if (!idb) return false;
+          return new Promise((resolve) => {
+            try {
+              const tx = idb.transaction(['kv'], 'readwrite');
+              tx.objectStore('kv').put({ key: String(key), value: String(value) });
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => resolve(false);
+            } catch (e) { resolve(false); }
+          });
+        }).catch(() => false);
+      }
+
+      function idbDeleteKv(key) {
+        return openMyTodoIdb().then((idb) => {
+          if (!idb) return false;
+          return new Promise((resolve) => {
+            try {
+              const tx = idb.transaction(['kv'], 'readwrite');
+              tx.objectStore('kv').delete(String(key));
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => resolve(false);
+            } catch (e) { resolve(false); }
+          });
+        }).catch(() => false);
+      }
+
+      function idbGetAllKv() {
+        return openMyTodoIdb().then((idb) => {
+          if (!idb) return [];
+          return new Promise((resolve) => {
+            try {
+              const tx = idb.transaction(['kv'], 'readonly');
+              const req = tx.objectStore('kv').getAll();
+              req.onsuccess = () => resolve(Array.isArray(req.result) ? req.result : []);
+              req.onerror = () => resolve([]);
+            } catch (e) { resolve([]); }
+          });
+        }).catch(() => []);
+      }
+
+      function getStoredBackupHandle(name = 'auto_backup_dir') {
+        return openMyTodoIdb().then((idb) => {
+          if (!idb) return null;
+          return new Promise((resolve) => {
+            try {
+              const tx = idb.transaction(['handles'], 'readonly');
+              const req = tx.objectStore('handles').get(String(name));
+              req.onsuccess = () => resolve(req.result ? req.result.handle : null);
+              req.onerror = () => resolve(null);
+            } catch (e) { resolve(null); }
+          });
+        }).catch(() => null);
+      }
+
+      function setStoredBackupHandle(handle, name = 'auto_backup_dir') {
+        return openMyTodoIdb().then((idb) => {
+          if (!idb) return false;
+          return new Promise((resolve) => {
+            try {
+              const tx = idb.transaction(['handles'], 'readwrite');
+              if (handle) tx.objectStore('handles').put({ key: String(name), handle });
+              else tx.objectStore('handles').delete(String(name));
+              tx.oncomplete = () => resolve(true);
+              tx.onerror = () => resolve(false);
+            } catch (e) { resolve(false); }
+          });
+        }).catch(() => false);
+      }
+
+      async function hydrateStorageFromIdb() {
+        const legacyMap = new Map();
+        if (window.__desktopStorageInit && typeof window.__desktopStorageInit === 'object') {
+          Object.entries(window.__desktopStorageInit).forEach(([k, v]) => {
+            if (typeof v === 'string') legacyMap.set(k, v);
+          });
+        }
+        try {
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && (k.startsWith('todoCalendar.') || k.startsWith('dday_'))) {
+              const v = localStorage.getItem(k);
+              if (typeof v === 'string' && !legacyMap.has(k)) {
+                legacyMap.set(k, v);
+              }
+            }
+          }
+        } catch (e) {}
+
+        const rows = await idbGetAllKv();
+        const idbMap = new Map();
+        rows.forEach(r => {
+          if (r && typeof r.key === 'string' && typeof r.value === 'string') {
+            idbMap.set(r.key, r.value);
+            memStorage.set(r.key, r.value);
+          }
+        });
+
+        for (const [k, v] of legacyMap.entries()) {
+          if (!idbMap.has(k)) {
+            memStorage.set(k, v);
+            await idbPutKv(k, v);
+          }
+        }
+        storageHydrated = true;
+      }
+
+      function flushToDesktopHost() {
         try {
           if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
             const dump = {};
@@ -6452,7 +6836,21 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         } catch (e) {}
       }
 
+      function syncToDesktopHost(immediate = false) {
+        if (immediate) {
+          if (syncHostTimer) { clearTimeout(syncHostTimer); syncHostTimer = null; }
+          flushToDesktopHost();
+          return;
+        }
+        if (syncHostTimer) clearTimeout(syncHostTimer);
+        syncHostTimer = setTimeout(() => {
+          syncHostTimer = null;
+          flushToDesktopHost();
+        }, 250);
+      }
+
       function storageGet(key) {
+        if (memStorage.has(key)) return memStorage.get(key);
         try {
           const v = localStorage.getItem(key);
           if (v !== null && v !== undefined) {
@@ -6460,25 +6858,39 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             return v;
           }
         } catch (e) {}
-        return memStorage.has(key) ? memStorage.get(key) : null;
+        return null;
       }
 
-      function storageSet(key, val) {
+      function storageSet(key, val, options = {}) {
         const strVal = String(val);
         memStorage.set(key, strVal);
+        idbPutKv(key, strVal);
         try {
-          localStorage.setItem(key, strVal);
-        } catch (e) {}
-        syncToDesktopHost();
+          if (strVal.length < 200000) {
+            localStorage.setItem(key, strVal);
+          } else {
+            localStorage.removeItem(key);
+          }
+        } catch (e) {
+          try { localStorage.removeItem(key); } catch (_) {}
+        }
+        if (storageHydrated && !(options && options.skipBackupDirty) && (key.startsWith('todoCalendar.work.v1') || key === STORE_LIST_KEY)) {
+          autoBackupDirty = true;
+        }
+        syncToDesktopHost(false);
         return true;
       }
 
       function storageRemove(key) {
         memStorage.delete(key);
+        idbDeleteKv(key);
         try {
           localStorage.removeItem(key);
         } catch (e) {}
-        syncToDesktopHost();
+        if (storageHydrated && (key.startsWith('todoCalendar.work.v1') || key === STORE_LIST_KEY)) {
+          autoBackupDirty = true;
+        }
+        syncToDesktopHost(false);
       }
 
       /* =====================================================================
@@ -6895,39 +7307,334 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
       const pad = n => String(n).padStart(2, '0');
 
       /* =====================================================================
-       * [ZenNotes 호환] 마크다운 서식 파서 및 위지윅 툴바 헬퍼
+       * [ZenNotes 호환 V1.1.0] 통합 마크다운 파서 · 에디터 직렬화 엔진
        * ===================================================================== */
       function parseMemoMarkdown(raw) {
         if (!raw) return '';
-        const lines = String(raw).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-        const parsedLines = lines.map(line => {
-          const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
-          if (hMatch) {
-            const lvl = hMatch[1].length;
-            const inner = parseInline(hMatch[2]);
-            const fontSizes = { 1: '16px', 2: '14.5px', 3: '13.5px' };
-            return `<div class="md-h${lvl}" style="font-size:${fontSizes[lvl]}; font-weight:800; color:inherit; margin:4px 0 2px 0; line-height:1.35;">${inner || '&nbsp;'}</div>`;
+        const normLines = String(raw).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+        const isTableSep = (s) => /^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(String(s || ''));
+        const splitTableRow = (line) => {
+          let s = String(line || '').trim();
+          if (s.startsWith('|')) s = s.slice(1);
+          if (s.endsWith('|')) s = s.slice(0, -1);
+          return s.split('|').map(c => c.trim());
+        };
+        const renderCellHtml = (cell) => String(cell || '').split(/<br\s*\/?>/gi).map(p => parseInline(p)).join('<br>');
+        const calcIndent = (ws) => Math.min(4, Math.floor(String(ws || '').replace(/\t/g, '  ').length / 2));
+
+        const buildListHtml = (items) => {
+          if (!items.length) return '';
+          let html = '';
+          const stack = [];
+          items.forEach((it) => {
+            while (stack.length > 0 && (it.indent < stack[stack.length - 1].indent || (it.indent === stack[stack.length - 1].indent && it.ordered !== stack[stack.length - 1].ordered))) {
+              const top = stack.pop();
+              html += (stack.length > 0 ? '</li>' : '') + (top.ordered ? '</ol>' : '</ul>');
+            }
+            if (stack.length === 0 || it.indent > stack[stack.length - 1].indent) {
+              const tag = it.ordered ? 'ol' : 'ul';
+              html += `<${tag} class="md-list">`;
+              stack.push({ ordered: it.ordered, indent: it.indent, hasOpenLi: false });
+            } else if (stack[stack.length - 1].hasOpenLi) {
+              html += '</li>';
+            }
+            html += `<li>${parseInline(it.text) || '&nbsp;'}`;
+            stack[stack.length - 1].hasOpenLi = true;
+          });
+          while (stack.length > 0) {
+            const top = stack.pop();
+            html += (top.hasOpenLi ? '</li>' : '') + (top.ordered ? '</ol>' : '</ul>');
           }
-          const inner = parseInline(line);
-          return `<div style="min-height:1.25em;">${inner || '&nbsp;'}</div>`;
-        });
-        return parsedLines.join('');
+          return html;
+        };
+
+        const parseBlocks = (lines) => {
+          let out = '';
+          let i = 0;
+          while (i < lines.length) {
+            const line = lines[i];
+
+            // 1. Fenced Code Block ```lang ... ```
+            const fenceMatch = line.match(/^\s*```([a-zA-Z0-9_+#-]*)\s*$/);
+            if (fenceMatch) {
+              const lang = fenceMatch[1] || 'plain';
+              const codeLines = [];
+              i++;
+              while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) {
+                codeLines.push(lines[i]);
+                i++;
+              }
+              if (i < lines.length) i++;
+              out += `<div class="md-code-wrap"><div class="md-code-head"><span>${esc(lang)}</span></div><pre class="md-code-block" data-lang="${esc(lang)}"><code>${esc(codeLines.join('\n'))}</code></pre></div>`;
+              continue;
+            }
+
+            // 2. Table (header | sep | rows)
+            if (line.includes('|') && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+              const headers = splitTableRow(line);
+              const colCount = headers.length;
+              i += 2;
+              const bodyRows = [];
+              while (i < lines.length && lines[i].includes('|') && !/^\s*```/.test(lines[i]) && !/^\s*>/.test(lines[i])) {
+                bodyRows.push(splitTableRow(lines[i]));
+                i++;
+              }
+              let tHtml = '<div class="md-table-wrap"><table class="md-table"><thead><tr>';
+              for (let c = 0; c < colCount; c++) {
+                tHtml += `<th>${renderCellHtml(headers[c] || '')}</th>`;
+              }
+              tHtml += '</tr></thead><tbody>';
+              bodyRows.forEach(r => {
+                tHtml += '<tr>';
+                for (let c = 0; c < colCount; c++) {
+                  tHtml += `<td>${renderCellHtml(r[c] || '')}</td>`;
+                }
+                tHtml += '</tr>';
+              });
+              tHtml += '</tbody></table></div>';
+              out += tHtml;
+              continue;
+            }
+
+            // 3. Horizontal Rule (---, ***, ___)
+            if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+              out += '<hr class="md-hr">';
+              i++;
+              continue;
+            }
+
+            // 4. Blockquote (> ...)
+            if (/^\s*>\s?(.*)$/.test(line)) {
+              const quoteLines = [];
+              while (i < lines.length && /^\s*>\s?(.*)$/.test(lines[i])) {
+                quoteLines.push(lines[i].replace(/^\s*>\s?/, ''));
+                i++;
+              }
+              out += `<blockquote class="md-quote">${parseBlocks(quoteLines)}</blockquote>`;
+              continue;
+            }
+
+            // 5. Checklist (- [ ] or - [x] or [ ] or [x])
+            const chkMatch = line.match(/^([ \t]*)(?:[-*]\s+)?\[( |x|X)\]\s+(.*)$/);
+            if (chkMatch) {
+              const indent = calcIndent(chkMatch[1]);
+              const isChecked = chkMatch[2].toLowerCase() === 'x';
+              const inner = parseInline(chkMatch[3]);
+              const checkSvg = isChecked
+                ? '<svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2 6.5 4.8 9.2 10 3"/></svg>'
+                : '';
+              out += `<div class="md-check-item${isChecked ? ' is-checked' : ''}" style="--md-indent:${indent};"><span class="md-check-box" aria-hidden="true">${checkSvg}</span><span class="md-check-text">${inner || '&nbsp;'}</span></div>`;
+              i++;
+              continue;
+            }
+
+            // 6. Bullet / Ordered Lists (grouped)
+            const ulMatch = line.match(/^([ \t]*)[-*]\s+(.*)$/);
+            const olMatch = line.match(/^([ \t]*)\d+\.\s+(.*)$/);
+            if (ulMatch || olMatch) {
+              const listItems = [];
+              while (i < lines.length) {
+                const cur = lines[i];
+                if (/^([ \t]*)(?:[-*]\s+)?\[( |x|X)\]\s+(.*)$/.test(cur)) break;
+                const mU = cur.match(/^([ \t]*)[-*]\s+(.*)$/);
+                const mO = cur.match(/^([ \t]*)\d+\.\s+(.*)$/);
+                if (mU) {
+                  listItems.push({ ordered: false, indent: calcIndent(mU[1]), text: mU[2] });
+                  i++;
+                } else if (mO) {
+                  listItems.push({ ordered: true, indent: calcIndent(mO[1]), text: mO[2] });
+                  i++;
+                } else {
+                  break;
+                }
+              }
+              out += buildListHtml(listItems);
+              continue;
+            }
+
+            // 7. Heading (#, ##, ###)
+            const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
+            if (hMatch) {
+              const lvl = hMatch[1].length;
+              const inner = parseInline(hMatch[2]);
+              const fontSizes = { 1: '16px', 2: '14.5px', 3: '13.5px' };
+              out += `<div class="md-h${lvl}" style="font-size:${fontSizes[lvl]}; font-weight:800; color:inherit; margin:4px 0 2px 0; line-height:1.35;">${inner || '&nbsp;'}</div>`;
+              i++;
+              continue;
+            }
+
+            // 8. Normal Line
+            const inner = parseInline(line);
+            out += `<div style="min-height:1.25em;">${inner || '&nbsp;'}</div>`;
+            i++;
+          }
+          return out;
+        };
+
+        return parseBlocks(normLines);
       }
 
       function parseMemoForEditor(raw) {
         if (!raw || !raw.trim()) return '<div><br></div>';
-        const lines = String(raw).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-        const parsedLines = lines.map(line => {
-          const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
-          if (hMatch) {
-            const lvl = hMatch[1].length;
-            const inner = parseInline(hMatch[2]) || '<br>';
-            return `<h${lvl}>${inner}</h${lvl}>`;
+        const normLines = String(raw).replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        const isTableSep = (s) => /^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(String(s || ''));
+        const splitTableRow = (line) => {
+          let s = String(line || '').trim();
+          if (s.startsWith('|')) s = s.slice(1);
+          if (s.endsWith('|')) s = s.slice(0, -1);
+          return s.split('|').map(c => c.trim());
+        };
+        const renderCellHtml = (cell) => String(cell || '').split(/<br\s*\/?>/gi).map(p => parseInline(p)).join('<br>') || '<br>';
+        const calcIndent = (ws) => Math.min(4, Math.floor(String(ws || '').replace(/\t/g, '  ').length / 2));
+
+        const buildEditorListHtml = (items) => {
+          if (!items.length) return '';
+          let html = '';
+          const stack = [];
+          items.forEach((it) => {
+            while (stack.length > 0 && (it.indent < stack[stack.length - 1].indent || (it.indent === stack[stack.length - 1].indent && it.ordered !== stack[stack.length - 1].ordered))) {
+              const top = stack.pop();
+              html += (stack.length > 0 ? '</li>' : '') + (top.ordered ? '</ol>' : '</ul>');
+            }
+            if (stack.length === 0 || it.indent > stack[stack.length - 1].indent) {
+              const tag = it.ordered ? 'ol' : 'ul';
+              html += `<${tag} class="md-list">`;
+              stack.push({ ordered: it.ordered, indent: it.indent, hasOpenLi: false });
+            } else if (stack[stack.length - 1].hasOpenLi) {
+              html += '</li>';
+            }
+            html += `<li>${parseInline(it.text) || '<br>'}`;
+            stack[stack.length - 1].hasOpenLi = true;
+          });
+          while (stack.length > 0) {
+            const top = stack.pop();
+            html += (top.hasOpenLi ? '</li>' : '') + (top.ordered ? '</ol>' : '</ul>');
           }
-          const inner = parseInline(line) || '<br>';
-          return `<div>${inner}</div>`;
-        });
-        return parsedLines.join('') || '<div><br></div>';
+          return html;
+        };
+
+        const parseEditorBlocks = (lines) => {
+          let out = '';
+          let lastWasStructured = false;
+          let i = 0;
+          while (i < lines.length) {
+            const line = lines[i];
+            lastWasStructured = false;
+
+            const fenceMatch = line.match(/^\s*```([a-zA-Z0-9_+#-]*)\s*$/);
+            if (fenceMatch) {
+              const lang = fenceMatch[1] || 'plain';
+              const codeLines = [];
+              i++;
+              while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) {
+                codeLines.push(lines[i]);
+                i++;
+              }
+              if (i < lines.length) i++;
+              out += `<pre class="md-code-block" data-lang="${esc(lang)}"><code>${esc(codeLines.join('\n') || ' ')}</code></pre>`;
+              lastWasStructured = true;
+              continue;
+            }
+
+            if (line.includes('|') && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+              const headers = splitTableRow(line);
+              const colCount = headers.length;
+              i += 2;
+              const bodyRows = [];
+              while (i < lines.length && lines[i].includes('|') && !/^\s*```/.test(lines[i]) && !/^\s*>/.test(lines[i])) {
+                bodyRows.push(splitTableRow(lines[i]));
+                i++;
+              }
+              let tHtml = '<table class="md-table"><thead><tr>';
+              for (let c = 0; c < colCount; c++) {
+                tHtml += `<th>${renderCellHtml(headers[c] || '')}</th>`;
+              }
+              tHtml += '</tr></thead><tbody>';
+              bodyRows.forEach(r => {
+                tHtml += '<tr>';
+                for (let c = 0; c < colCount; c++) {
+                  tHtml += `<td>${renderCellHtml(r[c] || '')}</td>`;
+                }
+                tHtml += '</tr>';
+              });
+              tHtml += '</tbody></table>';
+              out += tHtml;
+              lastWasStructured = true;
+              continue;
+            }
+
+            if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+              out += '<hr class="md-hr">';
+              i++;
+              lastWasStructured = true;
+              continue;
+            }
+
+            if (/^\s*>\s?(.*)$/.test(line)) {
+              const quoteLines = [];
+              while (i < lines.length && /^\s*>\s?(.*)$/.test(lines[i])) {
+                quoteLines.push(lines[i].replace(/^\s*>\s?/, ''));
+                i++;
+              }
+              out += `<blockquote class="md-quote">${parseEditorBlocks(quoteLines)}</blockquote>`;
+              lastWasStructured = true;
+              continue;
+            }
+
+            const chkMatch = line.match(/^([ \t]*)(?:[-*]\s+)?\[( |x|X)\]\s+(.*)$/);
+            if (chkMatch) {
+              const indent = calcIndent(chkMatch[1]);
+              const isChecked = chkMatch[2].toLowerCase() === 'x';
+              const inner = parseInline(chkMatch[3]) || '<br>';
+              out += `<div class="md-check-item${isChecked ? ' is-checked' : ''}" data-checked="${isChecked ? '1' : '0'}" style="--md-indent:${indent};"><input type="checkbox" class="md-check-input" contenteditable="false"${isChecked ? ' checked' : ''}><span class="md-check-text">${inner}</span></div>`;
+              i++;
+              continue;
+            }
+
+            const ulMatch = line.match(/^([ \t]*)[-*]\s+(.*)$/);
+            const olMatch = line.match(/^([ \t]*)\d+\.\s+(.*)$/);
+            if (ulMatch || olMatch) {
+              const listItems = [];
+              while (i < lines.length) {
+                const cur = lines[i];
+                if (/^([ \t]*)(?:[-*]\s+)?\[( |x|X)\]\s+(.*)$/.test(cur)) break;
+                const mU = cur.match(/^([ \t]*)[-*]\s+(.*)$/);
+                const mO = cur.match(/^([ \t]*)\d+\.\s+(.*)$/);
+                if (mU) {
+                  listItems.push({ ordered: false, indent: calcIndent(mU[1]), text: mU[2] });
+                  i++;
+                } else if (mO) {
+                  listItems.push({ ordered: true, indent: calcIndent(mO[1]), text: mO[2] });
+                  i++;
+                } else {
+                  break;
+                }
+              }
+              out += buildEditorListHtml(listItems);
+              continue;
+            }
+
+            const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
+            if (hMatch) {
+              const lvl = hMatch[1].length;
+              const inner = parseInline(hMatch[2]) || '<br>';
+              out += `<h${lvl}>${inner}</h${lvl}>`;
+              i++;
+              continue;
+            }
+
+            const inner = parseInline(line) || '<br>';
+            out += `<div>${inner}</div>`;
+            i++;
+          }
+          if (lastWasStructured && lines === normLines) {
+            out += '<div><br></div>';
+          }
+          return out;
+        };
+
+        return parseEditorBlocks(normLines) || '<div><br></div>';
       }
 
       function isLocalOrUncPath(raw) {
@@ -6947,7 +7654,15 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
       function parseInline(str) {
         if (!str) return '';
-        let s = String(str)
+        const imgPlaceholders = [];
+        let pre = String(str).replace(/!\[([^\]]*)\]\(((?:https?:\/\/|data:image\/[a-zA-Z0-9.+-]+;base64,)[^)\s]+)\)/g, (m, alt, src) => {
+          const idx = imgPlaceholders.length;
+          const cleanSrc = String(src || '').trim();
+          imgPlaceholders.push(`<img class="md-img" src="${esc(cleanSrc)}" alt="${esc(alt || '이미지')}">`);
+          return `\u0002MDIMG_${idx}\u0003`;
+        });
+
+        let s = pre
           .replace(/&/g, '&amp;')
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;')
@@ -6980,8 +7695,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         // 5. 형광펜: ==text==
         s = s.replace(/==(.+?)==/g, '<mark style="background:#fef08a; color:#854d0e; padding:1px 3px; border-radius:3px;">$1</mark>');
 
-        // 6. 저장된 인라인 HTML 태그(글자색/배경색 span, 레거시 font/strike/u 등)를
-        //    "여는 태그 / 닫는 태그" 단위로 개별 복원 → 여러 서식이 중첩되어도 짝이 어긋나지 않음
+        // 6. 저장된 인라인 HTML 태그(글자색/배경색 span, 레거시 font/strike/u 등)
         s = s.replace(/&lt;span\s+style=(?:&quot;|&#39;)(.*?)(?:&quot;|&#39;)\s*&gt;/gi, (m, st) => {
           const f = sanitizeMemoStyle(st);
           return f ? `<span style="${f}; padding:1px 2px; border-radius:2px;">` : '<span>';
@@ -6997,6 +7711,10 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
              .replace(/&lt;\/(?:strike|s|del)\s*&gt;/gi, '</del>')
              .replace(/&lt;u&gt;/gi, '<u style="text-decoration:underline;">')
              .replace(/&lt;\/u&gt;/gi, '</u>');
+
+        if (imgPlaceholders.length > 0) {
+          s = s.replace(/\u0002MDIMG_(\d+)\u0003/g, (m, idx) => imgPlaceholders[+idx] || '');
+        }
 
         return s;
       }
@@ -7016,25 +7734,159 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         return out.join('; ');
       }
 
-      // [V1.3.9] 위지윅 HTML → 마크다운 변환 (DOM 트리 순회 방식)
-      // 정규식 짝맞춤 방식은 <b>/<br>, <s>/<span>, <u>/<ul> 을 혼동하고 중첩 span 을 깨뜨리므로 DOM 기반으로 교체
+      // [V1.1.0] 위지윅 HTML → 마크다운 통합 변환 (DOM 트리 순회: 목록·체크리스트·인용·구분선·표·코드블록·이미지 포함)
       function convertHTMLToMarkdown(html) {
         if (!html) return '';
         const root = document.createElement('div');
         root.innerHTML = html;
         const BOUND = '\u0001';
-        const BLOCK = /^(DIV|P|LI|UL|OL|BLOCKQUOTE|PRE|SECTION|ARTICLE)$/;
+        const BLOCK = /^(DIV|P|SECTION|ARTICLE)$/;
         const hasText = (str) => str.replace(/[\s\u00a0\u0001]/g, '') !== '';
         const wrap = (inner, pre, post) => hasText(inner) ? pre + inner + post : inner;
         const HILITE = /^rgb\(254,\s*240,\s*138\)$|^#fef08a$/i;
 
-        const walk = (node) => {
+        const cleanBoundaries = (rawStr) => {
+          let res = '';
+          for (const ch of rawStr) {
+            if (ch === BOUND) {
+              if (res && !res.endsWith('\n')) res += '\n';
+            } else {
+              res += ch;
+            }
+          }
+          return res.replace(/^\n+|\s+$/g, '');
+        };
+
+        const walkPlainCode = (node) => {
+          if (node.nodeType === 3) return node.nodeValue.replace(/\u200B/g, '').replace(/\u00a0/g, ' ');
+          if (node.nodeType !== 1) return '';
+          if (node.tagName === 'BR') return '\n';
+          let inner = '';
+          node.childNodes.forEach(c => { inner += walkPlainCode(c); });
+          if (/^(DIV|P)$/.test(node.tagName) && inner && !inner.endsWith('\n')) {
+            inner += '\n';
+          }
+          return inner;
+        };
+
+        const walkList = (listNode, depth) => {
+          const isOrdered = listNode.tagName === 'OL';
+          let num = 1;
+          let res = '';
+          Array.from(listNode.children).forEach(ch => {
+            if (ch.tagName === 'LI') {
+              let itemIndent = depth;
+              const qm = (ch.className || '').match(/ql-indent-(\d+)/);
+              if (qm) itemIndent += parseInt(qm[1], 10);
+              const padWs = '  '.repeat(Math.min(4, itemIndent));
+              const dataList = ch.getAttribute('data-list');
+              let marker = isOrdered ? `${num++}.` : '-';
+              if (dataList === 'checked') marker = '- [x]';
+              else if (dataList === 'unchecked') marker = '- [ ]';
+              else if (dataList === 'bullet') marker = '-';
+
+              let inlinePart = '';
+              let nestedPart = '';
+              ch.childNodes.forEach(sub => {
+                if (sub.nodeType === 1 && (sub.tagName === 'UL' || sub.tagName === 'OL')) {
+                  nestedPart += walkList(sub, depth + 1);
+                } else {
+                  inlinePart += walk(sub, depth);
+                }
+              });
+              const cleanLine = cleanBoundaries(inlinePart).replace(/\n+/g, ' ');
+              res += BOUND + `${padWs}${marker} ${cleanLine}` + BOUND + nestedPart;
+            } else if (ch.tagName === 'UL' || ch.tagName === 'OL') {
+              res += walkList(ch, depth + 1);
+            }
+          });
+          return res;
+        };
+
+        const walk = (node, listDepth = 0) => {
           if (node.nodeType === 3) return node.nodeValue.replace(/\u200B/g, '').replace(/\u00a0/g, ' ');
           if (node.nodeType !== 1) return '';
           const tag = node.tagName;
           if (tag === 'BR') return '\n';
+          if (tag === 'HR') return BOUND + '---' + BOUND;
+
+          if (tag === 'IMG') {
+            const src = (node.getAttribute('src') || '').trim();
+            if (/^(https?:\/\/|data:image\/)/i.test(src)) {
+              const alt = (node.getAttribute('alt') || '이미지').replace(/[\[\]]/g, '');
+              return `![${alt}](${src})`;
+            }
+            return '';
+          }
+
+          if (tag === 'PRE') {
+            const lang = (node.getAttribute('data-lang') || 'plain').trim();
+            const codeText = walkPlainCode(node).replace(/\n+$/, '');
+            return BOUND + '```' + lang + '\n' + codeText + '\n```' + BOUND;
+          }
+
+          if (tag === 'DIV' && node.classList && node.classList.contains('md-code-wrap')) {
+            const pre = node.querySelector('pre');
+            if (pre) return walk(pre, listDepth);
+          }
+
+          if (tag === 'DIV' && node.classList && node.classList.contains('md-table-wrap')) {
+            const tbl = node.querySelector('table');
+            if (tbl) return walk(tbl, listDepth);
+          }
+
+          if (tag === 'TABLE') {
+            const trs = Array.from(node.querySelectorAll('tr'));
+            if (!trs.length) return '';
+            const rowArrays = trs.map(tr => Array.from(tr.children).filter(c => c.tagName === 'TH' || c.tagName === 'TD').map(cell => {
+              let cRaw = '';
+              cell.childNodes.forEach(c => { cRaw += walk(c, 0); });
+              return cleanBoundaries(cRaw).replace(/\n+/g, '<br>');
+            }));
+            const colCount = Math.max(...rowArrays.map(r => r.length), 1);
+            const fmtRow = (arr) => '| ' + Array.from({ length: colCount }, (_, idx) => (arr[idx] || '').replace(/\|/g, '/')).join(' | ') + ' |';
+            const lines = [fmtRow(rowArrays[0])];
+            lines.push('| ' + Array.from({ length: colCount }, () => '---').join(' | ') + ' |');
+            for (let r = 1; r < rowArrays.length; r++) {
+              lines.push(fmtRow(rowArrays[r]));
+            }
+            return BOUND + lines.join('\n') + BOUND;
+          }
+
+          if (tag === 'DIV' && node.classList && node.classList.contains('md-check-item')) {
+            const styleAttr = node.getAttribute('style') || '';
+            const indMatch = styleAttr.match(/--md-indent\s*:\s*(\d+)/);
+            const indent = indMatch ? Math.min(4, parseInt(indMatch[1], 10)) : 0;
+            const cb = node.querySelector('input[type="checkbox"]');
+            const isChecked = cb ? !!cb.checked : (node.getAttribute('data-checked') === '1' || node.classList.contains('is-checked'));
+            const textEl = node.querySelector('.md-check-text');
+            let textRaw = '';
+            if (textEl) {
+              textEl.childNodes.forEach(c => { textRaw += walk(c, listDepth); });
+            } else {
+              node.childNodes.forEach(c => {
+                if (c.nodeType === 1 && c.tagName === 'INPUT') return;
+                textRaw += walk(c, listDepth);
+              });
+            }
+            const cleanText = cleanBoundaries(textRaw).replace(/\n+/g, ' ');
+            return BOUND + '  '.repeat(indent) + `- [${isChecked ? 'x' : ' '}] ` + cleanText + BOUND;
+          }
+
+          if (tag === 'UL' || tag === 'OL') {
+            return walkList(node, listDepth);
+          }
+
+          if (tag === 'BLOCKQUOTE') {
+            let bRaw = '';
+            node.childNodes.forEach(c => { bRaw += walk(c, listDepth); });
+            const bMd = cleanBoundaries(bRaw);
+            const qLines = (bMd ? bMd.split('\n') : ['']).map(l => (l ? '> ' + l : '>'));
+            return BOUND + qLines.join('\n') + BOUND;
+          }
+
           let inner = '';
-          node.childNodes.forEach(c => { inner += walk(c); });
+          node.childNodes.forEach(c => { inner += walk(c, listDepth); });
 
           const css = node.style || {};
           const deco = String(css.textDecorationLine || css.textDecoration || '');
@@ -7077,18 +7929,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           return inner;
         };
 
-        let raw = '';
-        root.childNodes.forEach(c => { raw += walk(c); });
-        // 블록 경계 → 줄바꿈 (이미 줄 시작이면 추가하지 않음)
-        let out = '';
-        for (const ch of raw) {
-          if (ch === BOUND) {
-            if (out && !out.endsWith('\n')) out += '\n';
-          } else {
-            out += ch;
-          }
-        }
-        return out.replace(/^\n+|\s+$/g, '');
+        let rawOut = '';
+        root.childNodes.forEach(c => { rawOut += walk(c, 0); });
+        return cleanBoundaries(rawOut);
       }
 
       function applyMarkdownWrap(textarea, before, after) {
@@ -7235,6 +8078,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
       function renderMarkdownToolbar(prefix = '') {
         const specId = prefix ? prefix + 'OpenSpecialCharsBtn' : 'openSpecialCharsBtn';
+        const imgInputId = prefix ? prefix + 'MemoImageInput' : 'memoImageInput';
         return `
           <div class="memo-md-toolbar" id="${prefix}memoMdToolbar">
             <select class="memo-tool-select" id="${prefix}memoToolHeading" title="글자크기" tabindex="-1">
@@ -7279,6 +8123,32 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               </div>
             </div>
             <div class="memo-tool-divider"></div>
+            <button type="button" class="memo-tool-btn" data-md="ul" title="글머리 기호 (- )" tabindex="-1">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.5" cy="6" r="1" fill="currentColor"/><circle cx="3.5" cy="12" r="1" fill="currentColor"/><circle cx="3.5" cy="18" r="1" fill="currentColor"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="ol" title="번호 목록 (1. )" tabindex="-1">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="check" title="체크리스트 (- [ ] )" tabindex="-1">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="3" y="5" width="6" height="6" rx="1"/><path d="m4.5 8 1.2 1.2 2-2"/><line x1="12" y1="8" x2="21" y2="8"/><rect x="3" y="14" width="6" height="6" rx="1"/><line x1="12" y1="17" x2="21" y2="17"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="quote" title="인용구 (> )" tabindex="-1">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><line x1="5" y1="5" x2="5" y2="19"/><line x1="10" y1="8" x2="20" y2="8"/><line x1="10" y1="12" x2="18" y2="12"/><line x1="10" y1="16" x2="16" y2="16"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="hr" title="구분선 (---)" tabindex="-1">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;"><line x1="4" y1="12" x2="20" y2="12"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="table" title="표 삽입 (3x3)" tabindex="-1">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="codeblock" title="코드블록 (&#96;&#96;&#96;)" tabindex="-1">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            </button>
+            <button type="button" class="memo-tool-btn" data-md="image" title="이미지 삽입" tabindex="-1">
+              <svg viewBox="0 0 24 24" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 15-5-5L5 20"/></svg>
+            </button>
+            <input type="file" id="${imgInputId}" accept="image/*" multiple style="display:none;">
+            <div class="memo-tool-divider"></div>
             <button type="button" class="memo-tool-btn" id="${specId}" title="특수문자/이모티콘" style="color:#4f46e5;" tabindex="-1">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
             </button>
@@ -7294,6 +8164,42 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
       let lastActiveEditorRange = null;
 
+      function compressImageFileToDataUrl(file) {
+        return new Promise((resolve) => {
+          if (!file || !String(file.type || '').startsWith('image/')) { resolve(null); return; }
+          const reader = new FileReader();
+          reader.onload = () => {
+            const rawDataUrl = reader.result;
+            if (!rawDataUrl || file.size <= 350 * 1024) {
+              resolve(rawDataUrl);
+              return;
+            }
+            const img = new Image();
+            img.onload = () => {
+              try {
+                const maxW = 1400;
+                const scale = img.width > maxW ? (maxW / img.width) : 1;
+                const w = Math.max(1, Math.round(img.width * scale));
+                const h = Math.max(1, Math.round(img.height * scale));
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                const compressed = canvas.toDataURL('image/webp', 0.85);
+                resolve(compressed && compressed.length < rawDataUrl.length ? compressed : rawDataUrl);
+              } catch (e) {
+                resolve(rawDataUrl);
+              }
+            };
+            img.onerror = () => resolve(rawDataUrl);
+            img.src = rawDataUrl;
+          };
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        });
+      }
+
       function applyLiveMarkdown(editorEl) {
         if (!editorEl || !editorEl.isContentEditable) return;
         const sel = window.getSelection();
@@ -7302,39 +8208,180 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         const node = range.startContainer;
         if (node.nodeType !== Node.TEXT_NODE) return;
 
+        let pCur = node.parentNode;
+        while (pCur && pCur !== editorEl) {
+          if (/^(PRE|CODE)$/i.test(pCur.tagName)) return;
+          pCur = pCur.parentNode;
+        }
+
         const text = node.textContent;
         const offset = range.startOffset;
         const textBefore = text.slice(0, offset);
 
-        // 1. Heading (# , ## , ### )
-        const hMatch = textBefore.match(/^(#{1,3})\s$/);
-        if (hMatch) {
-          const lvl = hMatch[1].length;
-          node.textContent = text.slice(offset);
-          let block = node;
-          while (block && block.parentNode !== editorEl) {
-            block = block.parentNode;
-          }
-          const h = document.createElement('h' + lvl);
-          const remText = (node.textContent || '').trim();
-          h.innerHTML = remText ? remText : '<br>';
+        const getDirectBlock = () => {
+          let b = node;
+          while (b && b.parentNode !== editorEl) b = b.parentNode;
+          if (!b || /^(TABLE|UL|OL|BLOCKQUOTE|PRE)$/i.test(b.tagName) || (b.classList && b.classList.contains('md-check-item'))) return null;
+          return b;
+        };
+
+        const replaceBlockWithEl = (block, newEl, focusTargetEl) => {
           if (block && block.parentNode === editorEl) {
-            editorEl.replaceChild(h, block);
+            editorEl.replaceChild(newEl, block);
           } else {
-            editorEl.appendChild(h);
+            editorEl.appendChild(newEl);
           }
           const r = document.createRange();
-          if (remText) {
-            r.selectNodeContents(h);
+          const ft = focusTargetEl || newEl;
+          if ((ft.textContent || '').trim()) {
+            r.selectNodeContents(ft);
             r.collapse(false);
           } else {
-            r.setStart(h, 0);
+            r.setStart(ft, 0);
             r.collapse(true);
           }
           sel.removeAllRanges();
           sel.addRange(r);
           lastActiveEditorRange = r.cloneRange();
-          return;
+        };
+
+        // 1. Block Markdown Triggers (Heading, Checklist, Bullet, Ordered, Quote, HR, Codeblock)
+        const hMatch = textBefore.match(/^(#{1,3})\s$/);
+        if (hMatch) {
+          const directBlock = getDirectBlock();
+          if (directBlock || node.parentNode === editorEl) {
+            const lvl = hMatch[1].length;
+            node.textContent = text.slice(offset);
+            const h = document.createElement('h' + lvl);
+            const remText = (node.textContent || '').trim();
+            h.innerHTML = remText ? remText : '<br>';
+            replaceBlockWithEl(directBlock, h, h);
+            return;
+          }
+        }
+
+        const chkMatch = textBefore.match(/^(?:[-*]\s+)?\[( |x|X)?\]\s$/);
+        if (chkMatch) {
+          const directBlock = getDirectBlock();
+          if (directBlock || node.parentNode === editorEl) {
+            const checked = (chkMatch[1] || '').toLowerCase() === 'x';
+            const remText = text.slice(offset).trim();
+            const row = document.createElement('div');
+            row.className = 'md-check-item' + (checked ? ' is-checked' : '');
+            row.setAttribute('data-checked', checked ? '1' : '0');
+            row.style.setProperty('--md-indent', '0');
+            const cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'md-check-input';
+            cb.contentEditable = 'false';
+            if (checked) cb.checked = true;
+            const span = document.createElement('span');
+            span.className = 'md-check-text';
+            span.innerHTML = remText ? esc(remText) : '<br>';
+            row.appendChild(cb);
+            row.appendChild(span);
+            replaceBlockWithEl(directBlock, row, span);
+            return;
+          }
+        }
+
+        const ulMatch = textBefore.match(/^[-*]\s$/);
+        if (ulMatch) {
+          const directBlock = getDirectBlock();
+          if (directBlock || node.parentNode === editorEl) {
+            const remText = text.slice(offset).trim();
+            const ul = document.createElement('ul');
+            ul.className = 'md-list';
+            const li = document.createElement('li');
+            li.innerHTML = remText ? esc(remText) : '<br>';
+            ul.appendChild(li);
+            replaceBlockWithEl(directBlock, ul, li);
+            return;
+          }
+        }
+
+        const olMatch = textBefore.match(/^1\.\s$/);
+        if (olMatch) {
+          const directBlock = getDirectBlock();
+          if (directBlock || node.parentNode === editorEl) {
+            const remText = text.slice(offset).trim();
+            const ol = document.createElement('ol');
+            ol.className = 'md-list';
+            const li = document.createElement('li');
+            li.innerHTML = remText ? esc(remText) : '<br>';
+            ol.appendChild(li);
+            replaceBlockWithEl(directBlock, ol, li);
+            return;
+          }
+        }
+
+        const qMatch = textBefore.match(/^>\s$/);
+        if (qMatch) {
+          const directBlock = getDirectBlock();
+          if (directBlock || node.parentNode === editorEl) {
+            const remText = text.slice(offset).trim();
+            const bq = document.createElement('blockquote');
+            bq.className = 'md-quote';
+            const innerDiv = document.createElement('div');
+            innerDiv.innerHTML = remText ? esc(remText) : '<br>';
+            bq.appendChild(innerDiv);
+            replaceBlockWithEl(directBlock, bq, innerDiv);
+            return;
+          }
+        }
+
+        if (/^---\s$/.test(textBefore)) {
+          const directBlock = getDirectBlock();
+          if (directBlock || node.parentNode === editorEl) {
+            const hr = document.createElement('hr');
+            hr.className = 'md-hr';
+            const nextDiv = document.createElement('div');
+            nextDiv.innerHTML = '<br>';
+            if (directBlock && directBlock.parentNode === editorEl) {
+              editorEl.replaceChild(hr, directBlock);
+              hr.after(nextDiv);
+            } else {
+              editorEl.appendChild(hr);
+              editorEl.appendChild(nextDiv);
+            }
+            const r = document.createRange();
+            r.setStart(nextDiv, 0);
+            r.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(r);
+            lastActiveEditorRange = r.cloneRange();
+            return;
+          }
+        }
+
+        const cbMatch = textBefore.match(/^```([a-zA-Z0-9_+#-]*)\s$/);
+        if (cbMatch) {
+          const directBlock = getDirectBlock();
+          if (directBlock || node.parentNode === editorEl) {
+            const lang = cbMatch[1] || 'plain';
+            const pre = document.createElement('pre');
+            pre.className = 'md-code-block';
+            pre.setAttribute('data-lang', lang);
+            const codeEl = document.createElement('code');
+            codeEl.textContent = text.slice(offset) || ' ';
+            pre.appendChild(codeEl);
+            const nextDiv = document.createElement('div');
+            nextDiv.innerHTML = '<br>';
+            if (directBlock && directBlock.parentNode === editorEl) {
+              editorEl.replaceChild(pre, directBlock);
+              pre.after(nextDiv);
+            } else {
+              editorEl.appendChild(pre);
+              editorEl.appendChild(nextDiv);
+            }
+            const r = document.createRange();
+            r.setStart(codeEl.firstChild, 0);
+            r.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(r);
+            lastActiveEditorRange = r.cloneRange();
+            return;
+          }
         }
 
         // 2. Inline Markdown
@@ -7599,18 +8646,228 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           });
         });
 
+        const getCaretEl = () => {
+          const sel = window.getSelection();
+          if (!sel || !sel.rangeCount) return null;
+          const n = sel.getRangeAt(0).startContainer;
+          return n.nodeType === Node.TEXT_NODE ? n.parentElement : n;
+        };
+
+        const getTopBlock = (node) => {
+          let b = node;
+          while (b && b !== editorEl && b.parentNode !== editorEl) b = b.parentNode;
+          return b && b !== editorEl ? b : null;
+        };
+
+        const setCaretAt = (node, atEnd = false) => {
+          const sel = window.getSelection();
+          if (!sel || !node) return;
+          const r = document.createRange();
+          try {
+            if (atEnd) {
+              r.selectNodeContents(node);
+              r.collapse(false);
+            } else {
+              r.setStart(node, 0);
+              r.collapse(true);
+            }
+            sel.removeAllRanges();
+            sel.addRange(r);
+          } catch (err) {}
+          saveRange();
+        };
+
+        const insertBlockAfterCaret = (newNode, focusTarget, atEnd = false) => {
+          const sel = window.getSelection();
+          let inserted = false;
+          if (sel && sel.rangeCount) {
+            const top = getTopBlock(sel.getRangeAt(0).startContainer);
+            if (top) {
+              const isEmptyDiv = top.tagName === 'DIV' && !(top.textContent || '').replace(/\u200B/g, '').trim() && !top.querySelector('img, table, pre, hr, input');
+              if (isEmptyDiv) {
+                editorEl.replaceChild(newNode, top);
+              } else {
+                top.after(newNode);
+              }
+              inserted = true;
+            }
+          }
+          if (!inserted) editorEl.appendChild(newNode);
+          setCaretAt(focusTarget || newNode, atEnd);
+        };
+
+        const insertImageFiles = async (files) => {
+          if (!files || !files.length || typeof compressImageFileToDataUrl !== 'function') return;
+          const imgs = Array.from(files).filter(f => f && String(f.type || '').startsWith('image/'));
+          if (!imgs.length) return;
+          editorEl.focus();
+          restoreRange();
+          for (const file of imgs) {
+            const dataUrl = await compressImageFileToDataUrl(file);
+            if (!dataUrl) continue;
+            if (editorEl.isContentEditable) {
+              const wrap = document.createElement('div');
+              wrap.className = 'md-img-wrap';
+              const img = document.createElement('img');
+              img.className = 'md-img';
+              img.src = dataUrl;
+              img.alt = file.name || 'image';
+              wrap.appendChild(img);
+              const spacer = document.createElement('div');
+              spacer.innerHTML = '<br>';
+              insertBlockAfterCaret(wrap, spacer, false);
+              wrap.after(spacer);
+              setCaretAt(spacer, false);
+            } else {
+              applyMarkdownWrap(editorEl, `![${file.name || 'image'}](${dataUrl})`, '');
+            }
+          }
+          editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+        };
+
+        const imgInputId = prefix ? prefix + 'MemoImageInput' : 'memoImageInput';
+        const imgInput = $(imgInputId);
+        if (imgInput) {
+          imgInput.onchange = async (e) => {
+            const files = e.target.files;
+            if (files && files.length) await insertImageFiles(files);
+            e.target.value = '';
+          };
+        }
+
+        editorEl.addEventListener('change', (e) => {
+          if (e.target && e.target.classList && e.target.classList.contains('md-check-input')) {
+            const item = e.target.closest('.md-check-item');
+            if (item) {
+              item.classList.toggle('is-checked', e.target.checked);
+              item.dataset.checked = e.target.checked ? '1' : '0';
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+          }
+        });
+
+        editorEl.addEventListener('paste', async (e) => {
+          const dt = e.clipboardData;
+          if (!dt) return;
+          const imgFiles = [];
+          if (dt.items && dt.items.length) {
+            for (const it of dt.items) {
+              if (it.kind === 'file' && String(it.type || '').startsWith('image/')) {
+                const f = it.getAsFile();
+                if (f) imgFiles.push(f);
+              }
+            }
+          } else if (dt.files && dt.files.length) {
+            for (const f of dt.files) {
+              if (String(f.type || '').startsWith('image/')) imgFiles.push(f);
+            }
+          }
+          if (imgFiles.length) {
+            e.preventDefault();
+            e.stopPropagation();
+            saveRange();
+            await insertImageFiles(imgFiles);
+          }
+        });
+
+        editorEl.addEventListener('dragover', (e) => {
+          const dt = e.dataTransfer;
+          if (dt && dt.types && Array.from(dt.types).includes('Files')) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+        });
+
+        editorEl.addEventListener('drop', async (e) => {
+          const dt = e.dataTransfer;
+          if (dt && dt.files && dt.files.length) {
+            const imgs = Array.from(dt.files).filter(f => f && String(f.type || '').startsWith('image/'));
+            if (imgs.length) {
+              e.preventDefault();
+              e.stopPropagation();
+              await insertImageFiles(imgs);
+            }
+          }
+        });
+
         toolbar.querySelectorAll('[data-md]').forEach(btn => {
           btn.onclick = (e) => {
             e.preventDefault();
-            restoreRange();
             const type = btn.dataset.md;
+            if (type === 'image') {
+              saveRange();
+              const inp = $(imgInputId);
+              if (inp) inp.click();
+              return;
+            }
+            restoreRange();
             if (editorEl.isContentEditable) {
               if (type === 'bold') document.execCommand('bold', false, null);
               else if (type === 'italic') document.execCommand('italic', false, null);
               else if (type === 'underline') document.execCommand('underline', false, null);
               else if (type === 'strike') document.execCommand('strikeThrough', false, null);
               else if (type === 'highlight') document.execCommand('hiliteColor', false, '#fef08a');
-              else if (type === 'link') {
+              else if (type === 'ul') {
+                document.execCommand('insertUnorderedList', false, null);
+                editorEl.querySelectorAll('ul').forEach(u => u.classList.add('md-list'));
+              } else if (type === 'ol') {
+                document.execCommand('insertOrderedList', false, null);
+                editorEl.querySelectorAll('ol').forEach(o => o.classList.add('md-list'));
+              } else if (type === 'check') {
+                const item = document.createElement('div');
+                item.className = 'md-check-item';
+                item.dataset.checked = '0';
+                item.innerHTML = '<input type="checkbox" class="md-check-input" contenteditable="false"><span class="md-check-text"><br></span>';
+                insertBlockAfterCaret(item, item.querySelector('.md-check-text'), false);
+              } else if (type === 'quote') {
+                const curEl = getCaretEl();
+                const existingBq = curEl ? curEl.closest('blockquote') : null;
+                if (existingBq && editorEl.contains(existingBq)) {
+                  const div = document.createElement('div');
+                  div.innerHTML = existingBq.innerHTML || '<br>';
+                  editorEl.replaceChild(div, existingBq);
+                  setCaretAt(div, true);
+                } else {
+                  const top = curEl ? getTopBlock(curEl) : null;
+                  const bq = document.createElement('blockquote');
+                  bq.className = 'md-quote';
+                  if (top && /^(DIV|P|H1|H2|H3)$/i.test(top.tagName)) {
+                    bq.innerHTML = top.innerHTML || '<br>';
+                    editorEl.replaceChild(bq, top);
+                    setCaretAt(bq, !!bq.textContent.trim());
+                  } else {
+                    bq.innerHTML = '<br>';
+                    insertBlockAfterCaret(bq, bq, false);
+                  }
+                }
+              } else if (type === 'hr') {
+                const hr = document.createElement('hr');
+                hr.className = 'md-hr';
+                const nextDiv = document.createElement('div');
+                nextDiv.innerHTML = '<br>';
+                insertBlockAfterCaret(hr, nextDiv, false);
+                hr.after(nextDiv);
+                setCaretAt(nextDiv, false);
+              } else if (type === 'table') {
+                const table = document.createElement('table');
+                table.className = 'md-table';
+                table.innerHTML = '<thead><tr><th>항목</th><th>내용</th><th>비고</th></tr></thead><tbody><tr><td><br></td><td><br></td><td><br></td></tr><tr><td><br></td><td><br></td><td><br></td></tr></tbody>';
+                const spacer = document.createElement('div');
+                spacer.innerHTML = '<br>';
+                insertBlockAfterCaret(table, table.querySelector('th'), true);
+                table.after(spacer);
+                setCaretAt(table.querySelector('th'), true);
+              } else if (type === 'codeblock') {
+                const pre = document.createElement('pre');
+                pre.className = 'md-code-block';
+                pre.dataset.lang = 'plain';
+                pre.innerHTML = '<code> </code>';
+                const spacer = document.createElement('div');
+                spacer.innerHTML = '<br>';
+                insertBlockAfterCaret(pre, pre.querySelector('code'), false);
+                pre.after(spacer);
+                setCaretAt(pre.querySelector('code'), false);
+              } else if (type === 'link') {
                 const sel = window.getSelection();
                 const selText = sel ? sel.toString().trim() : '';
                 const linkRange = (sel && sel.rangeCount) ? sel.getRangeAt(0).cloneRange() : null;
@@ -7676,6 +8933,13 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               else if (type === 'underline') applyMarkdownWrap(editorEl, '<u>', '</u>');
               else if (type === 'strike') applyMarkdownWrap(editorEl, '~~', '~~');
               else if (type === 'highlight') applyMarkdownWrap(editorEl, '==', '==');
+              else if (type === 'ul') applyMarkdownWrap(editorEl, '\n- ', '');
+              else if (type === 'ol') applyMarkdownWrap(editorEl, '\n1. ', '');
+              else if (type === 'check') applyMarkdownWrap(editorEl, '\n- [ ] ', '');
+              else if (type === 'quote') applyMarkdownWrap(editorEl, '\n> ', '');
+              else if (type === 'hr') applyMarkdownWrap(editorEl, '\n---\n', '');
+              else if (type === 'table') applyMarkdownWrap(editorEl, '\n| 항목 | 내용 | 비고 |\n| --- | --- | --- |\n|  |  |  |\n', '');
+              else if (type === 'codeblock') applyMarkdownWrap(editorEl, '\n```\n', '\n```\n');
               else if (type === 'link') {
                 const url = prompt('연결할 링크 URL(웹 주소)을 입력하세요:', 'https://');
                 if (url && url.trim()) applyMarkdownWrap(editorEl, '[', `](${url.trim()})`);
@@ -7775,6 +9039,47 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         editorEl.onkeydown = (e) => {
           if (e.key === 'Tab') {
+            if (editorEl.isContentEditable) {
+              const caretEl = getCaretEl();
+              const cell = caretEl ? caretEl.closest('td, th') : null;
+              if (cell && editorEl.contains(cell)) {
+                const table = cell.closest('table');
+                if (table && editorEl.contains(table)) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const cells = Array.from(table.querySelectorAll('th, td'));
+                  const idx = cells.indexOf(cell);
+                  if (e.shiftKey) {
+                    if (idx > 0) setCaretAt(cells[idx - 1], true);
+                  } else if (idx >= 0 && idx < cells.length - 1) {
+                    setCaretAt(cells[idx + 1], true);
+                  } else {
+                    const row = cell.parentElement;
+                    const colCount = row ? row.children.length : 3;
+                    const tbody = table.querySelector('tbody') || table;
+                    const newTr = document.createElement('tr');
+                    for (let c = 0; c < Math.max(1, colCount); c++) {
+                      const td = document.createElement('td');
+                      td.innerHTML = '<br>';
+                      newTr.appendChild(td);
+                    }
+                    tbody.appendChild(newTr);
+                    setCaretAt(newTr.querySelector('td'), false);
+                    editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+                  }
+                  return;
+                }
+              }
+              const pre = caretEl ? caretEl.closest('pre') : null;
+              if (pre && editorEl.contains(pre)) {
+                e.preventDefault();
+                e.stopPropagation();
+                document.execCommand('insertText', false, '  ');
+                saveRange();
+                editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+                return;
+              }
+            }
             e.preventDefault();
             e.stopPropagation();
             if (e.shiftKey) {
@@ -7796,18 +9101,16 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 while (block && block.parentNode !== editorEl) {
                   block = block.parentNode;
                 }
-                // 빈 제목 태그(H1, H2, H3)에서 백스페이스를 누르면 본문 div로 안전하게 복귀
-                if (block && /^(H1|H2|H3)$/i.test(block.tagName) && !(block.textContent || '').trim()) {
+                // 빈 제목/인용/체크박스 블록에서 백스페이스를 누르면 본문 div로 안전하게 복귀
+                const isCheckEmpty = block && block.classList && block.classList.contains('md-check-item') &&
+                  !(block.querySelector('.md-check-text')?.textContent || '').replace(/\u200B/g, '').trim();
+                const isHeadingOrQuoteEmpty = block && /^(H1|H2|H3|BLOCKQUOTE)$/i.test(block.tagName) && !(block.textContent || '').trim();
+                if (isCheckEmpty || isHeadingOrQuoteEmpty) {
                   e.preventDefault();
                   const div = document.createElement('div');
                   div.innerHTML = '<br>';
                   editorEl.replaceChild(div, block);
-                  const r = document.createRange();
-                  r.setStart(div, 0);
-                  r.collapse(true);
-                  sel.removeAllRanges();
-                  sel.addRange(r);
-                  saveRange();
+                  setCaretAt(div, false);
                   syncHeadingSelect();
                   editorEl.dispatchEvent(new Event('input', { bubbles: true }));
                   return;
@@ -7836,6 +9139,159 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             const sel = window.getSelection();
             if (!sel || !sel.rangeCount) return;
             const range = sel.getRangeAt(0);
+            const caretEl = getCaretEl();
+
+            // A. 코드블록(PRE) 내부 엔터: \n 삽입 및 하단 탈출용 div 보장
+            const pre = caretEl ? caretEl.closest('pre') : null;
+            if (pre && editorEl.contains(pre)) {
+              range.deleteContents();
+              const nl = document.createTextNode('\n');
+              range.insertNode(nl);
+              const r = document.createRange();
+              r.setStartAfter(nl);
+              r.collapse(true);
+              sel.removeAllRanges();
+              sel.addRange(r);
+              if (!pre.nextElementSibling) {
+                const afterDiv = document.createElement('div');
+                afterDiv.innerHTML = '<br>';
+                pre.after(afterDiv);
+              }
+              saveRange();
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              return;
+            }
+
+            // B. 표 셀(TD/TH) 내부 엔터: 셀 분할 대신 셀 내부 줄바꿈(<br>)
+            const cell = caretEl ? caretEl.closest('td, th') : null;
+            if (cell && editorEl.contains(cell)) {
+              range.deleteContents();
+              const br = document.createElement('br');
+              range.insertNode(br);
+              const r = document.createRange();
+              r.setStartAfter(br);
+              r.collapse(true);
+              sel.removeAllRanges();
+              sel.addRange(r);
+              saveRange();
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              return;
+            }
+
+            // C. 체크리스트(.md-check-item) 내부 엔터: 빈 항목이면 일반 div 탈출, 내용 있으면 다음 체크항목 분할
+            const checkItem = caretEl ? caretEl.closest('.md-check-item') : null;
+            if (checkItem && editorEl.contains(checkItem)) {
+              const txtSpan = checkItem.querySelector('.md-check-text') || checkItem;
+              const txtClean = (txtSpan.textContent || '').replace(/\u200B/g, '').trim();
+              if (!txtClean) {
+                const div = document.createElement('div');
+                div.innerHTML = '<br>';
+                editorEl.replaceChild(div, checkItem);
+                setCaretAt(div, false);
+              } else {
+                const afterR = document.createRange();
+                const startInSpan = txtSpan.contains(range.endContainer);
+                afterR.setStart(startInSpan ? range.endContainer : txtSpan, startInSpan ? range.endOffset : txtSpan.childNodes.length);
+                afterR.setEnd(txtSpan, txtSpan.childNodes.length);
+                const tail = afterR.extractContents();
+                if (!txtSpan.textContent && !txtSpan.querySelector('img, a, br')) txtSpan.innerHTML = '<br>';
+                const nextItem = document.createElement('div');
+                nextItem.className = 'md-check-item';
+                nextItem.dataset.checked = '0';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.className = 'md-check-input';
+                cb.setAttribute('contenteditable', 'false');
+                const nextSpan = document.createElement('span');
+                nextSpan.className = 'md-check-text';
+                if (tail.textContent || tail.querySelector('img, a')) nextSpan.appendChild(tail);
+                else nextSpan.innerHTML = '<br>';
+                nextItem.appendChild(cb);
+                nextItem.appendChild(nextSpan);
+                checkItem.after(nextItem);
+                setCaretAt(nextSpan, false);
+              }
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              return;
+            }
+
+            // D. 순서/비순서 목록(LI) 내부 엔터: 빈 LI면 목록 탈출, 내용 있으면 다음 LI
+            const li = caretEl ? caretEl.closest('li') : null;
+            if (li && editorEl.contains(li)) {
+              const list = li.closest('ul, ol');
+              const liClean = (li.textContent || '').replace(/\u200B/g, '').trim();
+              if (!liClean && list && editorEl.contains(list)) {
+                const trailingLis = [];
+                let nxt = li.nextElementSibling;
+                while (nxt) {
+                  trailingLis.push(nxt);
+                  nxt = nxt.nextElementSibling;
+                }
+                li.remove();
+                const div = document.createElement('div');
+                div.innerHTML = '<br>';
+                list.after(div);
+                if (trailingLis.length) {
+                  const tailList = document.createElement(list.tagName.toLowerCase());
+                  tailList.className = 'md-list';
+                  trailingLis.forEach(item => tailList.appendChild(item));
+                  div.after(tailList);
+                }
+                if (!list.querySelector('li')) list.remove();
+                setCaretAt(div, false);
+              } else {
+                const afterR = document.createRange();
+                afterR.setStart(range.endContainer, range.endOffset);
+                afterR.setEnd(li, li.childNodes.length);
+                const tail = afterR.extractContents();
+                if (!li.textContent && !li.querySelector('img, a, br')) li.innerHTML = '<br>';
+                const newLi = document.createElement('li');
+                if (tail.textContent || tail.querySelector('img, a')) newLi.appendChild(tail);
+                else newLi.innerHTML = '<br>';
+                li.after(newLi);
+                setCaretAt(newLi, false);
+              }
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              return;
+            }
+
+            // E. 인용구(BLOCKQUOTE) 내부 엔터
+            const bq = caretEl ? caretEl.closest('blockquote') : null;
+            if (bq && editorEl.contains(bq)) {
+              if (!(bq.textContent || '').replace(/\u200B/g, '').trim()) {
+                const div = document.createElement('div');
+                div.innerHTML = '<br>';
+                editorEl.replaceChild(div, bq);
+                setCaretAt(div, false);
+              } else {
+                const beforeR = document.createRange();
+                beforeR.setStart(bq, 0);
+                beforeR.setEnd(range.startContainer, range.startOffset);
+                const tmp = document.createElement('div');
+                tmp.appendChild(beforeR.cloneContents());
+                const endsWithBlankLine = /(<br\s*\/?>|\n)\s*$/i.test(tmp.innerHTML) && !(range.endContainer.nextSibling);
+                if (endsWithBlankLine) {
+                  const lastBr = bq.querySelector('br:last-of-type');
+                  if (lastBr && !lastBr.nextSibling) lastBr.remove();
+                  const div = document.createElement('div');
+                  div.innerHTML = '<br>';
+                  bq.after(div);
+                  setCaretAt(div, false);
+                } else {
+                  range.deleteContents();
+                  const br = document.createElement('br');
+                  range.insertNode(br);
+                  const r = document.createRange();
+                  r.setStartAfter(br);
+                  r.collapse(true);
+                  sel.removeAllRanges();
+                  sel.addRange(r);
+                  saveRange();
+                }
+              }
+              editorEl.dispatchEvent(new Event('input', { bubbles: true }));
+              return;
+            }
 
             // 현재 커서가 속한 직계 블록 찾기
             let block = range.startContainer;
@@ -9475,7 +10931,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                     <tr style="height:100%;">
                       <th style="width:66px; background:#f1f5f9; padding:13px 6px; text-align:center; color:#475569; font-weight:700; border-right:1px solid #e2e8f0; white-space:nowrap; vertical-align:top; font-size:12.5px;">내용</th>
                       <td style="padding:0; vertical-align:top; height:100%; position:relative; background:#ffffff;">
-                        <div class="detail-memo-scroll-box" style="position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:13px 15px; line-height:1.65; word-break:break-all; white-space:pre-wrap; tab-size:4; font-size:13.5px; color:#0f172a;">${memoHtml}</div>
+                        <div class="detail-memo-scroll-box" style="position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:13px 15px; line-height:1.65; word-break:keep-all; overflow-wrap:anywhere; white-space:pre-wrap; tab-size:4; font-size:13.5px; color:#0f172a;">${memoHtml}</div>
                       </td>
                     </tr>
                   </tbody>
@@ -9577,6 +11033,23 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
       padding: 1px 4px;
     }
     .memo-box a { color: #2563eb; text-decoration: underline; }
+    .memo-box .md-list { margin: 4px 0 6px 0; padding-left: 20px; }
+    .memo-box .md-list li { margin: 2px 0; }
+    .memo-box .md-check-item { display: flex; align-items: flex-start; gap: 6px; margin: 2px 0; }
+    .memo-box .md-check-item.is-checked .md-check-text { text-decoration: line-through; color: #64748b; }
+    .memo-box .md-check-box { width: 14px; height: 14px; border: 1.5px solid #94a3b8; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 3px; background: #ffffff; }
+    .memo-box .md-check-item.is-checked .md-check-box { background: #334155; border-color: #334155; color: #ffffff; }
+    .memo-box .md-quote { margin: 6px 0; padding: 5px 10px; border-left: 3px solid #94a3b8; background: #f8fafc; color: #334155; border-radius: 0 5px 5px 0; }
+    .memo-box .md-hr { border: none; border-top: 1px solid #cbd5e1; margin: 10px 0; }
+    .memo-box .md-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 12.5px; }
+    .memo-box .md-table th, .memo-box .md-table td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; vertical-align: top; }
+    .memo-box .md-table th { background: #f1f5f9; font-weight: 700; color: #1e293b; }
+    .memo-box .md-code-wrap { position: relative; margin: 6px 0; }
+    .memo-box .md-code-lang { position: absolute; top: 4px; right: 8px; font-size: 10px; color: #64748b; font-family: ui-monospace, monospace; }
+    .memo-box pre.md-code-block { margin: 0; padding: 10px 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .memo-box pre.md-code-block code { border: none; background: transparent; padding: 0; font-size: inherit; }
+    .memo-box .md-img-wrap { margin: 6px 0; }
+    .memo-box .md-img { max-width: 100%; height: auto; border-radius: 6px; border: 1px solid #cbd5e1; display: block; }
   </style>
 </head>
 <body>
@@ -9696,9 +11169,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <div class="field" style="margin-bottom:2px;">
                 <label>일정 정보 <span class="req">*</span></label>
                 <div style="display:flex; gap:6px; align-items:center; width:100%; box-sizing:border-box;">
-                  <input type="text" id="modalTime" class="control" autofocus value="${esc(editTarget.time || '')}" placeholder="시간" maxlength="5" autocomplete="off" style="width:58px; min-width:58px; max-width:58px; height:33px; text-align:center; font-feature-settings:'tnum'; box-sizing:border-box; margin:0; padding:0 4px; font-size:12.5px;">
+                  <input type="text" id="modalTime" class="control" autofocus value="${esc(editTarget.time || '')}" placeholder="시간" maxlength="5" autocomplete="off" style="width:66px; min-width:66px; max-width:66px; height:33px; text-align:center; font-feature-settings:'tnum'; box-sizing:border-box; margin:0; padding:0 4px; font-size:12.5px;">
                   <input id="modalTitle" class="control" value="${esc(editTarget.title)}" placeholder="일정 제목" autocomplete="off" style="flex:1; min-width:0; height:33px; box-sizing:border-box; margin:0; font-size:13px; font-weight:600; color:${editTarget.titleColor || '#0f172a'};">
-                  <input type="text" id="modalLocation" class="control" value="${esc(editTarget.location || '')}" placeholder="장소" autocomplete="off" style="width:76px; min-width:76px; max-width:76px; height:33px; text-align:center; box-sizing:border-box; margin:0; padding:0 6px; font-size:12.5px;">
+                  <input type="text" id="modalLocation" class="control" value="${esc(editTarget.location || '')}" placeholder="장소" autocomplete="off" style="width:110px; min-width:110px; max-width:110px; height:33px; text-align:center; box-sizing:border-box; margin:0; padding:0 6px; font-size:12.5px;">
                   <div class="memo-color-wrapper" style="position:relative; flex-shrink:0;">
                     <button type="button" class="memo-tool-btn color-btn" id="modalTitleColorBtn" title="제목 글자색 변경" tabindex="-1" style="width:33px; height:33px; border-radius:6px; border:1px solid #cbd5e1; background:#ffffff; display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box;">
                       <span id="modalTitleColorIndicator" style="font-weight:800; font-size:14px; border-bottom:3px solid ${editTarget.titleColor || '#0f172a'}; line-height:1.1; color:#0f172a;">A</span>
@@ -9734,7 +11207,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <!-- 2-2. 내용 입력란 -->
               <div class="field" id="fieldMemo" style="margin-bottom:4px;">
                 <div style="position:relative; width:100%;">
-                  <div id="modalMemo" class="control memo-editor" contenteditable="true" placeholder="상세 내용을 입력하세요" style="min-height:44px; padding:6px 10px;"></div>
+                  <div id="modalMemo" class="control memo-editor" contenteditable="true" placeholder="상세 내용을 입력하세요" style="min-height:180px; padding:10px 12px;"></div>
                   <div id="memoResizeHandle" style="position:absolute; bottom:0; left:0; width:calc(100% - 18px); height:6px; cursor:ns-resize;" title="하단 라인을 드래그하여 높이 조절"></div>
                 </div>
               </div>
@@ -10286,8 +11759,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           lastActiveTextarea = memoEl;
           memoEl.onfocus = () => { lastActiveTextarea = memoEl; };
           const autoExpand = () => {
+            const maxH = Math.max(260, Math.round(window.innerHeight * 0.45));
             memoEl.style.height = 'auto';
-            memoEl.style.height = Math.max(48, memoEl.scrollHeight + 2) + 'px';
+            memoEl.style.height = Math.min(Math.max(180, memoEl.scrollHeight + 2), maxH) + 'px';
           };
           memoEl.addEventListener('input', autoExpand);
         }
@@ -10346,12 +11820,13 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         safePushModalState('editor');
         // 다이얼로그 노출 즉시 scrollHeight 측정하여 내용 전체 표시 (하단 잉여 빈공간 완전 제거)
         if (memoEl) {
-          memoEl.style.height = 'auto';
-          memoEl.style.height = Math.max(48, memoEl.scrollHeight + 2) + 'px';
-          requestAnimationFrame(() => {
+          const clampMemoHeight = () => {
+            const maxH = Math.max(260, Math.round(window.innerHeight * 0.45));
             memoEl.style.height = 'auto';
-            memoEl.style.height = Math.max(48, memoEl.scrollHeight + 2) + 'px';
-          });
+            memoEl.style.height = Math.min(Math.max(180, memoEl.scrollHeight + 2), maxH) + 'px';
+          };
+          clampMemoHeight();
+          requestAnimationFrame(clampMemoHeight);
         }
         // [V1.5.3] 일정 추가/수정 창 오픈 시 제일 먼저 시간 입력란(#modalTime)으로 커서 이동
         const focusFirstInput = () => {
@@ -10551,7 +12026,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <!-- 2-2. 내용 입력란 -->
               <div class="field" id="recFieldMemo" style="margin-bottom:4px;">
                 <div style="position:relative; width:100%;">
-                  <div id="recModalMemo" class="control memo-editor" contenteditable="true" placeholder="상세 내용을 입력하세요"></div>
+                  <div id="recModalMemo" class="control memo-editor" contenteditable="true" placeholder="상세 내용을 입력하세요" style="min-height:180px; padding:10px 12px;"></div>
                   <div id="recMemoResizeHandle" style="position:absolute; bottom:0; left:0; width:calc(100% - 18px); height:6px; cursor:ns-resize;" title="하단 라인을 드래그하여 높이 조절"></div>
                 </div>
               </div>
@@ -10819,12 +12294,6 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             $('recModalMemo')?.focus();
           }
         });
-        $('recModalMemo')?.addEventListener('keydown', (e) => {
-          if (e.key === 'Tab') {
-            e.preventDefault();
-            e.stopPropagation();
-            if (e.shiftKey) {
-              
         // [V1.7.0] 반복 일정 스마트 ArrowDown -> 내용 이동
         const recTitle = $('recModalTitle');
         const recMemo = $('recModalMemo');
@@ -10846,13 +12315,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             }
           });
         }
-
         $('recModalTitle')?.focus();
-            } else {
-              $('recModalTags')?.focus();
-            }
-          }
-        });
         $('recModalTags')?.addEventListener('keydown', (e) => {
           if (e.key === 'Tab' && e.shiftKey) {
             e.preventDefault();
@@ -10888,8 +12351,9 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           lastActiveTextarea = recMemoEl;
           recMemoEl.onfocus = () => { lastActiveTextarea = recMemoEl; };
           const autoExpandRec = () => {
+            const maxH = Math.max(260, Math.round(window.innerHeight * 0.45));
             recMemoEl.style.height = 'auto';
-            recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
+            recMemoEl.style.height = Math.min(Math.max(180, recMemoEl.scrollHeight + 2), maxH) + 'px';
           };
           recMemoEl.addEventListener('input', autoExpandRec);
         }
@@ -10939,12 +12403,13 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         $('editor').showModal();
         safePushModalState('editor');
         if (recMemoEl) {
-          recMemoEl.style.height = 'auto';
-          recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
-          requestAnimationFrame(() => {
+          const clampRecMemoHeight = () => {
+            const maxH = Math.max(260, Math.round(window.innerHeight * 0.45));
             recMemoEl.style.height = 'auto';
-            recMemoEl.style.height = Math.max(48, recMemoEl.scrollHeight + 2) + 'px';
-          });
+            recMemoEl.style.height = Math.min(Math.max(180, recMemoEl.scrollHeight + 2), maxH) + 'px';
+          };
+          clampRecMemoHeight();
+          requestAnimationFrame(clampRecMemoHeight);
         }
       }
 
@@ -11011,6 +12476,16 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           : (localStorage.getItem('auto_startup') !== 'false');
 
         const alertPrefs = getAlertPreferences();
+        const isDesktopEnv = !!(window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function');
+        const isMobileEnv = !isDesktopEnv && isMobileBrowserEnv();
+        const lastAutoBackupRaw = storageGet('todoCalendar.autoBackupLastAt') || '';
+        const fmtBackupStamp = (raw) => {
+          if (!raw) return '기록 없음';
+          const d = new Date(raw);
+          if (isNaN(d.getTime())) return '기록 없음';
+          return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())}. ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        };
+        const lastAutoBackupText = fmtBackupStamp(lastAutoBackupRaw);
 
         const modal = $('settings');
         modal.innerHTML = `
@@ -11029,8 +12504,8 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             <!-- 상단 2개 세그먼트 탭 -->
             <div style="padding:8px 14px 0; background:#ffffff; border-bottom:1px solid #f1f5f9;">
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; background:#f1f5f9; padding:3px; border-radius:9px;">
-                <button type="button" class="settings-tab-btn" data-settings-tab="general" style="height:30px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; background:#ffffff; color:#4f46e5; box-shadow:0 1px 3px rgba(0,0,0,0.08); transition:all 0.15s ease;">🔔 알림 · 일반</button>
-                <button type="button" class="settings-tab-btn" data-settings-tab="data" style="height:30px; border:none; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; color:#64748b; transition:all 0.15s ease;">💾 데이터 · 백업</button>
+                <button type="button" class="settings-tab-btn" data-settings-tab="general" style="height:30px; border:none; border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; background:#ffffff; color:#4f46e5; box-shadow:0 1px 3px rgba(0,0,0,0.08); transition:all 0.15s ease;">알림 · 일반</button>
+                <button type="button" class="settings-tab-btn" data-settings-tab="data" style="height:30px; border:none; border-radius:7px; font-size:12px; font-weight:600; cursor:pointer; background:transparent; color:#64748b; transition:all 0.15s ease;">데이터 · 백업</button>
               </div>
               <div style="height:8px;"></div>
             </div>
@@ -11140,6 +12615,39 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                   <div class="settings-desc" style="margin-top:4px; font-size:11px; color:#64748b; line-height:1.3;">지정한 기간의 일정 파일(.dday) 내보내기 및 전체 백업을 지원합니다.</div>
                 </div>
 
+                <!-- 2-1B. 1시간 자동 전체 백업 -->
+                <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:6px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
+                      <span style="font-size:12.5px; font-weight:700; color:#1e293b;">자동 전체 백업</span>
+                      <span style="font-size:11px; color:#64748b; font-weight:500;">(30일 보관)</span>
+                    </div>
+                    <span id="autoBackupLastTimeText" style="font-size:11px; color:#64748b;">최근: ${esc(lastAutoBackupText)}</span>
+                  </div>
+                  ${isDesktopEnv ? `
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:wrap;">
+                    <code style="font-size:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:4px 8px; color:#334155; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">D:\\MY_Apps\\Backups\\mytodo\\</code>
+                    <div style="display:flex; gap:5px; flex-shrink:0;">
+                      <button type="button" class="btn" id="autoBackupOpenDirBtn" style="height:26px; font-size:11.5px; padding:0 10px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; cursor:pointer;">폴더 열기</button>
+                      <button type="button" class="btn" id="autoBackupRunNowBtn" style="height:26px; font-size:11.5px; padding:0 10px; background:#f8fafc; border:1px solid #cbd5e1; color:#1e293b; font-weight:600; border-radius:6px; cursor:pointer;">지금 백업</button>
+                    </div>
+                  </div>
+                  <p class="settings-desc" style="margin:5px 0 0; font-size:11px; color:#64748b; line-height:1.3;">변경사항이 있을 때만 매 1시간마다 조용히 전체 일정표 백업을 생성하며 30일 경과 파일은 자동 정리됩니다.</p>
+                  ` : isMobileEnv ? `
+                  <p class="settings-desc" style="margin:2px 0 0; font-size:11px; color:#64748b; line-height:1.35;">모바일 기기에서는 로컬 폴더 자동 백업을 건너뛰며, 클라우드 동기화 또는 상단 전체 백업을 사용합니다.</p>
+                  ` : `
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:wrap;">
+                    <span id="autoBackupFolderStatus" style="font-size:11.5px; color:#475569; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:4px 8px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">확인 중...</span>
+                    <div style="display:flex; gap:5px; flex-shrink:0;">
+                      ${typeof window.showDirectoryPicker === 'function' ? `<button type="button" class="btn" id="autoBackupPickDirBtn" style="height:26px; font-size:11.5px; padding:0 10px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; cursor:pointer;">백업 폴더 선택</button>` : ''}
+                      <button type="button" class="btn" id="autoBackupRunNowBtn" style="height:26px; font-size:11.5px; padding:0 10px; background:#f8fafc; border:1px solid #cbd5e1; color:#1e293b; font-weight:600; border-radius:6px; cursor:pointer;">지금 백업</button>
+                    </div>
+                  </div>
+                  <p class="settings-desc" style="margin:5px 0 0; font-size:11px; color:#64748b; line-height:1.3;">PC 브라우저에서 폴더(D:\\MY_Apps\\Backups\\mytodo 등)를 지정해 두면 변경 시 1시간 주기로 조용히 자동 백업됩니다.</p>
+                  `}
+                </div>
+
                 <!-- 2-2. 일정 가져오기 -->
                 <div class="settings-card" style="box-sizing:border-box; width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:10px; background:#ffffff;">
                   <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
@@ -11174,7 +12682,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.0.20</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.1.0</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -11299,6 +12807,89 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             const f = e.target.files && e.target.files[0];
             nameDisp.textContent = f ? f.name : '선택된 파일 없음 (.dday)';
             nameDisp.title = f ? f.name : '';
+          };
+        }
+
+        const refreshBrowserAutoBackupStatus = async () => {
+          const folderStatusEl = $('autoBackupFolderStatus');
+          if (folderStatusEl) {
+            try {
+              const handle = await getStoredBackupHandle('auto_backup_dir');
+              if (!handle) {
+                folderStatusEl.textContent = '연결된 폴더 없음 (선택 필요)';
+              } else {
+                const perm = (typeof handle.queryPermission === 'function') ? await handle.queryPermission({ mode: 'readwrite' }) : 'granted';
+                folderStatusEl.textContent = perm === 'granted' ? `${handle.name} (자동 저장 활성)` : `${handle.name} (권한 재승인 필요)`;
+              }
+            } catch (e) {
+              folderStatusEl.textContent = '폴더 상태 확인 불가';
+            }
+          }
+          const lastTextEl = $('autoBackupLastTimeText');
+          if (lastTextEl) {
+            lastTextEl.textContent = '최근: ' + fmtBackupStamp(storageGet('todoCalendar.autoBackupLastAt') || '');
+          }
+        };
+        if (!isDesktopEnv && !isMobileEnv) {
+          refreshBrowserAutoBackupStatus();
+        }
+
+        const abOpenDirBtn = $('autoBackupOpenDirBtn');
+        if (abOpenDirBtn) {
+          abOpenDirBtn.onclick = () => {
+            if (window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function') {
+              window.chrome.webview.postMessage(JSON.stringify({ type: 'openAutoBackupFolder' }));
+            }
+          };
+        }
+
+        const abPickDirBtn = $('autoBackupPickDirBtn');
+        if (abPickDirBtn) {
+          abPickDirBtn.onclick = async () => {
+            try {
+              if (typeof window.showDirectoryPicker !== 'function') {
+                return toast('이 브라우저는 자동 백업 폴더 선택을 지원하지 않습니다.');
+              }
+              const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+              if (!handle) return;
+              if (typeof handle.requestPermission === 'function') {
+                const perm = await handle.requestPermission({ mode: 'readwrite' });
+                if (perm !== 'granted') return toast('폴더 쓰기 권한이 허용되지 않았습니다.');
+              }
+              await setStoredBackupHandle(handle, 'auto_backup_dir');
+              await refreshBrowserAutoBackupStatus();
+              const res = await runSilentAutoBackup(true);
+              await refreshBrowserAutoBackupStatus();
+              if (res && res.ok) toast('자동 백업 폴더가 연결되었으며 즉시 백업을 저장했습니다.');
+              else toast('자동 백업 폴더가 연결되었습니다.');
+            } catch (err) {
+              if (err && err.name !== 'AbortError') toast('백업 폴더 선택에 실패했습니다.');
+            }
+          };
+        }
+
+        const abRunNowBtn = $('autoBackupRunNowBtn');
+        if (abRunNowBtn) {
+          abRunNowBtn.onclick = async () => {
+            if (!isDesktopEnv && !isMobileEnv && typeof window.showDirectoryPicker === 'function') {
+              const handle = await getStoredBackupHandle('auto_backup_dir');
+              if (handle && typeof handle.requestPermission === 'function') {
+                try { await handle.requestPermission({ mode: 'readwrite' }); } catch (e) {}
+              }
+            }
+            const res = await runSilentAutoBackup(true);
+            await refreshBrowserAutoBackupStatus();
+            if (res && res.ok) {
+              toast('전체 자동 백업이 완료되었습니다.');
+            } else if (res && res.reason === 'no_handle') {
+              toast('먼저 백업 폴더 선택 버튼으로 폴더를 지정해 주세요.');
+            } else if (res && res.reason === 'permission_needed') {
+              toast('백업 폴더 쓰기 권한을 다시 허용해 주세요.');
+            } else if (res && res.reason === 'unsupported') {
+              toast('이 환경에서는 상단 전체 백업 파일 저장(.dday)을 이용해 주세요.');
+            } else {
+              toast('자동 백업 실행 중 문제가 발생했습니다.');
+            }
           };
         }
 
@@ -16075,6 +17666,22 @@ function getRandomAppQuote() {
     .detail-memo-scroll-box del { text-decoration: line-through; opacity: 0.7; }
     .detail-memo-scroll-box u { text-decoration: underline; text-underline-offset: 2px; }
     .detail-memo-scroll-box strong { font-weight: 700; color: #0f172a; }
+    .detail-memo-scroll-box .md-list { margin: 4px 0 6px 0; padding-left: 20px; }
+    .detail-memo-scroll-box .md-list li { margin: 2px 0; }
+    .detail-memo-scroll-box .md-check-item { display: flex; align-items: flex-start; gap: 6px; margin: 2px 0; }
+    .detail-memo-scroll-box .md-check-item.is-checked .md-check-text { text-decoration: line-through; color: #64748b; }
+    .detail-memo-scroll-box .md-check-box { width: 14px; height: 14px; border: 1.5px solid #94a3b8; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 3px; background: #ffffff; }
+    .detail-memo-scroll-box .md-check-item.is-checked .md-check-box { background: #4f46e5; border-color: #4f46e5; color: #ffffff; }
+    .detail-memo-scroll-box .md-quote { margin: 6px 0; padding: 5px 10px; border-left: 3px solid #94a3b8; background: #f8fafc; color: #334155; border-radius: 0 5px 5px 0; }
+    .detail-memo-scroll-box .md-hr { border: none; border-top: 1px solid #cbd5e1; margin: 10px 0; }
+    .detail-memo-scroll-box .md-table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 12.5px; }
+    .detail-memo-scroll-box .md-table th, .detail-memo-scroll-box .md-table td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; vertical-align: top; }
+    .detail-memo-scroll-box .md-table th { background: #f1f5f9; font-weight: 700; color: #1e293b; }
+    .detail-memo-scroll-box .md-code-wrap { position: relative; margin: 6px 0; }
+    .detail-memo-scroll-box .md-code-lang { position: absolute; top: 4px; right: 8px; font-size: 10px; color: #64748b; font-family: ui-monospace, monospace; }
+    .detail-memo-scroll-box pre.md-code-block { margin: 0; padding: 10px 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+    .detail-memo-scroll-box .md-img-wrap { margin: 6px 0; }
+    .detail-memo-scroll-box .md-img { max-width: 100%; height: auto; border-radius: 6px; border: 1px solid #cbd5e1; display: block; }
   </style>
 </head>
 <body>
@@ -16167,7 +17774,7 @@ function getRandomAppQuote() {
                 '<tr style="height:100%;">' +
                   '<th style="width:66px; background:#f1f5f9; padding:13px 6px; text-align:center; color:#475569; font-weight:700; border-right:1px solid #e2e8f0; white-space:nowrap; vertical-align:top; font-size:12.5px;">내용</th>' +
                   '<td style="padding:0; vertical-align:top; height:100%; position:relative; background:#ffffff;">' +
-                    '<div class="detail-memo-scroll-box" style="position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:13px 15px; line-height:1.65; word-break:break-all; white-space:pre-wrap; tab-size:4; font-size:13.5px; color:#0f172a;">' + memoHtml + '</div>' +
+                    '<div class="detail-memo-scroll-box" style="position:absolute; top:0; left:0; right:0; bottom:0; overflow-y:auto; padding:13px 15px; line-height:1.65; word-break:keep-all; overflow-wrap:anywhere; white-space:pre-wrap; tab-size:4; font-size:13.5px; color:#0f172a;">' + memoHtml + '</div>' +
                   '</td>' +
                 '</tr>' +
               '</tbody>' +
@@ -17136,6 +18743,157 @@ function getRandomAppQuote() {
         }
       }
 
+      function isMobileBrowserEnv() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '') ||
+               (navigator.maxTouchPoints > 1 && window.innerWidth <= 900);
+      }
+
+      function buildFullMultiStoreBackupPayload() {
+        const storeList = getStoreList();
+        const activeStoreId = getActiveStoreId();
+        const stores = {};
+        let latestUpdatedAt = '';
+        for (const s of storeList) {
+          const k = getStoreKey(s.id);
+          let storeObj = null;
+          if (String(s.id) === String(activeStoreId) && data) {
+            storeObj = clone(data);
+          } else {
+            try {
+              const raw = storageGet(k);
+              storeObj = raw ? normalize(JSON.parse(raw)) : blank();
+            } catch (e) {
+              storeObj = blank();
+            }
+          }
+          stores[s.id] = storeObj;
+          const upd = storeObj.updatedAt || '';
+          if (upd && upd > latestUpdatedAt) latestUpdatedAt = upd;
+        }
+        let qc = null;
+        try {
+          const qcRaw = storageGet('todoCalendar.quickConnect');
+          if (qcRaw) qc = JSON.parse(qcRaw);
+        } catch (e) {}
+        return {
+          backupType: 'my_todo_full_v1',
+          version: window.APP_VERSION || 'v1.1.0',
+          exportedAt: latestUpdatedAt,
+          activeStoreId,
+          storeList,
+          stores,
+          quickConnect: qc
+        };
+      }
+
+      async function computeTextSha256Hex(text) {
+        try {
+          if (window.crypto && window.crypto.subtle && typeof TextEncoder !== 'undefined') {
+            const buf = new TextEncoder().encode(text);
+            const hashBuf = await window.crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+          }
+        } catch (e) {}
+        let h1 = 0x811c9dc5;
+        let h2 = 0x01000193;
+        for (let i = 0; i < text.length; i++) {
+          const ch = text.charCodeAt(i);
+          h1 = Math.imul(h1 ^ ch, 0x01000193) >>> 0;
+          h2 = Math.imul(h2 ^ (ch + i), 0x85ebca6b) >>> 0;
+        }
+        return h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0') + '_' + text.length;
+      }
+
+      async function runSilentAutoBackup(force = false) {
+        try {
+          const isDesktop = !!(window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function');
+          if (!isDesktop && isMobileBrowserEnv()) {
+            return { ok: false, skipped: true, reason: 'mobile' };
+          }
+          const payloadObj = buildFullMultiStoreBackupPayload();
+          const payloadJson = JSON.stringify(payloadObj);
+          const hash = await computeTextSha256Hex(payloadJson);
+          const lastHash = storageGet('todoCalendar.autoBackupLastHash') || '';
+          if (!force && !autoBackupDirty && lastHash && hash === lastHash) {
+            return { ok: true, skipped: true, reason: 'unchanged', hash };
+          }
+          if (!force && lastHash && hash === lastHash) {
+            autoBackupDirty = false;
+            return { ok: true, skipped: true, reason: 'unchanged', hash };
+          }
+
+          if (isDesktop) {
+            window.chrome.webview.postMessage(JSON.stringify({ type: 'autoBackupSnapshot', payload: payloadJson }));
+            autoBackupDirty = false;
+            storageSet('todoCalendar.autoBackupLastHash', hash, { skipBackupDirty: true });
+            storageSet('todoCalendar.autoBackupLastAt', iso(), { skipBackupDirty: true });
+            return { ok: true, skipped: false, mode: 'desktop', hash };
+          }
+
+          if (typeof window.showDirectoryPicker === 'function') {
+            const dirHandle = await getStoredBackupHandle('auto_backup_dir');
+            if (!dirHandle) {
+              return { ok: false, skipped: true, reason: 'no_handle' };
+            }
+            if (typeof dirHandle.queryPermission === 'function') {
+              const perm = await dirHandle.queryPermission({ mode: 'readwrite' });
+              if (perm !== 'granted') {
+                return { ok: false, skipped: true, reason: 'permission_needed' };
+              }
+            }
+            const now = new Date();
+            const fileName = `mytodo_backup_${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.dday`;
+            const fh = await dirHandle.getFileHandle(fileName, { create: true });
+            const writable = await fh.createWritable();
+            await writable.write(JSON.stringify(payloadObj, null, 2));
+            await writable.close();
+
+            try {
+              const entries = [];
+              for await (const [name, entry] of dirHandle.entries()) {
+                if (entry.kind === 'file' && /^mytodo_backup_.*\.dday$/i.test(name)) {
+                  const file = await entry.getFile();
+                  entries.push({ name, lastModified: file.lastModified || 0 });
+                }
+              }
+              entries.sort((a, b) => b.lastModified - a.lastModified);
+              const cutoff = Date.now() - (30 * 24 * 60 * 60 * 1000);
+              for (let i = 1; i < entries.length; i++) {
+                if (entries[i].lastModified < cutoff) {
+                  await dirHandle.removeEntry(entries[i].name).catch(() => {});
+                }
+              }
+            } catch (pruneErr) {
+              console.warn('Auto backup prune error:', pruneErr);
+            }
+
+            autoBackupDirty = false;
+            storageSet('todoCalendar.autoBackupLastHash', hash, { skipBackupDirty: true });
+            storageSet('todoCalendar.autoBackupLastAt', iso(), { skipBackupDirty: true });
+            return { ok: true, skipped: false, mode: 'browser', fileName, hash };
+          }
+          return { ok: false, skipped: true, reason: 'unsupported' };
+        } catch (err) {
+          console.warn('Silent auto-backup error:', err);
+          return { ok: false, error: err };
+        }
+      }
+
+      let autoBackupTimerId = null;
+      function startSilentAutoBackupScheduler() {
+        if (autoBackupTimerId) clearInterval(autoBackupTimerId);
+        const isDesktop = !!(window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function');
+        if (!isDesktop && isMobileBrowserEnv()) return;
+        setTimeout(() => {
+          if (autoBackupDirty || !storageGet('todoCalendar.autoBackupLastHash')) {
+            runSilentAutoBackup(false);
+          }
+        }, 2 * 60 * 1000);
+        autoBackupTimerId = setInterval(() => {
+          runSilentAutoBackup(false);
+        }, 60 * 60 * 1000);
+      }
+
       function processImportFile(file) {
         if (!file) return;
         const reader = new FileReader();
@@ -17152,6 +18910,43 @@ function getRandomAppQuote() {
       }
 
       async function executeImportMerge(parsed, fileName = '') {
+        if (parsed && parsed.backupType === 'my_todo_full_v1' && parsed.stores && typeof parsed.stores === 'object') {
+          const storeEntries = Object.entries(parsed.stores);
+          const totalTasks = storeEntries.reduce((acc, [, v]) => acc + (Array.isArray(v && v.tasks) ? v.tasks.length : 0), 0);
+          const ok = await appConfirm({
+            title: 'MY 일정관리 전체 백업 복원',
+            message: `
+              <div style="font-weight:700; color:#1e293b; margin-bottom:8px; font-size:14px; word-break:break-all;">[${esc(fileName || '전체 백업 파일')}]에서</div>
+              <div style="color:#475569; font-size:13.5px; line-height:1.5;">총 <b style="color:#4f46e5;">${storeEntries.length}개 일정표 (${totalTasks}건)</b>로 전체 복원하시겠습니까?</div>
+            `,
+            confirmText: '전체 복원',
+            cancelText: '취소'
+          });
+          if (!ok) return;
+          if (Array.isArray(parsed.storeList) && parsed.storeList.length > 0) {
+            saveStoreList(parsed.storeList);
+          }
+          for (const [sId, sData] of storeEntries) {
+            const norm = normalize(sData || blank());
+            storageSet(getStoreKey(sId), JSON.stringify(norm));
+          }
+          if (parsed.quickConnect) {
+            storageSet('todoCalendar.quickConnect', typeof parsed.quickConnect === 'string' ? parsed.quickConnect : JSON.stringify(parsed.quickConnect));
+          }
+          if (parsed.activeStoreId) {
+            setActiveStoreId(parsed.activeStoreId);
+          }
+          loadCurrentStoreData();
+          renderStoreTabs();
+          rebuildHolidays();
+          ui.listSelectedTask = null;
+          syncToDesktopHost(true);
+          if (typeof markLocalCloudModified === 'function') markLocalCloudModified();
+          if ($('settings') && $('settings').open) $('settings').close();
+          render();
+          toast(`전체 백업(${storeEntries.length}개 일정표, ${totalTasks}건)이 복원되었습니다.`);
+          return;
+        }
         const tasksToMerge = Array.isArray(parsed.tasks) ? parsed.tasks : (Array.isArray(parsed) ? parsed : []);
         if (!tasksToMerge.length) {
           return toast('가져올 일정이 파일에 존재하지 않습니다.');
@@ -17227,6 +19022,8 @@ function getRandomAppQuote() {
 
         const isOsFileDrag = (e) => {
           if (window._isInternalDragging) return false;
+          if (document.querySelector('dialog[open]')) return false;
+          if (e.target && e.target.closest && e.target.closest('.memo-editor')) return false;
           const dt = e.dataTransfer;
           if (!dt || !dt.types) return false;
           return Array.from(dt.types).includes('Files');
@@ -17256,6 +19053,11 @@ function getRandomAppQuote() {
 
         window.addEventListener('drop', (e) => {
           if (window._isInternalDragging) return;
+          if (document.querySelector('dialog[open]') || (e.target && e.target.closest && e.target.closest('.memo-editor'))) {
+            dragCounter = 0;
+            overlay.style.display = 'none';
+            return;
+          }
           e.preventDefault();
           dragCounter = 0;
           overlay.style.display = 'none';
@@ -17920,6 +19722,60 @@ function getRandomAppQuote() {
         }
       }
 
+      function stripLargeImagesForCloudFallback(storeJsonStr) {
+        try {
+          const obj = JSON.parse(storeJsonStr);
+          let strippedCount = 0;
+          const cleanMemo = (m) => {
+            if (!m || typeof m !== 'string') return m;
+            return m.replace(/(!\[[^\]]*\]\()data:image\/[^)\s]+(\))/gi, (full, p1, p2) => {
+              if (full.length > 20000) { strippedCount++; return '[이미지: 로컬 저장됨]'; }
+              return full;
+            }).replace(/<img\b[^>]*\bsrc=["']data:image\/[^"']+["'][^>]*>/gi, (full) => {
+              if (full.length > 20000) { strippedCount++; return '[이미지: 로컬 저장됨]'; }
+              return full;
+            });
+          };
+          if (Array.isArray(obj.tasks)) obj.tasks.forEach(t => { if (t && t.memo) t.memo = cleanMemo(t.memo); });
+          if (Array.isArray(obj.recurrings)) obj.recurrings.forEach(r => { if (r && r.memo) r.memo = cleanMemo(r.memo); });
+          return { json: JSON.stringify(obj), strippedCount };
+        } catch (e) {
+          return { json: storeJsonStr, strippedCount: 0 };
+        }
+      }
+
+      function applyRemoteMultiStoreSnapshot(remoteMs, remoteUpdatedAt) {
+        isApplyingCloudSnapshot = true;
+        if (Array.isArray(remoteMs.storeList) && remoteMs.storeList.length > 0) {
+          storageSet(STORE_LIST_KEY, JSON.stringify(remoteMs.storeList));
+        }
+        if (remoteMs.stores && typeof remoteMs.stores === 'object') {
+          Object.entries(remoteMs.stores).forEach(([sId, sVal]) => {
+            try {
+              const rawStr = typeof sVal === 'string' ? sVal : JSON.stringify(sVal);
+              const normObj = normalize(JSON.parse(rawStr));
+              storageSet(getStoreKey(sId), JSON.stringify(normObj));
+            } catch (e) {}
+          });
+        }
+        if (remoteMs.quickConnect) {
+          storageSet('todoCalendar.quickConnect', typeof remoteMs.quickConnect === 'string' ? remoteMs.quickConnect : JSON.stringify(remoteMs.quickConnect));
+        }
+        const updatedList = getStoreList();
+        if (!updatedList.some(s => String(s.id) === String(getActiveStoreId()))) {
+          setActiveStoreId(remoteMs.activeStoreId || updatedList[0].id);
+        }
+        if (remoteUpdatedAt) {
+          storageSet('todoCalendar.cloudUpdatedAt', remoteUpdatedAt);
+        }
+        loadCurrentStoreData();
+        renderStoreTabs();
+        ui.listSelectedTask = null;
+        render();
+        isApplyingCloudSnapshot = false;
+        syncStatus = 'synced';
+      }
+
       function startCloudListener(uid) {
         if (!firestoreDb) return;
         if (cloudUnsubscribe) {
@@ -17928,7 +19784,7 @@ function getRandomAppQuote() {
         }
         try {
           const docRef = firestoreDb.collection('users').doc(uid);
-          cloudUnsubscribe = docRef.onSnapshot(doc => {
+          cloudUnsubscribe = docRef.onSnapshot(async doc => {
             if (!doc.exists) {
               if (hasAnyLocalTasks()) pushToCloud(true);
               return;
@@ -17940,6 +19796,58 @@ function getRandomAppQuote() {
             if (!remote) return;
 
             try {
+              if (remote.schemaVersion === 2 && Array.isArray(remote.storeIds)) {
+                let remoteMs = null;
+                try {
+                  const snap = await docRef.collection('stores').get();
+                  const docsMap = {};
+                  snap.forEach(d => { docsMap[d.id] = d.data(); });
+                  const parsedList = typeof remote.storeList === 'string' ? JSON.parse(remote.storeList) : (Array.isArray(remote.storeList) ? remote.storeList : getStoreList());
+                  const stores = {};
+                  for (const sId of remote.storeIds) {
+                    const sDoc = docsMap[String(sId)];
+                    if (!sDoc) continue;
+                    if (sDoc.chunked && sDoc.chunkCount > 0) {
+                      let joined = '';
+                      for (let i = 0; i < sDoc.chunkCount; i++) {
+                        const cDoc = docsMap[`${sId}_chunk_${i}`];
+                        if (cDoc && typeof cDoc.data === 'string') joined += cDoc.data;
+                      }
+                      stores[sId] = joined || JSON.stringify(blank());
+                    } else if (typeof sDoc.payload === 'string') {
+                      stores[sId] = sDoc.payload;
+                    }
+                  }
+                  if (Object.keys(stores).length > 0) {
+                    remoteMs = {
+                      storeList: parsedList,
+                      activeStoreId: remote.activeStoreId || parsedList[0]?.id || 'default',
+                      stores,
+                      quickConnect: remote.quickConnect || null
+                    };
+                  }
+                } catch (subErr) {
+                  console.warn('v2 subcollection read fallback:', subErr);
+                }
+                if (remoteMs) {
+                  const localMs = buildMultiStoreSnapshot();
+                  const isSameStores = JSON.stringify(remoteMs.stores) === JSON.stringify(localMs.stores) &&
+                                       JSON.stringify(remoteMs.storeList) === JSON.stringify(localMs.storeList);
+                  if (isSameStores) {
+                    syncStatus = 'synced';
+                    return;
+                  }
+                  const localUpdatedAt = storageGet('todoCalendar.cloudUpdatedAt') || '';
+                  const remoteUpdatedAt = remote.updatedAt || '';
+                  if (!hasAnyLocalTasks() || !localUpdatedAt || !remoteUpdatedAt || remoteUpdatedAt >= localUpdatedAt) {
+                    applyRemoteMultiStoreSnapshot(remoteMs, remoteUpdatedAt);
+                  } else {
+                    pushToCloud(true);
+                  }
+                  return;
+                }
+              }
+
               if (remote.multiStorePayload) {
                 const remoteMs = JSON.parse(remote.multiStorePayload);
                 const localMs = buildMultiStoreSnapshot();
@@ -17954,35 +19862,7 @@ function getRandomAppQuote() {
                 const remoteUpdatedAt = remote.updatedAt || '';
 
                 if (!hasAnyLocalTasks() || !localUpdatedAt || !remoteUpdatedAt || remoteUpdatedAt >= localUpdatedAt) {
-                  isApplyingCloudSnapshot = true;
-                  if (Array.isArray(remoteMs.storeList) && remoteMs.storeList.length > 0) {
-                    storageSet(STORE_LIST_KEY, JSON.stringify(remoteMs.storeList));
-                  }
-                  if (remoteMs.stores && typeof remoteMs.stores === 'object') {
-                    Object.entries(remoteMs.stores).forEach(([sId, sVal]) => {
-                      try {
-                        const rawStr = typeof sVal === 'string' ? sVal : JSON.stringify(sVal);
-                        const normObj = normalize(JSON.parse(rawStr));
-                        storageSet(getStoreKey(sId), JSON.stringify(normObj));
-                      } catch (e) { }
-                    });
-                  }
-                  if (remoteMs.quickConnect) {
-                    storageSet('todoCalendar.quickConnect', remoteMs.quickConnect);
-                  }
-                  const updatedList = getStoreList();
-                  if (!updatedList.some(s => String(s.id) === String(getActiveStoreId()))) {
-                    setActiveStoreId(remoteMs.activeStoreId || updatedList[0].id);
-                  }
-                  if (remoteUpdatedAt) {
-                    storageSet('todoCalendar.cloudUpdatedAt', remoteUpdatedAt);
-                  }
-                  loadCurrentStoreData();
-                  renderStoreTabs();
-                  ui.listSelectedTask = null;
-                  render();
-                  isApplyingCloudSnapshot = false;
-                  syncStatus = 'synced';
+                  applyRemoteMultiStoreSnapshot(remoteMs, remoteUpdatedAt);
                 } else {
                   pushToCloud(true);
                 }
@@ -18026,9 +19906,79 @@ function getRandomAppQuote() {
             const ms = buildMultiStoreSnapshot();
             const cloudUpdatedAt = storageGet('todoCalendar.cloudUpdatedAt') || data.updatedAt || iso();
             const docRef = firestoreDb.collection('users').doc(currentUser.uid);
+
+            try {
+              const CHUNK_LEN = 250000;
+              for (const s of ms.storeList) {
+                const sId = String(s.id);
+                const rawStr = ms.stores[s.id] || JSON.stringify(blank());
+                if (rawStr.length <= CHUNK_LEN) {
+                  await docRef.collection('stores').doc(sId).set({
+                    storeId: sId,
+                    payload: rawStr,
+                    chunked: false,
+                    chunkCount: 0,
+                    updatedAt: cloudUpdatedAt
+                  });
+                } else {
+                  const totalChunks = Math.ceil(rawStr.length / CHUNK_LEN);
+                  for (let i = 0; i < totalChunks; i++) {
+                    await docRef.collection('stores').doc(`${sId}_chunk_${i}`).set({
+                      parentStoreId: sId,
+                      chunkIndex: i,
+                      data: rawStr.slice(i * CHUNK_LEN, (i + 1) * CHUNK_LEN),
+                      updatedAt: cloudUpdatedAt
+                    });
+                  }
+                  await docRef.collection('stores').doc(sId).set({
+                    storeId: sId,
+                    payload: '',
+                    chunked: true,
+                    chunkCount: totalChunks,
+                    updatedAt: cloudUpdatedAt
+                  });
+                }
+              }
+              await docRef.set({
+                schemaVersion: 2,
+                storeList: JSON.stringify(ms.storeList),
+                activeStoreId: ms.activeStoreId,
+                quickConnect: ms.quickConnect || null,
+                storeIds: ms.storeList.map(x => String(x.id)),
+                updatedAt: cloudUpdatedAt,
+                email: currentUser.email || '',
+                savedAt: firebase.firestore.FieldValue.serverTimestamp()
+              }, { merge: true });
+              syncStatus = 'synced';
+              return;
+            } catch (v2Err) {
+              console.warn('v2 서브컬렉션 업로드 실패 -> 단일 문서 폴백:', v2Err);
+            }
+
+            let msForLegacy = ms;
+            let legacyPayload = msForLegacy.stores['default'] || JSON.stringify(data);
+            let legacyMulti = JSON.stringify(msForLegacy);
+            const approxBytes = new TextEncoder().encode(legacyPayload).length + new TextEncoder().encode(legacyMulti).length;
+            if (approxBytes > 900000) {
+              const strippedStores = {};
+              let totalStripped = 0;
+              Object.entries(msForLegacy.stores).forEach(([k, v]) => {
+                const res = stripLargeImagesForCloudFallback(v);
+                strippedStores[k] = res.json;
+                totalStripped += res.strippedCount;
+              });
+              msForLegacy = Object.assign({}, msForLegacy, { stores: strippedStores });
+              legacyPayload = msForLegacy.stores['default'] || strippedStores[msForLegacy.activeStoreId] || '{}';
+              legacyMulti = JSON.stringify(msForLegacy);
+              if (totalStripped > 0) {
+                toast('클라우드 단일문서 용량 한도로 대용량 이미지는 로컬에만 보관됩니다.');
+              }
+            }
+
             await docRef.set({
-              payload: ms.stores['default'] || JSON.stringify(data),
-              multiStorePayload: JSON.stringify(ms),
+              schemaVersion: 1,
+              payload: legacyPayload,
+              multiStorePayload: legacyMulti,
               updatedAt: cloudUpdatedAt,
               email: currentUser.email || '',
               savedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -18111,7 +20061,8 @@ function getRandomAppQuote() {
         }
       };
 
-      function init() {
+      async function init() {
+        await hydrateStorageFromIdb();
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
           document.documentElement.setAttribute('data-theme', 'dark');
@@ -18590,10 +20541,13 @@ function getRandomAppQuote() {
 
         /* 다른 탭/창에서 저장이 일어나면 즉시 반영 (오래된 화면이 최신 데이터를 덮어쓰는 것 방지) */
         window.addEventListener('resize', alignStoreTabs);
+        window.addEventListener('beforeunload', () => syncToDesktopHost(true));
+        window.addEventListener('pagehide', () => syncToDesktopHost(true));
         window.addEventListener('storage', e => {
           if (e.key !== getCurrentKey() || storageBlocked) return;
+          if (!e.newValue) return;
           try {
-            data = e.newValue ? normalize(JSON.parse(e.newValue)) : blank();
+            data = normalize(JSON.parse(e.newValue));
             rebuildHolidays();
             render();
           } catch (err) { console.warn(err); }
@@ -18674,6 +20628,7 @@ function getRandomAppQuote() {
         });
       })();
       setInterval(checkSmartAlerts, 30000);
+      startSilentAutoBackupScheduler();
       }
 
       init();
