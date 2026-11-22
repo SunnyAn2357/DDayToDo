@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.1">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.2">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -5166,7 +5166,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.2.1"></script>
+  <script src="./lib/little-note-editor.js?v=1.2.2"></script>
 
   <script>
     (function () {
@@ -5175,7 +5175,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.1';
+      window.APP_VERSION = 'v1.2.2';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -9215,7 +9215,13 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <span class="report-accent-bar" style="display:inline-block; width:3.5px; height:13px; border-radius:2px; background:#4f46e5;"></span>
                 <span style="font-size:13px; font-weight:700; color:#475569; letter-spacing:-0.01em;">일정 상세 내용</span>
               </div>
-              <button type="button" class="btn icon" data-action="closeReportModal" title="닫기 (단축키: Esc)" aria-label="닫기" style="color:#64748b; background:transparent; border:none; width:26px; height:26px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer;">${icon('close')}</button>
+              <button type="button" class="memo-tool-btn" data-action="printReport" data-id="${t.id}" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc; flex-shrink:0; cursor:pointer;" title="내용 인쇄" aria-label="내용 인쇄">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                  <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+              </button>
             </div>
             <div class="modal-body" style="padding:12px 18px 14px 18px; flex:1; min-height:0; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; background:#ffffff; gap:10px;">
               <div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; flex-shrink:0;">
@@ -9260,7 +9266,6 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <button type="button" class="btn" data-action="deleteFromReport" data-id="${t.id}" style="height:32px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #fecdd3; color:#e11d48; border-radius:9px; cursor:pointer; font-weight:600;">삭제</button>
               </div>
               <div style="display:flex; gap:6px;">
-                <button type="button" class="btn" data-action="printReport" data-id="${t.id}" style="height:32px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; border-radius:9px; cursor:pointer; font-weight:600;">인쇄</button>
                 <button type="button" class="btn" data-action="editFromReport" data-id="${t.id}" style="height:32px; font-size:12.5px; padding:0 18px; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; font-weight:700; border-radius:9px; box-shadow:0 2px 6px rgba(79,70,229,0.25); cursor:pointer;">수정</button>
                 <button type="button" class="btn primary" data-action="closeReportModal" style="height:32px; font-size:12.5px; padding:0 20px; font-weight:700; background:#4f46e5 !important; border:1px solid #4338ca !important; color:#ffffff !important; border-radius:9px !important; box-shadow:0 2px 6px rgba(79,70,229,0.25) !important; cursor:pointer;" title="닫기 (단축키: Esc)">닫기</button>
               </div>
@@ -9298,7 +9303,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.1">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.2">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -10804,7 +10809,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                     <div style="display:flex; align-items:center; gap:6px;">
                       <span style="color:#4f46e5; font-size:10px; line-height:1;">●</span>
                       <span style="font-size:12.5px; font-weight:700; color:#1e293b;">일정 내보내기</span>
-                      <span style="font-size:11.5px; color:#64748b; font-weight:500;">(${esc(activeStore.name)})</span>
+                      <span style="font-size:11.5px; color:#4f46e5; font-weight:600;">(${esc(activeStore.name)})</span>
                     </div>
                     <button type="button" class="btn" data-action="exportAllBackup" style="height:26px; font-size:11.5px; padding:0 11px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:6px; flex-shrink:0; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:all 0.15s ease;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#94a3b8';" onmouseout="this.style.background='#ffffff'; this.style.borderColor='#cbd5e1';">전체 백업</button>
                   </div>
@@ -10884,7 +10889,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.1</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.2</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -15822,7 +15827,7 @@ function getRandomAppQuote() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.1">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.2">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -16980,7 +16985,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.2.1',
+          version: window.APP_VERSION || 'v1.2.2',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
