@@ -1,8 +1,8 @@
 /* =====================================================================
  * PWA Service Worker for D-Day 일정관리 (PWA Icon & Maskable Support)
  * ===================================================================== */
-const APP_VERSION = '1.1.0';
-const CACHE_NAME = 'todo-pwa-v1.1.0';
+const APP_VERSION = '1.2.0';
+const CACHE_NAME = 'todo-pwa-v1.2.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -13,7 +13,22 @@ const ASSETS_TO_CACHE = [
   './icon-192.png',
   './icon-512.png',
   './icon-maskable-192x192.png',
-  './icon-maskable-512x512.png'
+  './icon-maskable-512x512.png',
+  './lib/little-note-editor.css',
+  './lib/little-note-editor.js',
+  './lib/quill/quill.snow.css',
+  './lib/quill/quill.js',
+  './lib/highlight/atom-one-dark.min.css',
+  './lib/highlight/highlight.min.js',
+  './lib/fontawesome/css/all.min.css',
+  './lib/fontawesome/webfonts/fa-brands-400.ttf',
+  './lib/fontawesome/webfonts/fa-brands-400.woff2',
+  './lib/fontawesome/webfonts/fa-regular-400.ttf',
+  './lib/fontawesome/webfonts/fa-regular-400.woff2',
+  './lib/fontawesome/webfonts/fa-solid-900.ttf',
+  './lib/fontawesome/webfonts/fa-solid-900.woff2',
+  './lib/fontawesome/webfonts/fa-v4compatibility.ttf',
+  './lib/fontawesome/webfonts/fa-v4compatibility.woff2'
 ];
 
 // 서비스워커 메시지 수신 (새 버전 배포 시 즉시 활성화 트리거)
