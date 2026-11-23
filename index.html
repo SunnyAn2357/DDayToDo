@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>MY 일정관리 V1.2.9</title>
+  <title>MY 일정관리 V1.2.10</title>
   <!-- Favicon (Desktop & Browser Tab) -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.9">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.10">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -2216,7 +2216,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 13px 18px;
+      padding: 15px 24px;
       border-bottom: 1px solid var(--border-subtle);
       background: #ffffff;
       flex: none;
@@ -2253,7 +2253,7 @@
     }
 
     .modal-body {
-      padding: 14px 18px;
+      padding: 18px 24px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
@@ -2268,7 +2268,7 @@
       align-items: center;
       justify-content: flex-end;
       gap: 8px;
-      padding: 10px 18px;
+      padding: 13px 24px;
       border-top: 1px solid var(--border-subtle);
       background: #f8fafc;
       flex: none;
@@ -2862,9 +2862,21 @@
         overflow: hidden;
       }
 
+      .modal-head {
+        padding: 12px 18px !important;
+      }
+
+      .modal-fixed-top {
+        padding: 12px 18px 4px 18px !important;
+      }
+
       .modal-body {
-        padding: 12px 14px;
+        padding: 14px 18px !important;
         gap: 8px;
+      }
+
+      .modal-foot {
+        padding: 11px 18px !important;
       }
 
     }
@@ -5173,7 +5185,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.2.9"></script>
+  <script src="./lib/little-note-editor.js?v=1.2.10"></script>
 
   <script>
     (function () {
@@ -5182,7 +5194,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.9';
+      window.APP_VERSION = 'v1.2.10';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -7235,18 +7247,18 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         const defaultName = isEdit ? target.name : `일정 ${list.length + 1}`;
         modal.innerHTML = `
           <form id="storeModalForm" class="modal-frame" style="width:100%; box-sizing:border-box;">
-            <div class="modal-head" style="padding:12px 16px;">
+            <div class="modal-head" style="padding:14px 22px;">
               <h2 style="font-size:15px;">${isEdit ? '일정표 설정' : '새 일정표 추가'}</h2>
               <button type="button" class="btn icon" id="closeStoreModalBtn" aria-label="닫기">${icon('close')}</button>
             </div>
-            <div class="modal-body" style="padding:14px 16px; gap:8px;">
+            <div class="modal-body" style="padding:16px 22px; gap:10px;">
               <div class="field">
                 <label>일정표 이름</label>
                 <input type="text" id="storeModalNameInput" class="control" value="${esc(defaultName)}" placeholder="예: 일정 3, 개인 일정" maxlength="20" autocomplete="off" style="height:34px; font-size:13px; font-weight:600;">
               </div>
               ${isEdit ? '<div style="font-size:11.5px; color:#64748b;">※ 탭을 더블클릭하거나 우클릭하여 언제든 이름을 바꾸거나 삭제할 수 있습니다.</div>' : ''}
             </div>
-            <div class="modal-foot" style="padding:10px 16px; display:flex; justify-content:space-between; align-items:center;">
+            <div class="modal-foot" style="padding:12px 22px; display:flex; justify-content:space-between; align-items:center;">
               <div>
                 ${(isEdit && list.length > 1) ? '<button type="button" class="btn" id="deleteStoreModalBtn" style="height:32px; padding:0 14px; font-size:12px; color:#e11d48; border:1px solid #fecdd3; border-radius:10px; background:#ffffff; cursor:pointer;">일정표 삭제</button>' : ''}
               </div>
@@ -7638,11 +7650,11 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         const isDesktopWebView = !!(window.chrome && window.chrome.webview && typeof window.chrome.webview.postMessage === 'function');
         modal.innerHTML = `
           <form id="linkInputForm" class="modal-frame" style="width:100%; box-sizing:border-box; background:#ffffff; border-radius:12px; overflow:hidden;">
-            <div class="modal-head" style="padding:12px 16px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+            <div class="modal-head" style="padding:14px 22px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
               <h2 style="font-size:14.5px; font-weight:800; color:#1e293b; margin:0;">${isEdit ? '하이퍼링크 수정' : '하이퍼링크 연결'}</h2>
               <button type="button" class="btn icon" id="closeLinkInputBtn" style="width:26px; height:26px;" aria-label="닫기">${icon('close')}</button>
             </div>
-            <div class="modal-body" style="padding:14px 16px; display:flex; flex-direction:column; gap:10px; background:#ffffff;">
+            <div class="modal-body" style="padding:16px 22px; display:flex; flex-direction:column; gap:10px; background:#ffffff;">
               ${needsText ? `
               <div class="field" style="margin:0;">
                 <label style="font-size:12px; font-weight:700; color:#475569; margin-bottom:4px; display:block;">표시할 텍스트</label>
@@ -7666,7 +7678,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
               </div>
             </div>
-            <div class="modal-foot" style="padding:10px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; gap:6px;">
+            <div class="modal-foot" style="padding:12px 22px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; gap:6px;">
               <div>
                 ${isQuill && isEdit ? `<button type="button" class="btn" id="unlinkLinkInputBtn" style="height:32px; padding:0 12px; font-size:12px; color:#e11d48; border:1px solid #fecdd3; border-radius:9px; background:#ffffff; cursor:pointer; font-weight:600;">링크 해제</button>` : ''}
               </div>
@@ -8243,16 +8255,16 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           }
           modal.innerHTML = `
             <div class="modal-frame" style="width:360px; max-width:100%; background:#ffffff; border-radius:14px; box-sizing:border-box; overflow:hidden; border:1px solid #e2e8f0; font-family:inherit;">
-              <div class="modal-head" style="padding:14px 18px 12px; display:flex; align-items:center; gap:8px; border-bottom:1px solid #f1f5f9; background:#ffffff;">
+              <div class="modal-head" style="padding:16px 24px 14px; display:flex; align-items:center; gap:8px; border-bottom:1px solid #f1f5f9; background:#ffffff;">
                 <div style="width:26px; height:26px; border-radius:7px; background:#eef2ff; display:flex; align-items:center; justify-content:center; color:#4f46e5; flex-shrink:0;">
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
                 <h3 style="margin:0; font-size:14px; font-weight:700; color:#0f172a; flex:1;">${esc(title)}</h3>
               </div>
-              <div class="modal-body" style="padding:18px 20px; color:#334155; font-size:13.5px; line-height:1.6; background:#ffffff;">
+              <div class="modal-body" style="padding:20px 24px; color:#334155; font-size:13.5px; line-height:1.6; background:#ffffff;">
                 ${typeof message === 'string' && message.includes('<') ? message : esc(message).replace(/\n/g, '<br>')}
               </div>
-              <div class="modal-foot" style="padding:10px 18px 14px; display:flex; justify-content:flex-end; gap:8px; background:#f8fafc; border-top:1px solid #f1f5f9;">
+              <div class="modal-foot" style="padding:12px 24px 16px; display:flex; justify-content:flex-end; gap:8px; background:#f8fafc; border-top:1px solid #f1f5f9;">
                 <button type="button" id="appConfirmCancelBtn" class="btn" style="height:32px; padding:0 14px; font-size:12.5px; font-weight:600; background:#ffffff; border:1px solid #cbd5e1; color:#475569; border-radius:10px; cursor:pointer;">${esc(cancelText)}</button>
                 <button type="button" id="appConfirmOkBtn" class="btn" style="height:32px; padding:0 18px; font-size:12.5px; font-weight:700; background:${isDanger ? '#ef4444' : '#4f46e5'}; border:1px solid ${isDanger ? '#dc2626' : '#4338ca'}; color:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(79,70,229,0.28); cursor:pointer;">${esc(confirmText)}</button>
               </div>
@@ -9345,7 +9357,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         container.innerHTML = `
           <div class="modal-frame schedule-detail-view${t.completed ? ' is-completed' : ''}" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; background:#ffffff; overflow:hidden; border-radius:14px;">
-            <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center; padding:11px 18px; border-bottom:1px solid #e2e8f0; background:#f8fafc; flex-shrink:0;">
+            <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center; padding:14px 24px; border-bottom:1px solid #e2e8f0; background:#f8fafc; flex-shrink:0;">
               <div style="display:inline-flex; align-items:center; gap:6px;">
                 <span class="report-accent-bar" style="display:inline-block; width:3.5px; height:13px; border-radius:2px; background:#4f46e5;"></span>
                 <span style="font-size:13px; font-weight:700; color:#475569; letter-spacing:-0.01em;">일정 상세 내용</span>
@@ -9358,7 +9370,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </svg>
               </button>
             </div>
-            <div class="modal-body" style="padding:12px 18px 14px 18px; flex:1; min-height:0; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; background:#ffffff; gap:10px;">
+            <div class="modal-body" style="padding:16px 24px 18px 24px; flex:1; min-height:0; display:flex; flex-direction:column; box-sizing:border-box; overflow:hidden; background:#ffffff; gap:10px;">
               <div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; flex-shrink:0;">
                 <h3 class="report-title" style="font-size:16px; font-weight:800; color:#0f172a; margin:0; line-height:1.35; word-break:break-all;">${esc(t.title || '일정 상세')}</h3>
               </div>
@@ -9396,7 +9408,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </table>
               </div>
             </div>
-            <div class="modal-foot" style="padding:10px 18px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+            <div class="modal-foot" style="padding:12px 24px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
               <div>
                 <button type="button" class="btn" data-action="deleteFromReport" data-id="${t.id}" style="height:32px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #fecdd3; color:#e11d48; border-radius:9px; cursor:pointer; font-weight:600;">삭제</button>
               </div>
@@ -9440,7 +9452,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.9">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.10">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -9610,7 +9622,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         $('editor').innerHTML = `
           <form id="taskForm" class="modal-frame" style="width:100%; box-sizing:border-box;">
-            <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center; padding:10px 16px;">
+            <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center; padding:14px 24px;">
               <h2>${editing ? '일정 수정' : '새 일정'}</h2>
               <div style="display:flex; align-items:center; gap:8px;">
                 <button type="button" id="modalPrintMemoBtn" class="memo-tool-btn" tabindex="-1" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc;" title="내용 인쇄">
@@ -9627,7 +9639,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               </div>
             </div>
             <!-- [V2.1.19] 상단 고정 구역 (일정 기본정보 + 내용 라벨 + 툴바 좌측 정렬) -->
-            <div class="modal-fixed-top" style="flex-shrink:0; padding:10px 16px 2px 16px; display:flex; flex-direction:column; gap:6px; background:#ffffff; box-sizing:border-box;">
+            <div class="modal-fixed-top" style="flex-shrink:0; padding:14px 24px 6px 24px; display:flex; flex-direction:column; gap:6px; background:#ffffff; box-sizing:border-box;">
               <!-- 1. 일정 정보 3분할 (시간 - 제목 - 장소 - 색상) -->
               <div class="field" style="margin-bottom:2px;">
                 <label>일정 정보 <span class="req">*</span></label>
@@ -9658,7 +9670,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             </div>
 
             <!-- 하단 스크롤 구역 (내용 입력란 + 태그/중요도/D-Day기준/기간/알림/반복) -->
-            <div class="modal-body" style="padding:4px 16px 12px 16px; gap:6px; overflow-y:auto; box-sizing:border-box;">
+            <div class="modal-body" style="padding:8px 24px 18px 24px; gap:8px; overflow-y:auto; box-sizing:border-box;">
 
               <!-- 2-2. 내용 입력란 (리틀 MY 노트 Quill WYSIWYG) -->
               <div class="field" id="fieldMemo" style="margin-bottom:4px;">
@@ -9754,7 +9766,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <input type="date" id="modalCompletedDate" class="control" min="1900-01-01" max="2099-12-31" style="width:130px; margin-left:auto;" value="${editTarget.completedDate || today()}">
               </div>` : ''}
             </div>
-            <div class="modal-foot" style="padding:10px 16px; box-sizing:border-box;">
+            <div class="modal-foot" style="padding:12px 24px; box-sizing:border-box;">
               ${editing ? `<button type="button" class="btn" data-action="deleteTask" data-id="${editTarget.id}" style="height:32px; padding:0 14px; color:#e11d48; border:1px solid #fecdd3; border-radius:10px; background:#ffffff; cursor:pointer;">삭제</button>` : '<div></div>'}
               <div class="actions">
                 <button type="button" class="btn" data-action="closeEditor" title="닫기 (단축키: Esc)" style="height:32px; padding:0 16px; border:1px solid #cbd5e1; border-radius:10px; color:#475569; background:#ffffff; cursor:pointer;">취소</button>
@@ -9919,15 +9931,28 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         $('modalIsLunar')?.addEventListener('change', updateModalLunarDisplay);
 
-        $('modalStartDate').addEventListener('input', () => {
-          const sVal = $('modalStartDate').value;
-          const dVal = $('modalDueDate').value;
+        const syncStartToDue = () => {
+          const sVal = $('modalStartDate')?.value;
+          const dVal = $('modalDueDate')?.value;
           if (sVal && sVal.length === 10 && (!dVal || dVal < sVal)) {
             $('modalDueDate').value = sVal;
           }
           syncPeriodRecurrenceUI();
-        });
-        $('modalDueDate').addEventListener('input', syncPeriodRecurrenceUI);
+          updateModalLunarDisplay();
+        };
+        const syncDueToStart = () => {
+          const sVal = $('modalStartDate')?.value;
+          const dVal = $('modalDueDate')?.value;
+          if (dVal && dVal.length === 10 && (!sVal || dVal < sVal)) {
+            $('modalStartDate').value = dVal;
+          }
+          syncPeriodRecurrenceUI();
+          updateModalLunarDisplay();
+        };
+        $('modalStartDate').addEventListener('input', syncStartToDue);
+        $('modalStartDate').addEventListener('change', syncStartToDue);
+        $('modalDueDate').addEventListener('input', syncDueToStart);
+        $('modalDueDate').addEventListener('change', syncDueToStart);
 
         $('modalHoliday').addEventListener('change', () => {
           holidayHasTask = false;
@@ -10383,7 +10408,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         $('editor').innerHTML = `
           <form id="recurringForm" class="modal-frame">
-            <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="modal-head" style="display:flex; justify-content:space-between; align-items:center; padding:14px 24px;">
               <h2>반복 마스터 수정</h2>
               <button type="button" id="recModalPrintMemoBtn" class="memo-tool-btn" style="width:28px; height:28px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; color:#475569; border:1px solid #cbd5e1; background:#f8fafc;" title="내용 인쇄">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10394,7 +10419,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               </button>
             </div>
             <!-- [V2.1.19] 반복 상단 고정 구역 (제목 + 내용 라벨 + 툴바 좌측 정렬) -->
-            <div class="modal-fixed-top" style="flex-shrink:0; padding:10px 16px 2px 16px; display:flex; flex-direction:column; gap:6px; background:#ffffff; box-sizing:border-box;">
+            <div class="modal-fixed-top" style="flex-shrink:0; padding:14px 24px 6px 24px; display:flex; flex-direction:column; gap:6px; background:#ffffff; box-sizing:border-box;">
               <!-- 1. 제목 -->
               <div class="field" style="margin-bottom:2px;">
                 <label>제목 <span class="req">*</span></label>
@@ -10423,7 +10448,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
             </div>
 
             <!-- 하단 스크롤 구역 -->
-            <div class="modal-body" style="padding:4px 16px 12px 16px; gap:6px; overflow-y:auto; box-sizing:border-box;">
+            <div class="modal-body" style="padding:8px 24px 18px 24px; gap:8px; overflow-y:auto; box-sizing:border-box;">
               <!-- 2-2. 내용 입력란 (리틀 MY 노트 Quill WYSIWYG) -->
               <div class="field" id="recFieldMemo" style="margin-bottom:4px;">
                 <label style="margin:0 0 4px 0; display:block; font-size:12px; font-weight:600; color:#475569;">내용</label>
@@ -10508,7 +10533,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
               </div>
             </div>
-            <div class="modal-foot">
+            <div class="modal-foot" style="padding:12px 24px; box-sizing:border-box;">
               <button type="button" class="btn danger" data-action="deleteRecurringRule" data-id="${editingRule.id}" style="height:32px; padding:0 14px; font-size:12px; border:1px solid #fecdd3; border-radius:10px; color:#e11d48; background:#ffffff; cursor:pointer;">반복 삭제</button>
               <div class="actions">
                 <button type="button" class="btn" data-action="closeEditor" title="닫기 (단축키: Esc)" style="height:32px; padding:0 16px; border:1px solid #cbd5e1; border-radius:10px; color:#475569; background:#ffffff; cursor:pointer;">취소</button>
@@ -11064,7 +11089,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.9</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.10</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -11301,7 +11326,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <button type="button" class="btn icon" data-action="closeDetail" aria-label="닫기">${icon('close')}</button>
               </div>
             </div>
-            <div class="modal-body" style="padding: 14px 18px; gap: 8px;">
+            <div class="modal-body" style="padding: 18px 24px; gap: 10px;">
               ${logs.length ? logs.map(n => {
                 const isOverdue = n.message && n.message.includes('(기한 지남)');
                 const cleanMsg = isOverdue ? n.message.replace(/\(기한 지남\)/g, '').trim() : n.message;
@@ -16008,7 +16033,7 @@ function getRandomAppQuote() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${esc(title)}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.9">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.10">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -16141,14 +16166,14 @@ function getRandomAppQuote() {
         : '';
 
       var detailHtml = '<div class="schedule-detail-view" style="width:100%; height:100%; display:flex; flex-direction:column; background:#ffffff; box-sizing:border-box; overflow:hidden;">' +
-        '<div class="modal-head briefing-drag-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:11px 18px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">' +
+        '<div class="modal-head briefing-drag-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">' +
           '<div style="display:inline-flex; align-items:center; gap:6px;">' +
             '<span style="display:inline-block; width:3.5px; height:13px; border-radius:2px; background:#4f46e5;"></span>' +
             '<span style="font-size:13px; font-weight:700; color:#475569; letter-spacing:-0.01em;">일정 상세 내용</span>' +
           '</div>' +
           '<button type="button" data-action="closeAlertModal" style="color:#64748b; background:transparent; border:none; width:26px; height:26px; padding:0; display:flex; align-items:center; justify-content:center; cursor:pointer;" title="닫기 (단축키: Esc)" aria-label="닫기">✕</button>' +
         '</div>' +
-        '<div style="flex:1; min-height:0; display:flex; flex-direction:column; padding:12px 18px 14px 18px; box-sizing:border-box; overflow:hidden; gap:10px;">' +
+        '<div style="flex:1; min-height:0; display:flex; flex-direction:column; padding:16px 22px 18px 22px; box-sizing:border-box; overflow:hidden; gap:10px;">' +
           '<div style="padding:9px 13px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; flex-shrink:0;">' +
             '<h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0; line-height:1.35; word-break:break-all;">' + esc(item.title || '일정 상세') + '</h3>' +
           '</div>' +
@@ -16172,7 +16197,7 @@ function getRandomAppQuote() {
             '</table>' +
           '</div>' +
         '</div>' +
-        '<div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:10px 18px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">' +
+        '<div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:12px 22px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">' +
           '<button type="button" data-action="backToBriefingList" style="height:32px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; border-radius:9px; cursor:pointer; font-weight:600;">‹ 브리핑 목록</button>' +
           '<button type="button" data-action="openInMainCalendar" data-id="' + esc(item.id) + '" style="height:32px; font-size:12.5px; padding:0 16px; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; font-weight:700; border-radius:9px; box-shadow:0 2px 6px rgba(79,70,229,0.25); cursor:pointer;">메인 캘린더에서 열기</button>' +
         '</div>' +
@@ -16318,7 +16343,7 @@ function getRandomAppQuote() {
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; background:#ffffff; border-radius:14px; overflow:hidden;">
             <!-- [V2.1.2] 정돈된 상단 타이틀 바 -->
-            <div class="briefing-drag-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:11px 18px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; cursor:move; user-select:none;">
+            <div class="briefing-drag-header" style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:14px 22px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:inline-flex; align-items:center; gap:6px;">
                 <span style="display:inline-block; width:3.5px; height:13px; border-radius:2px; background:#4f46e5;"></span>
                 <span style="font-size:13.5px; font-weight:800; color:#1e293b; letter-spacing:-0.01em;">오늘 일정 브리핑</span>
@@ -16329,7 +16354,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 날짜·날씨·건수 요약 및 오늘의 명언 영역 -->
-            <div class="briefing-drag-header" style="background:#ffffff; border-bottom:1px solid #e2e8f0; padding:11px 16px 12px 16px; flex-shrink:0; cursor:move; user-select:none;">
+            <div class="briefing-drag-header" style="background:#ffffff; border-bottom:1px solid #e2e8f0; padding:14px 22px; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; flex-wrap:wrap;">
                 <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
                   <span style="font-size:15px; font-weight:800; color:#0f172a; line-height:1; letter-spacing:-0.02em; white-space:nowrap;">${dateStr}</span>
@@ -16353,7 +16378,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 타임라인 및 일정 목록 영역 -->
-            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:14px 18px; gap:10px; background:#f8fafc; box-sizing:border-box;">
+            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:16px 22px; gap:10px; background:#f8fafc; box-sizing:border-box;">
               ${items.length === 0 ? `
                 <div style="text-align:center; padding:40px 20px; background:#ffffff; border:1px dashed #cbd5e1; border-radius:12px; margin-top:14px;">
                   <div style="margin-bottom:10px; display:flex; justify-content:center; color:#94a3b8;">
@@ -16422,7 +16447,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 하단 닫기 바 -->
-            <div class="modal-foot" style="padding:10px 18px; display:flex; justify-content:flex-end; background:#ffffff; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+            <div class="modal-foot" style="padding:12px 22px; display:flex; justify-content:flex-end; background:#ffffff; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
               <button type="button" class="btn primary" data-action="closeDailyBriefingModal" style="height:34px; padding:0 22px; font-size:12.5px; font-weight:700; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; border-radius:9px; box-shadow:0 2px 6px rgba(79,70,229,0.25); cursor:pointer;">확인 (닫기)</button>
             </div>
           </div>
@@ -16487,7 +16512,7 @@ function getRandomAppQuote() {
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box;">
             <!-- 상단 앰버 골드 하이라이트 배너 -->
-            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-bottom:1px solid #fde68a; padding:18px 20px 14px; flex-shrink:0; cursor:move; user-select:none;">
+            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border-bottom:1px solid #fde68a; padding:18px 22px 16px; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:#b45309; color:#ffffff; font-size:11.5px; font-weight:700; padding:2px 10px; border-radius:20px;">
                   현재 시간 ${nowTimeStr}
@@ -16500,7 +16525,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 일정 상세 정보 카드 -->
-            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:12px; background:#ffffff; box-sizing:border-box;">
+            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; gap:12px; background:#ffffff; box-sizing:border-box;">
               <div style="font-size:17px; font-weight:800; color:#0f172a; line-height:1.45; word-break:break-all;">
                 ${esc(task.title)}
               </div>
@@ -16515,7 +16540,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 하단 액션 버튼 (오늘 전체 브리핑 다시 보기 탑재!) -->
-            <div class="modal-foot" style="padding:10px 16px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+            <div class="modal-foot" style="padding:12px 22px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
               <div>
                 <button type="button" class="btn" data-action="openBriefingFromUrgent" style="height:32px; font-size:11.5px; padding:0 12px; background:#ffffff; border:1px solid #cbd5e1; color:#0f172a; font-weight:700; display:inline-flex; align-items:center; gap:4px; border-radius:10px; cursor:pointer;">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="m9 14 2 2 4-4"></path></svg><span>오늘 일정 브리핑</span>
@@ -16570,7 +16595,7 @@ function getRandomAppQuote() {
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box;">
             <!-- 인디고/바이올렛 프리미엄 배너 -->
-            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); padding:20px 22px 18px; color:#ffffff; flex-shrink:0; cursor:move; user-select:none;">
+            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #312e81 0%, #1e1b4b 100%); padding:20px 24px 18px; color:#ffffff; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:rgba(199, 210, 254, 0.2); border:1px solid rgba(199, 210, 254, 0.4); color:#e0e7ff; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:20px;">
                   D-Day 사전 예고 알림
@@ -16582,7 +16607,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 그룹별 목록 영역 -->
-            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:16px 20px; gap:16px; background:#f8fafc; box-sizing:border-box;">
+            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 24px; gap:16px; background:#f8fafc; box-sizing:border-box;">
               ${sortedGroups.map(grp => `
                 <div>
                   <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
@@ -16608,7 +16633,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 하단 확인 버튼 -->
-            <div class="modal-foot" style="padding:12px 20px; display:flex; justify-content:flex-end; background:#ffffff; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+            <div class="modal-foot" style="padding:12px 24px; display:flex; justify-content:flex-end; background:#ffffff; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
               <button type="button" class="btn primary" data-action="closeDdayAlertModal" style="height:34px; padding:0 22px; font-size:12.5px; font-weight:700; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(79,70,229,0.28); cursor:pointer;">확인 완료</button>
             </div>
           </div>
@@ -16669,7 +16694,7 @@ function getRandomAppQuote() {
         container.innerHTML = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box; background:#ffffff; border-radius:14px; overflow:hidden;">
             <!-- 상단 인디고-바이올렛 소프트 그라디언트 배너 (여유로운 패딩 및 정돈된 폰트) -->
-            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-bottom:1px solid #c7d2fe; padding:18px 22px 14px; flex-shrink:0; cursor:move; user-select:none;">
+            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); border-bottom:1px solid #c7d2fe; padding:18px 24px 16px; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; gap:8px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:#4f46e5; color:#ffffff; font-size:11.5px; font-weight:700; padding:3px 10px; border-radius:20px; box-shadow:0 2px 4px rgba(79,70,229,0.25); white-space:nowrap; flex-shrink:0;">
                   ${alertTitle}
@@ -16682,7 +16707,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 안내 본문 카드 (균형 잡힌 황금비율 여백 및 정갈한 불릿 리스트) -->
-            <div class="modal-body overtime-modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:20px 22px; display:flex; flex-direction:column; justify-content:center; gap:16px; background:#ffffff; box-sizing:border-box;">
+            <div class="modal-body overtime-modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:20px 24px; display:flex; flex-direction:column; justify-content:center; gap:16px; background:#ffffff; box-sizing:border-box;">
               <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:18px 20px; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
                 <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
                   <span>초과근무 확인 및 등록 요청</span>
@@ -16710,7 +16735,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 하단 액션 버튼 -->
-            <div class="modal-foot" style="padding:12px 20px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+            <div class="modal-foot" style="padding:12px 24px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
               <div>
                 <button type="button" class="btn" data-action="openBriefingFromUrgent" style="height:34px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#0f172a; font-weight:600; display:inline-flex; align-items:center; gap:5px; border-radius:10px; cursor:pointer;">
                   <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path><rect x="9" y="3" width="6" height="4" rx="1"></rect><path d="m9 14 2 2 4-4"></path></svg><span>오늘 일정 브리핑</span>
@@ -16783,7 +16808,7 @@ function getRandomAppQuote() {
         const html = `
           <div class="modal-frame" style="width:100%; height:100%; display:flex; flex-direction:column; box-sizing:border-box;">
             <!-- 상단 블루 소프트 배너 -->
-            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-bottom:1px solid #bfdbfe; padding:18px 20px 14px; flex-shrink:0; cursor:move; user-select:none;">
+            <div class="briefing-drag-header" style="background:linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-bottom:1px solid #bfdbfe; padding:18px 22px 16px; flex-shrink:0; cursor:move; user-select:none;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                 <span style="display:inline-flex; align-items:center; gap:5px; background:#1d4ed8; color:#ffffff; font-size:11.5px; font-weight:700; padding:2px 9px; border-radius:20px; white-space:nowrap;">
                   일정 ${headLabel}
@@ -16797,7 +16822,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 일정 정보 -->
-            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 20px; display:flex; flex-direction:column; gap:12px; background:#ffffff; box-sizing:border-box;">
+            <div class="modal-body" style="flex:1; min-height:0; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; gap:12px; background:#ffffff; box-sizing:border-box;">
               <div style="font-size:17px; font-weight:800; color:#0f172a; line-height:1.45; word-break:break-all;">
                 ${esc(task.title)}
               </div>
@@ -16812,7 +16837,7 @@ function getRandomAppQuote() {
             </div>
 
             <!-- 하단 버튼 -->
-            <div class="modal-foot" style="padding:10px 16px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
+            <div class="modal-foot" style="padding:12px 22px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top:1px solid #e2e8f0; flex-shrink:0; box-sizing:border-box;">
               <button type="button" class="btn" data-action="openDetailFromBriefing" data-id="${task.id}" style="height:32px; font-size:12px; padding:0 14px; background:#ffffff; border:1px solid #cbd5e1; color:#334155; font-weight:600; border-radius:10px; cursor:pointer;">상세보기</button>
               <button type="button" class="btn primary" data-action="closeReminderAlertModal" style="height:32px; font-size:12.5px; padding:0 22px; font-weight:700; background:#4f46e5; border:1px solid #4338ca; color:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(79,70,229,0.28); cursor:pointer;">확인</button>
             </div>
@@ -17170,7 +17195,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.2.9',
+          version: window.APP_VERSION || 'v1.2.10',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
@@ -17627,7 +17652,7 @@ function getRandomAppQuote() {
                 <h2>${dateTitle}</h2>
                 <button type="button" class="btn icon" data-action="closeDetail" aria-label="닫기">${icon('close')}</button>
               </div>
-              <div class="modal-body" style="padding:10px 16px; max-height:450px; overflow-y:auto;">
+              <div class="modal-body" style="padding:18px 24px; max-height:450px; overflow-y:auto;">
                 ${tasks.length ? tasks.map(t => taskRow(t, today())).join('') : '<div class="empty">등록된 일정이 없습니다.</div>'}
               </div>
               <div class="modal-foot">
@@ -17968,7 +17993,7 @@ function getRandomAppQuote() {
                 <h2>${titleText}</h2>
                 <button type="button" class="btn icon" data-action="closeDetail" aria-label="닫기">${icon('close')}</button>
               </div>
-              <div class="modal-body" style="padding:10px 16px;">
+              <div class="modal-body" style="padding:18px 24px;">
                 ${openTasks.length ? openTasks.map(t => taskRow(t, base)).join('') : '<div class="empty">해당 조건의 일정이 없습니다</div>'}
               </div>
             </div>
