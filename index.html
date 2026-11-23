@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>MY 일정관리 V1.2.12</title>
+  <title>MY 일정관리 V1.2.13</title>
   <!-- Favicon (Desktop & Browser Tab) -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.12">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.13">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -2118,16 +2118,16 @@
 
     dialog#editor .editor-section-label,
     dialog#editor .field > label,
-    dialog#editor .field > div > label,
-    dialog#editor .field > div > div > label {
+    dialog#editor .field > div > label:not(.options-chip):not(.label-addon-btn),
+    dialog#editor .field > div > div > label:not(.options-chip):not(.label-addon-btn) {
       color: #2563eb !important;
       font-weight: 700 !important;
     }
 
     [data-theme="dark"] dialog#editor .editor-section-label,
     [data-theme="dark"] dialog#editor .field > label,
-    [data-theme="dark"] dialog#editor .field > div > label,
-    [data-theme="dark"] dialog#editor .field > div > div > label {
+    [data-theme="dark"] dialog#editor .field > div > label:not(.options-chip):not(.label-addon-btn),
+    [data-theme="dark"] dialog#editor .field > div > div > label:not(.options-chip):not(.label-addon-btn) {
       color: #60a5fa !important;
     }
 
@@ -5246,7 +5246,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.2.12"></script>
+  <script src="./lib/little-note-editor.js?v=1.2.13"></script>
 
   <script>
     (function () {
@@ -5255,7 +5255,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.12';
+      window.APP_VERSION = 'v1.2.13';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -9513,7 +9513,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.12">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.13">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -9744,7 +9744,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <!-- 3. 하단 1행: 기간(좌) + 태그·D-Day 기준(우) -->
               <div class="editor-row-2col">
                 <div class="field" id="fieldDateRange" style="margin:0;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; min-height:22px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; height:28px; margin:0;">
                     <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
                     <button type="button" class="label-addon-btn primary" id="modalResetPeriodBtn">기간리셋</button>
                   </div>
@@ -9756,7 +9756,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
 
                 <div class="field" style="margin:0; min-width:0;">
-                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:5px; min-height:22px; flex-wrap:wrap;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; height:28px; margin:0; flex-wrap:wrap;">
                     <label for="modalTags" style="margin-bottom:0;">태그</label>
                     <div id="fieldDdayMode" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                       <span class="editor-section-label" style="font-size:11.5px; font-weight:700;">D-Day</span>
@@ -9777,7 +9777,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               <!-- 4. 하단 2행: 알림 주기(좌) + 반복 주기(우) 대칭 카드 -->
               <div class="editor-alert-rec-grid">
                 <div class="field" id="fieldReminders">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; min-height:22px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; height:28px; margin:0;">
                     <label style="margin-bottom:0;">알림 주기</label>
                   </div>
                   <div class="options-card">
@@ -9798,7 +9798,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </div>
 
                 <div class="field" id="fieldRecurrence">
-                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; gap:8px; min-height:22px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; height:28px; margin:0;">
                     <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-width:0;">
                       <label style="margin-bottom:0;">반복 주기</label>
                       <span id="modalLunarDateDisplay" style="font-size:11.5px; color:#2563eb; font-weight:600; display:none;"></span>
@@ -11152,7 +11152,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.12</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.13</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -16096,7 +16096,7 @@ function getRandomAppQuote() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${esc(title)}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.12">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.13">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -17258,7 +17258,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.2.12',
+          version: window.APP_VERSION || 'v1.2.13',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
