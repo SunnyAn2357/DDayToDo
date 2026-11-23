@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>MY 일정관리 V1.2.10</title>
+  <title>MY 일정관리 V1.2.11</title>
   <!-- Favicon (Desktop & Browser Tab) -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.10">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.11">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -2076,6 +2076,46 @@
       line-height: 1.65;
     }
 
+    .editor-row-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .editor-alert-rec-grid {
+      display: grid;
+      grid-template-columns: 1.24fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .editor-alert-rec-grid > .field {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 0 !important;
+      min-width: 0;
+    }
+
+    .editor-alert-rec-grid .options-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: stretch;
+      gap: 8px;
+      padding: 9px 12px;
+      box-sizing: border-box;
+    }
+
+    .editor-alert-rec-grid .inline-input {
+      flex: 1 1 72px;
+      min-width: 72px;
+      height: 26px;
+      font-size: 11.5px;
+      padding: 0 7px;
+    }
+
     dialog#settings {
       width: 540px;
       max-width: calc(100vw - 32px);
@@ -2877,6 +2917,12 @@
 
       .modal-foot {
         padding: 11px 18px !important;
+      }
+
+      .editor-row-2col,
+      .editor-alert-rec-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
       }
 
     }
@@ -5185,7 +5231,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.2.10"></script>
+  <script src="./lib/little-note-editor.js?v=1.2.11"></script>
 
   <script>
     (function () {
@@ -5194,7 +5240,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.10';
+      window.APP_VERSION = 'v1.2.11';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -9452,7 +9498,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.10">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.11">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -9638,15 +9684,13 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 </label>
               </div>
             </div>
-            <!-- [V2.1.19] 상단 고정 구역 (일정 기본정보 + 내용 라벨 + 툴바 좌측 정렬) -->
+            <!-- [V1.2.11] 상단 고정 구역 (일정 정보 1행 통합: 시간 - 제목 - 색상 - 장소 - 중요도) -->
             <div class="modal-fixed-top" style="flex-shrink:0; padding:14px 24px 6px 24px; display:flex; flex-direction:column; gap:6px; background:#ffffff; box-sizing:border-box;">
-              <!-- 1. 일정 정보 3분할 (시간 - 제목 - 장소 - 색상) -->
               <div class="field" style="margin-bottom:2px;">
                 <label>일정 정보 <span class="req">*</span></label>
-                <div style="display:flex; gap:6px; align-items:center; width:100%; box-sizing:border-box;">
+                <div style="display:flex; gap:6px; align-items:center; width:100%; box-sizing:border-box; flex-wrap:wrap;">
                   <input type="text" id="modalTime" class="control" autofocus value="${esc(editTarget.time || '')}" placeholder="시간" maxlength="5" autocomplete="off" style="width:66px; min-width:66px; max-width:66px; height:33px; text-align:center; font-feature-settings:'tnum'; box-sizing:border-box; margin:0; padding:0 4px; font-size:12.5px;">
-                  <input id="modalTitle" class="control" value="${esc(editTarget.title)}" placeholder="일정 제목" autocomplete="off" style="flex:1; min-width:0; height:33px; box-sizing:border-box; margin:0; font-size:13px; font-weight:600; color:${editTarget.titleColor || '#0f172a'};">
-                  <input type="text" id="modalLocation" class="control" value="${esc(editTarget.location || '')}" placeholder="장소" autocomplete="off" style="width:110px; min-width:110px; max-width:110px; height:33px; text-align:center; box-sizing:border-box; margin:0; padding:0 6px; font-size:12.5px;">
+                  <input id="modalTitle" class="control" value="${esc(editTarget.title)}" placeholder="일정 제목" autocomplete="off" style="flex:1; min-width:140px; height:33px; box-sizing:border-box; margin:0; font-size:13px; font-weight:600; color:${editTarget.titleColor || '#0f172a'};">
                   <div class="memo-color-wrapper" style="position:relative; flex-shrink:0;">
                     <button type="button" class="memo-tool-btn color-btn" id="modalTitleColorBtn" title="제목 글자색 변경" tabindex="-1" style="width:33px; height:33px; border-radius:6px; border:1px solid #cbd5e1; background:#ffffff; display:inline-flex; align-items:center; justify-content:center; box-sizing:border-box;">
                       <span id="modalTitleColorIndicator" style="font-weight:800; font-size:14px; border-bottom:3px solid ${editTarget.titleColor || '#0f172a'}; line-height:1.1; color:#0f172a;">A</span>
@@ -9664,104 +9708,108 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                       <span class="color-dot memo-color-dot" data-color="#64748b" style="background:#64748b;" title="회색"></span>
                     </div>
                   </div>
+                  <input type="text" id="modalLocation" class="control" value="${esc(editTarget.location || '')}" placeholder="장소" autocomplete="off" style="width:116px; min-width:96px; height:33px; text-align:center; box-sizing:border-box; margin:0; padding:0 6px; font-size:12.5px;">
+                  <div class="field" id="fieldPriority" style="margin:0; width:92px; flex-shrink:0;">
+                    <select id="modalPriority" class="control" title="중요도" aria-label="중요도" style="height:33px; padding:0 6px; width:100%; box-sizing:border-box; font-size:12.5px;">${Object.entries(PRIORITY).map(([k, v]) => `<option value="${k}" ${k === editTarget.priority ? 'selected' : ''}>${v}</option>`).join('')}</select>
+                  </div>
                 </div>
               </div>
 
             </div>
 
-            <!-- 하단 스크롤 구역 (내용 입력란 + 태그/중요도/D-Day기준/기간/알림/반복) -->
-            <div class="modal-body" style="padding:8px 24px 18px 24px; gap:8px; overflow-y:auto; box-sizing:border-box;">
+            <!-- 하단 스크롤 구역 (내용 입력란 + 2열 병렬 카드 배치) -->
+            <div class="modal-body" style="padding:8px 24px 18px 24px; gap:10px; overflow-y:auto; box-sizing:border-box;">
 
-              <!-- 2-2. 내용 입력란 (리틀 MY 노트 Quill WYSIWYG) -->
-              <div class="field" id="fieldMemo" style="margin-bottom:4px;">
+              <!-- 2. 내용 입력란 (리틀 MY 노트 Quill WYSIWYG) -->
+              <div class="field" id="fieldMemo" style="margin-bottom:2px;">
                 <label style="margin:0 0 4px 0; display:block; font-size:12px; font-weight:600; color:#475569;">내용</label>
                 <div id="modalMemoQuillWrap" class="little-note-scope"></div>
               </div>
 
-              <!-- 3 & 4. 태그 + 중요도 (1행 컴팩트 결합, 중요도 폭 90px 최적화로 우측 정렬 완벽 일치) -->
-              <div style="display:grid; grid-template-columns:1fr 90px; gap:8px; align-items:end; margin-bottom:4px;">
-                <div class="field" id="fieldTags" style="margin:0;">
-                  <label>태그</label>
-                  <input id="modalTags" class="control" value="${esc((editTarget.tags || []).join(', '))}" placeholder="쉼표로 구분하여 입력" style="height:32px;">
-                </div>
-                <div class="field" id="fieldPriority" style="margin:0;">
-                  <label>중요도</label>
-                  <select id="modalPriority" class="control" style="height:32px; padding:0 6px; width:100%; box-sizing:border-box;">${Object.entries(PRIORITY).map(([k, v]) => `<option value="${k}" ${k === editTarget.priority ? 'selected' : ''}>${v}</option>`).join('')}</select>
-                </div>
-              </div>
-
-              <!-- 5. 알림 주기 [V1.6.0: 일자별 알림 및 시간별 당일 알림 2행 구조] -->
-              <div class="field" id="fieldReminders" style="margin-bottom:6px;">
-                <label>알림 주기</label>
-                <div class="options-card" style="display:flex; flex-direction:column; gap:8px; align-items:stretch; padding:8px 12px; box-sizing:border-box;">
-                  <!-- 1행: 일자별 알림 -->
-                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <label class="options-chip"><input type="checkbox" class="rem-today-check" ${editTarget.sameDayAlert ? 'checked' : ''}> 당일</label>
-                    <label class="options-chip"><input type="checkbox" class="rem-check" value="3" ${(editTarget.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
-                    <label class="options-chip"><input type="checkbox" class="rem-check" value="5" ${(editTarget.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
-                    <label class="options-chip"><input type="checkbox" id="modalCustomRemCheck" ${customRemVal ? 'checked' : ''}> 기타</label>
-                    <input type="text" id="modalCustomRem" class="control inline-input" placeholder="일수 입력(예: 10, 20)" value="${esc(customRemVal)}">
+              <!-- 3. 하단 1행: 기간(좌) + 태그·D-Day 기준(우) -->
+              <div class="editor-row-2col">
+                <div class="field" id="fieldDateRange" style="margin:0;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; min-height:22px;">
+                    <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
+                    <button type="button" class="label-addon-btn primary" id="modalResetPeriodBtn">기간리셋</button>
                   </div>
-                  <!-- 2행: 시간별 알림 (당일 일정 시간 2시간 전, 1시간 전 등) -->
-                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; border-top:1px dashed #e2e8f0; padding-top:6px;">
-                    <label class="options-chip"><input type="checkbox" class="rem-hour-check" value="120" ${has2h ? 'checked' : ''}> 2시간 전</label>
-                    <label class="options-chip"><input type="checkbox" class="rem-hour-check" value="60" ${has1h ? 'checked' : ''}> 1시간 전</label>
-                    <label class="options-chip"><input type="checkbox" id="modalCustomHourRemCheck" ${customHourRemVal ? 'checked' : ''}> 기타</label>
-                    <input type="text" id="modalCustomHourRem" class="control inline-input" placeholder="시간 입력(예: 30분, 3시간)" value="${esc(customHourRemVal)}">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <input type="date" id="modalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.startDate || editTarget.dueDate || today()}" required style="flex:1; min-width:0; height:33px;">
+                    <span style="color:var(--text-sub); font-weight:700;">~</span>
+                    <input type="date" id="modalDueDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.dueDate || editTarget.startDate || today()}" required style="flex:1; min-width:0; height:33px;">
                   </div>
                 </div>
-              </div>
 
-              <!-- 6. 기간 (시작일 ~ 마감일) -->
-              <div class="field" id="fieldDateRange" style="margin-bottom:6px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                  <label style="margin-bottom:0;">기간 <span class="req">*</span></label>
-                  <button type="button" class="label-addon-btn primary" id="modalResetPeriodBtn">기간리셋</button>
-                </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  <input type="date" id="modalStartDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.startDate || editTarget.dueDate || today()}" required style="flex:1;">
-                  <span style="color:var(--text-sub); font-weight:700;">~</span>
-                  <input type="date" id="modalDueDate" class="control" min="1900-01-01" max="2099-12-31" value="${editTarget.dueDate || editTarget.startDate || today()}" required style="flex:1;">
-                </div>
-              </div>
-
-              <!-- 7. 반복 주기 -->
-              <div class="field" id="fieldRecurrence" style="margin-bottom:6px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:8px;">
-                  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                    <label style="margin-bottom:0;">반복 주기</label>
-                    <span id="periodRecNotice" style="display:none; font-size:11.5px; color:#e11d48; font-weight:500;">※ 기간 일정(2일 이상)은 반복 주기를 설정할 수 없습니다.</span>
+                <div class="field" style="margin:0; min-width:0;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:5px; min-height:22px; flex-wrap:wrap;">
+                    <label for="modalTags" style="margin-bottom:0;">태그</label>
+                    <div id="fieldDdayMode" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                      <span style="font-size:11.5px; font-weight:600; color:#64748b;">D-Day</span>
+                      <label class="options-chip" style="cursor:pointer; font-size:12px;">
+                        <input type="radio" name="modalDdayMode" value="workday" ${editTarget.ddayMode !== 'calendar' ? 'checked' : ''}> 근무일
+                      </label>
+                      <label class="options-chip" style="cursor:pointer; font-size:12px;">
+                        <input type="radio" name="modalDdayMode" value="calendar" ${editTarget.ddayMode === 'calendar' ? 'checked' : ''}> 달력일
+                      </label>
+                    </div>
                   </div>
-                  <span id="modalLunarDateDisplay" style="font-size:12px; color:#2563eb; font-weight:600; display:none;"></span>
-                </div>
-                <div class="options-card">
-                  <label class="options-chip"><input type="checkbox" class="rec-check" value="weekly" ${isWeekly ? 'checked' : ''}> 매주</label>
-                  <label class="options-chip"><input type="checkbox" class="rec-check" value="monthly" ${isMonthly ? 'checked' : ''}> 매월</label>
-                  <label class="options-chip"><input type="checkbox" class="rec-check" value="yearly" ${isYearly ? 'checked' : ''}> 매년</label>
-                  <label class="options-chip"><input type="checkbox" class="rec-check" id="modalCustomRecCheck" value="custom" ${isCustomRec ? 'checked' : ''}> 기타</label>
-                  <input type="text" id="modalCustomRec" class="control inline-input" placeholder="일 수(예: 15)" value="${esc(customRecVal)}">
-                  <label class="label-addon-btn" style="cursor:pointer; margin-left:auto;">
-                    <input type="checkbox" id="modalIsLunar" ${editTarget.isLunar ? 'checked' : ''} style="margin:0; width:14px; height:14px; accent-color:#4f46e5;"> 음력
-                  </label>
+                  <div id="fieldTags" style="margin:0;">
+                    <input id="modalTags" class="control" value="${esc((editTarget.tags || []).join(', '))}" placeholder="쉼표로 구분하여 입력" style="height:33px;">
+                  </div>
                 </div>
               </div>
 
-              <!-- 8. D-Day 기준 (1줄 컴팩트 표출) -->
-              <div class="field" id="fieldDdayMode" style="margin-bottom:6px; display:flex; flex-direction:row; align-items:center; gap:16px; flex-wrap:wrap; padding:2px 0;">
-                <label style="margin-bottom:0;">D-Day 기준</label>
-                <div style="display:flex; gap:16px; align-items:center;">
-                  <label class="options-chip" style="cursor:pointer;">
-                    <input type="radio" name="modalDdayMode" value="workday" ${editTarget.ddayMode !== 'calendar' ? 'checked' : ''}> 근무일 기준
-                  </label>
-                  <label class="options-chip" style="cursor:pointer;">
-                    <input type="radio" name="modalDdayMode" value="calendar" ${editTarget.ddayMode === 'calendar' ? 'checked' : ''}> 달력일 기준
-                  </label>
+              <!-- 4. 하단 2행: 알림 주기(좌) + 반복 주기(우) 대칭 카드 -->
+              <div class="editor-alert-rec-grid">
+                <div class="field" id="fieldReminders">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; min-height:22px;">
+                    <label style="margin-bottom:0;">알림 주기</label>
+                  </div>
+                  <div class="options-card">
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rem-today-check" ${editTarget.sameDayAlert ? 'checked' : ''}> 당일</label>
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rem-check" value="3" ${(editTarget.reminders || []).includes(3) ? 'checked' : ''}> 3일 전</label>
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rem-check" value="5" ${(editTarget.reminders || []).includes(5) ? 'checked' : ''}> 5일 전</label>
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" id="modalCustomRemCheck" ${customRemVal ? 'checked' : ''}> 기타</label>
+                      <input type="text" id="modalCustomRem" class="control inline-input" placeholder="일수(예: 10, 20)" value="${esc(customRemVal)}">
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; border-top:1px dashed #e2e8f0; padding-top:8px;">
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rem-hour-check" value="120" ${has2h ? 'checked' : ''}> 2시간 전</label>
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rem-hour-check" value="60" ${has1h ? 'checked' : ''}> 1시간 전</label>
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" id="modalCustomHourRemCheck" ${customHourRemVal ? 'checked' : ''}> 기타</label>
+                      <input type="text" id="modalCustomHourRem" class="control inline-input" placeholder="시간(예: 30분, 3시간)" value="${esc(customHourRemVal)}">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field" id="fieldRecurrence">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px; gap:8px; min-height:22px;">
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-width:0;">
+                      <label style="margin-bottom:0;">반복 주기</label>
+                      <span id="modalLunarDateDisplay" style="font-size:11.5px; color:#2563eb; font-weight:600; display:none;"></span>
+                    </div>
+                    <label class="label-addon-btn" style="cursor:pointer; flex-shrink:0;">
+                      <input type="checkbox" id="modalIsLunar" ${editTarget.isLunar ? 'checked' : ''} style="margin:0; width:14px; height:14px; accent-color:#4f46e5;"> 음력
+                    </label>
+                  </div>
+                  <div class="options-card">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rec-check" value="weekly" ${isWeekly ? 'checked' : ''}> 매주</label>
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rec-check" value="monthly" ${isMonthly ? 'checked' : ''}> 매월</label>
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rec-check" value="yearly" ${isYearly ? 'checked' : ''}> 매년</label>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; border-top:1px dashed #e2e8f0; padding-top:8px;">
+                      <label class="options-chip" style="white-space:nowrap;"><input type="checkbox" class="rec-check" id="modalCustomRecCheck" value="custom" ${isCustomRec ? 'checked' : ''}> 기타</label>
+                      <input type="text" id="modalCustomRec" class="control inline-input" placeholder="일 수(예: 15)" value="${esc(customRecVal)}">
+                      <span id="periodRecNotice" style="display:none; font-size:11px; color:#e11d48; font-weight:600; white-space:nowrap;">※ 2일 이상 반복 불가</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <!-- 9. 완료 처리 (수정 모드 전용) -->
+              <!-- 5. 완료 처리 (수정 모드 전용) -->
               ${editing ? `
-              <div class="completion-box" id="fieldCompletion" style="margin-bottom:6px;">
+              <div class="completion-box" id="fieldCompletion" style="margin-bottom:2px;">
                 <label class="options-chip"><input type="checkbox" id="modalCompleted" ${editTarget.completed ? 'checked' : ''}> 완료 처리</label>
                 <input type="date" id="modalCompletedDate" class="control" min="1900-01-01" max="2099-12-31" style="width:130px; margin-left:auto;" value="${editTarget.completedDate || today()}">
               </div>` : ''}
@@ -11089,7 +11137,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.10</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.11</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -16033,7 +16081,7 @@ function getRandomAppQuote() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${esc(title)}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.10">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.11">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -17195,7 +17243,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.2.10',
+          version: window.APP_VERSION || 'v1.2.11',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
