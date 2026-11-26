@@ -579,12 +579,21 @@
     transition: all 0.2s ease;
 }
 
+.ql-snow .ql-editor a,
 .ql-editor a {
     color: #2563eb;
-    text-decoration: underline;
+    text-decoration: none !important;
     cursor: pointer;
+    transition: opacity 0.15s ease;
 }
 
+.ql-snow .ql-editor a:hover,
+.ql-editor a:hover {
+    text-decoration: none !important;
+    opacity: 0.78;
+}
+
+[data-theme="dark"] .ql-snow .ql-editor a,
 [data-theme="dark"] .ql-editor a {
     color: #60a5fa;
 }
@@ -1430,6 +1439,9 @@ dialog#markdownHelpModal::backdrop {
     .ql-editor img.zen-img-multi-selected {
         outline: none !important;
         box-shadow: none !important;
+    }
+    .ql-editor a {
+        text-decoration: none !important;
     }
     .ql-editor .ql-code-block-container {
         padding-top: 14px !important;

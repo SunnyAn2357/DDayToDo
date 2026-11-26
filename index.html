@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>MY 일정관리 V1.2.13</title>
+  <title>MY 일정관리 V1.3.0</title>
   <!-- Favicon (Desktop & Browser Tab) -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.13">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.3.0">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -1804,8 +1804,13 @@
     }
     .memo-editor a, .detail-memo a {
       color: #2563eb;
-      text-decoration: underline;
+      text-decoration: none !important;
       font-weight: 600;
+      transition: opacity 0.15s ease;
+    }
+    .memo-editor a:hover, .detail-memo a:hover {
+      text-decoration: none !important;
+      opacity: 0.78;
     }
 
     /* [V1.1.0] MY 노트 통합 마크다운 표현 양식 (표·인용구·구분선·목록·체크리스트·코드블록·이미지) */
@@ -5246,7 +5251,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.2.13"></script>
+  <script src="./lib/little-note-editor.js?v=1.3.0"></script>
 
   <script>
     (function () {
@@ -5255,7 +5260,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.2.13';
+      window.APP_VERSION = 'v1.3.0';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -7640,10 +7645,10 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           const rawDecoded = url.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
           const cleanUrl = normalizeSmartLinkUrl(rawDecoded);
           const safeAttr = esc(cleanUrl);
-          return `<a href="${safeAttr}" data-raw-href="${safeAttr}" target="_blank" rel="noopener noreferrer" title="${safeAttr}" style="color:#2563eb; text-decoration:underline; font-weight:600; cursor:pointer;">${txt || safeAttr}</a>`;
+          return `<a href="${safeAttr}" data-raw-href="${safeAttr}" target="_blank" rel="noopener noreferrer" title="${safeAttr}" style="color:#2563eb; text-decoration:none; font-weight:600; cursor:pointer;">${txt || safeAttr}</a>`;
         });
         // Raw url (if not preceded by href=" or >)
-        s = s.replace(/(^|[\s(])(https?:\/\/[^\s)<>]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:underline; font-weight:600;">$2</a>');
+        s = s.replace(/(^|[\s(])(https?:\/\/[^\s)<>]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none; font-weight:600;">$2</a>');
 
         // [티커/인라인코드]: `code`
         s = s.replace(/`([^`\n]+)`/g, '<code class="memo-code">$1</code>');
@@ -7817,7 +7822,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
               s.addRange(linkRange);
             }
             const safeHref = esc(cleanUrl);
-            const anchorHtml = `<a href="${safeHref}" data-raw-href="${safeHref}" title="${safeHref}" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:underline; font-weight:600; cursor:pointer;">${esc(customText)}</a>`;
+            const anchorHtml = `<a href="${safeHref}" data-raw-href="${safeHref}" title="${safeHref}" target="_blank" rel="noopener noreferrer" style="color:#2563eb; text-decoration:none; font-weight:600; cursor:pointer;">${esc(customText)}</a>`;
             document.execCommand('insertHTML', false, selText ? anchorHtml : (anchorHtml + '&nbsp;'));
             if (typeof onAfterInsert === 'function') onAfterInsert();
             editorEl.dispatchEvent(new Event('input', { bubbles: true }));
@@ -9513,7 +9518,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.2.13">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.3.0">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -9568,7 +9573,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
       border-radius: 4px;
       padding: 1px 4px;
     }
-    .memo-box a { color: #2563eb; text-decoration: underline; }
+    .memo-box a { color: #2563eb; text-decoration: none !important; }
     .memo-box .md-list { margin: 4px 0 6px 0; padding-left: 20px; }
     .memo-box .md-list li { margin: 2px 0; }
     .memo-box .md-check-item { display: flex; align-items: flex-start; gap: 6px; margin: 2px 0; }
@@ -11152,7 +11157,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.2.13</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.3.0</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -16096,7 +16101,7 @@ function getRandomAppQuote() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${esc(title)}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.2.13">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.3.0">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -16144,6 +16149,8 @@ function getRandomAppQuote() {
     .detail-memo-scroll-box code.memo-code { background: #f1f5f9; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 12px; color: #e11d48; }
     .detail-memo-scroll-box del { text-decoration: line-through; opacity: 0.7; }
     .detail-memo-scroll-box u { text-decoration: underline; text-underline-offset: 2px; }
+    .detail-memo-scroll-box a, .alert-memo-box a { color: #2563eb; text-decoration: none !important; transition: opacity 0.15s ease; }
+    .detail-memo-scroll-box a:hover, .alert-memo-box a:hover { text-decoration: none !important; opacity: 0.78; }
     .detail-memo-scroll-box strong { font-weight: 700; color: #0f172a; }
     .detail-memo-scroll-box .md-list { margin: 4px 0 6px 0; padding-left: 20px; }
     .detail-memo-scroll-box .md-list li { margin: 2px 0; }
@@ -17258,7 +17265,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.2.13',
+          version: window.APP_VERSION || 'v1.3.0',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
