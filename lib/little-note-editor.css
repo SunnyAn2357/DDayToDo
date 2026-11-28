@@ -11,7 +11,9 @@
 #zen-codeblock-tooltip,
 #table-context-menu,
 #image-context-menu,
-#markdownHelpModal {
+#zen-table-toolbar-menu,
+#markdownHelpModal,
+#videoInsertModal {
     --font-family: var(--font-sans, "Pretendard Variable", "Pretendard", "Malgun Gothic", "맑은 고딕", "Nanum Gothic", -apple-system, BlinkMacSystemFont, system-ui, sans-serif);
     --bg: #ffffff;
     --surface: #f8fafc;
@@ -35,7 +37,9 @@
 [data-theme="dark"] #zen-codeblock-tooltip,
 [data-theme="dark"] #table-context-menu,
 [data-theme="dark"] #image-context-menu,
-[data-theme="dark"] #markdownHelpModal {
+[data-theme="dark"] #zen-table-toolbar-menu,
+[data-theme="dark"] dialog#markdownHelpModal,
+[data-theme="dark"] dialog#videoInsertModal {
     --bg: #1e222b;
     --surface: #252a35;
     --surface-hover: #2f3644;
@@ -49,6 +53,13 @@
     --toast-bg: rgba(15, 23, 42, 0.95);
     --toast-text: #f8fafc;
     --toast-shadow: 0 8px 24px rgba(0, 0, 0, 0.48);
+}
+
+[data-theme="dark"] dialog#markdownHelpModal,
+[data-theme="dark"] dialog#videoInsertModal {
+    background: #1e222b !important;
+    color: #f1f5f9 !important;
+    border-color: #3a4254 !important;
 }
 
 /* ============================================================================
@@ -237,8 +248,128 @@
     color: inherit !important;
 }
 
+/* [V1.4.0 / MY 노트 V1.9.1] iOS Safari(WebKit) Flexbox 내 글자색/배경색 SVG 0px 축소 방어 */
+.little-note-scope .ql-toolbar.ql-snow .ql-color-picker {
+    width: 26px !important;
+}
+
+.little-note-scope .ql-toolbar.ql-snow .ql-color-picker .ql-picker-label {
+    justify-content: center;
+    padding: 0 !important;
+}
+
+.little-note-scope .ql-toolbar.ql-snow .ql-color-picker .ql-picker-label svg {
+    width: 17px !important;
+    height: 17px !important;
+    min-width: 17px;
+    min-height: 17px;
+    flex-shrink: 0;
+    display: block;
+    position: static !important;
+    margin: 0 !important;
+}
+
+/* [V1.4.0 / MY 노트 V1.9.2] 제목 드롭다운 한글화 & 12색 Zen Editorial 팔레트 */
 .little-note-scope .ql-snow .ql-picker.ql-header {
-    width: 85px !important;
+    width: 68px !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-label::before,
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-item:not([data-value])::before {
+    content: '본문' !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
+    content: '제목 1' !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
+    content: '제목 2' !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
+    content: '제목 3' !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-options {
+    min-width: 112px !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-item {
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="1"] {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="2"] {
+    font-size: 15.5px !important;
+    font-weight: 700 !important;
+}
+
+.little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-item[data-value="3"] {
+    font-size: 14px !important;
+    font-weight: 700 !important;
+}
+
+.little-note-scope .ql-snow .ql-color-picker .ql-picker-options,
+.little-note-scope .ql-snow .ql-background .ql-picker-options {
+    width: 190px !important;
+    padding: 8px !important;
+    display: none;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+}
+
+.little-note-scope .ql-snow .ql-color-picker.ql-expanded .ql-picker-options,
+.little-note-scope .ql-snow .ql-background.ql-expanded .ql-picker-options {
+    display: grid !important;
+}
+
+.little-note-scope .ql-snow .ql-color-picker .ql-picker-item,
+.little-note-scope .ql-snow .ql-background .ql-picker-item {
+    width: 24px !important;
+    height: 24px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 7px !important;
+    border: 1px solid rgba(148, 163, 184, 0.28) !important;
+    transition: transform 0.14s ease, box-shadow 0.14s ease !important;
+}
+
+.little-note-scope .ql-snow .ql-color-picker .ql-picker-item:hover,
+.little-note-scope .ql-snow .ql-background .ql-picker-item:hover {
+    transform: scale(1.12);
+    border-color: var(--accent) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+.little-note-scope .ql-snow .ql-color-picker .ql-picker-item.ql-selected,
+.little-note-scope .ql-snow .ql-background .ql-picker-item.ql-selected {
+    border: 2px solid var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.22);
+}
+
+.little-note-scope .ql-snow .ql-color-picker .ql-picker-item:not([data-value]),
+.little-note-scope .ql-snow .ql-background .ql-picker-item:not([data-value]) {
+    background-color: #ffffff !important;
+    background-image: linear-gradient(
+        to top right,
+        transparent calc(50% - 0.9px),
+        #ef4444 50%,
+        transparent calc(50% + 0.9px)
+    ) !important;
+}
+
+[data-theme="dark"] .little-note-scope .ql-snow .ql-color-picker .ql-picker-item:not([data-value]),
+[data-theme="dark"] .little-note-scope .ql-snow .ql-background .ql-picker-item:not([data-value]) {
+    background-color: var(--surface) !important;
 }
 
 .little-note-scope .ql-toolbar.ql-snow .ql-picker.ql-align {
@@ -269,8 +400,8 @@
 .little-note-scope .ql-snow .ql-picker-options {
     background-color: var(--bg) !important;
     border: 1px solid var(--border) !important;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
-    border-radius: 8px !important;
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18) !important;
+    border-radius: 12px !important;
     padding: 8px 0 !important;
     z-index: 10020 !important;
 }
@@ -891,12 +1022,38 @@
     position: fixed;
     background: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.22);
-    padding: 6px 0;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+    padding: 6px;
     z-index: 10060;
-    min-width: 170px;
+    min-width: 176px;
     backdrop-filter: blur(8px);
+}
+
+.zen-table-toolbar-menu {
+    min-width: 214px;
+    border-radius: 12px;
+    padding: 6px;
+}
+
+.zen-table-toolbar-menu .table-menu-item {
+    border-radius: 8px;
+    padding: 8px 10px;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.zen-tm-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.zen-tm-shortcut {
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 [data-theme="dark"] .table-context-menu {
@@ -1312,16 +1469,59 @@
     transform: translateY(0);
 }
 
+.zen-modal-icon-close {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.zen-modal-icon-close:hover {
+    background: var(--surface-hover);
+    color: var(--text-main);
+}
+
+.zen-modal-done-btn {
+    padding: 0 18px;
+    height: 34px;
+    border: none;
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+
+[data-theme="dark"] .zen-modal-done-btn {
+    color: var(--accent-contrast);
+}
+
+.zen-modal-done-btn:hover {
+    filter: brightness(0.94);
+}
+
 dialog#markdownHelpModal {
-    width: 470px;
+    width: 480px;
     max-width: calc(100vw - 24px);
-    max-height: 88vh;
+    max-height: 92vh;
     padding: 0;
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 18px;
     background: var(--bg);
     color: var(--text-main);
-    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.22);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24);
     overflow: hidden;
     user-select: none;
     caret-color: transparent;
@@ -1337,7 +1537,7 @@ dialog#markdownHelpModal::backdrop {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    background: var(--surface);
+    background: var(--bg);
     border-bottom: 1px solid var(--border);
 }
 
@@ -1364,26 +1564,48 @@ dialog#markdownHelpModal::backdrop {
 }
 
 .md-help-body {
-    padding: 10px 18px 14px;
-    max-height: 60vh;
+    padding: 0 18px 14px;
+    max-height: calc(92vh - 134px);
     overflow-y: auto;
     scrollbar-width: thin !important;
     scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
 }
 
+.md-help-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.md-help-body::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
+
+.md-help-footer {
+    padding: 12px 18px;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+}
+
 .md-help-table { width: 100%; border-collapse: collapse; text-align: left; }
 .md-help-table th {
-    padding: 7px 8px;
+    padding: 10px 8px 8px;
     border-bottom: 1px solid var(--border);
     color: var(--text-muted);
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 600;
     text-align: left;
     white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--bg);
 }
 
 .md-help-table td {
-    padding: 6px 8px;
+    padding: 5.5px 8px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
     color: var(--text-main);
     vertical-align: middle;
@@ -1394,7 +1616,7 @@ dialog#markdownHelpModal::backdrop {
 }
 
 [data-theme="dark"] .md-help-table td {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .md-help-table tr:hover td { background: rgba(0, 0, 0, 0.02); }
@@ -1403,20 +1625,212 @@ dialog#markdownHelpModal::backdrop {
 
 .md-help-table code.md-key {
     background: #f1f5f9;
-    color: #1d4ed8;
-    border: 1px solid #cbd5e1;
-    padding: 2px 5px;
-    border-radius: 4px;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    padding: 2px 7px;
+    border-radius: 6px;
     font-size: 12px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 600;
+    font-family: "Pretendard Variable", "Pretendard", "Nanum Gothic", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, sans-serif;
     display: inline-block;
     white-space: nowrap;
 }
 
 [data-theme="dark"] .md-help-table code.md-key {
-    background: rgba(255, 255, 255, 0.07);
-    color: #60a5fa;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(148, 163, 184, 0.14);
+    color: var(--text-main);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* [V1.4.0 / MY 노트 V1.9.0] 전용 Zen 동영상 삽입 모달 (#videoInsertModal) */
+dialog#videoInsertModal {
+    width: 420px;
+    max-width: calc(100vw - 24px);
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--bg);
+    color: var(--text-main);
+    box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24);
+    overflow: hidden;
+    user-select: none;
+    caret-color: transparent;
+}
+
+dialog#videoInsertModal::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+}
+
+.video-modal-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--text-main);
+    font-family: var(--font-family);
+}
+
+.video-modal-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.video-modal-title {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.video-modal-body {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.video-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.video-modal-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.video-modal-input {
+    width: 100%;
+    height: 36px;
+    padding: 0 11px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: var(--surface);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 13px;
+    box-sizing: border-box;
+    outline: none;
+    user-select: text;
+    caret-color: auto;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.video-modal-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.14);
+}
+
+.video-modal-hint {
+    font-size: 11.5px;
+    color: var(--text-muted);
+}
+
+.video-modal-footer {
+    padding: 12px 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.video-modal-btn-cancel {
+    height: 34px;
+    padding: 0 15px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-main);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.video-modal-btn-cancel:hover {
+    background: var(--surface-hover);
+}
+
+.video-modal-btn-submit {
+    height: 34px;
+    padding: 0 18px;
+    border-radius: 9px;
+    border: none;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+}
+
+[data-theme="dark"] .video-modal-btn-submit {
+    color: var(--accent-contrast);
+}
+
+.video-modal-btn-submit:hover {
+    filter: brightness(0.94);
+}
+
+/* [V1.4.0 / MY 노트 V1.9.4] 모바일 툴바 터치 치수 최적화 */
+@media (max-width: 768px) {
+    .little-note-scope .ql-toolbar.ql-snow {
+        padding: 6px 10px !important;
+        min-height: 42px !important;
+        gap: 7px !important;
+    }
+    .little-note-scope .ql-toolbar.ql-snow .ql-formats {
+        gap: 2px !important;
+        margin: 0 6px 0 0 !important;
+    }
+    .little-note-scope .ql-toolbar.ql-snow .ql-formats::after {
+        right: -4px;
+    }
+    .little-note-scope .ql-toolbar.ql-snow button {
+        width: 27px !important;
+        height: 27px !important;
+        padding: 4px !important;
+    }
+    .little-note-scope .ql-toolbar.ql-snow button svg {
+        width: 17.5px !important;
+        height: 17.5px !important;
+    }
+    .little-note-scope .ql-toolbar.ql-snow button i {
+        font-size: 15px !important;
+    }
+    .little-note-scope .ql-toolbar.ql-snow .ql-color-picker {
+        width: 28px !important;
+        height: 28px !important;
+    }
+    .little-note-scope .ql-toolbar.ql-snow .ql-color-picker .ql-picker-label svg {
+        width: 18.5px !important;
+        height: 18.5px !important;
+        min-width: 18.5px;
+        min-height: 18.5px;
+    }
+    .little-note-scope .ql-toolbar.ql-snow .ql-picker.ql-align {
+        width: 27px !important;
+        height: 27px !important;
+    }
+    .little-note-scope .ql-toolbar.ql-snow .ql-picker.ql-align .ql-picker-label svg {
+        width: 17.5px !important;
+        height: 17.5px !important;
+    }
+    .little-note-scope .ql-snow .ql-picker.ql-header {
+        width: 68px !important;
+        height: 27px !important;
+        line-height: 27px !important;
+        font-size: 13px !important;
+    }
 }
 
 .md-key-lines { display: flex; flex-direction: column; gap: 4px; line-height: 1.4; }

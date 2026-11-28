@@ -6,7 +6,7 @@
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="color-scheme" content="light">
-  <title>MY 일정관리 V1.3.0</title>
+  <title>MY 일정관리 V1.4.0</title>
   <!-- Favicon (Desktop & Browser Tab) -->
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png">
@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="./lib/fontawesome/css/all.min.css">
   <link rel="stylesheet" href="./lib/highlight/atom-one-dark.min.css">
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.3.0">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.4.0">
 
   <style>
     /* DESIGN TOKENS & RESET */
@@ -119,6 +119,12 @@
 
     ::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
+    }
+
+    ::-webkit-scrollbar-button {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
     }
 
     html {
@@ -3292,21 +3298,19 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        border-radius: 7px;
-        font-size: 13px;
+        background: transparent;
+        border: none;
+        border-radius: 999px;
+        font-size: 15px;
         cursor: pointer;
         color: #64748b;
         line-height: 1;
         padding: 0;
-        transition: all 0.15s ease;
+        transition: background-color 0.16s ease, color 0.16s ease;
       }
       .spec-close-btn:hover {
-        background: #fee2e2;
-        color: #ef4444;
-        border-color: #fca5a5;
-        transform: scale(1.05);
+        background: #f1f5f9;
+        color: #0f172a;
       }
       .spec-close-btn:active {
         transform: scale(0.95);
@@ -3952,6 +3956,316 @@
       --surface: #ffffff;
       color: #0f172a !important;
       background: #ffffff !important;
+    }
+
+    /* [V1.4.0] 통합 Zen 다이얼로그 · 특수문자 · 링크 입력 모달 (화이트/다크 완벽 대응) */
+    dialog#appConfirmModal {
+      --zm-bg: #ffffff;
+      --zm-surface: #f8fafc;
+      --zm-surface-hover: #f1f5f9;
+      --zm-text: #0f172a;
+      --zm-muted: #475569;
+      --zm-border: #e2e8f0;
+      --zm-accent: #4f46e5;
+      --zm-accent-contrast: #ffffff;
+      width: 392px;
+      max-width: calc(100vw - 24px);
+      padding: 0;
+      border: 1px solid var(--zm-border) !important;
+      border-radius: 18px !important;
+      background: var(--zm-bg) !important;
+      color: var(--zm-text) !important;
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.24) !important;
+      overflow: hidden;
+      user-select: none;
+      caret-color: transparent;
+    }
+    dialog#appConfirmModal::backdrop,
+    dialog#specialCharModal::backdrop,
+    dialog#linkInputModal::backdrop {
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    [data-theme="dark"] dialog#appConfirmModal {
+      --zm-bg: #1e222b;
+      --zm-surface: #252a35;
+      --zm-surface-hover: #2f3644;
+      --zm-text: #f1f5f9;
+      --zm-muted: #94a3b8;
+      --zm-border: #3a4254;
+      --zm-accent: #78a9ff;
+      --zm-accent-contrast: #0f172a;
+      box-shadow: 0 24px 52px rgba(0, 0, 0, 0.56) !important;
+    }
+    .zen-confirm-card {
+      width: 100%;
+      background: var(--zm-bg);
+      color: var(--zm-text);
+      font-family: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+    .zen-confirm-head {
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--zm-border);
+      background: var(--zm-bg);
+    }
+    .zen-confirm-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(79, 70, 229, 0.12);
+      color: var(--zm-accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .zen-confirm-icon.is-danger {
+      background: rgba(239, 68, 68, 0.14);
+      color: #ef4444;
+    }
+    .zen-confirm-icon.is-info {
+      background: rgba(59, 130, 246, 0.14);
+      color: #2563eb;
+    }
+    [data-theme="dark"] .zen-confirm-icon.is-info {
+      color: #60a5fa;
+    }
+    .zen-confirm-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--zm-text);
+      flex: 1;
+      line-height: 1.3;
+    }
+    .zen-confirm-close {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: none;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--zm-muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.16s ease, color 0.16s ease;
+    }
+    .zen-confirm-close:hover {
+      background: var(--zm-surface-hover);
+      color: var(--zm-text);
+    }
+    .zen-confirm-body {
+      padding: 18px 22px;
+      font-size: 13.8px;
+      line-height: 1.62;
+      color: var(--zm-text);
+      background: var(--zm-bg);
+      word-break: keep-all;
+    }
+    .zen-confirm-foot {
+      padding: 12px 18px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      background: var(--zm-surface);
+      border-top: 1px solid var(--zm-border);
+    }
+    .zen-confirm-btn-cancel {
+      height: 34px;
+      padding: 0 15px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: var(--zm-bg);
+      border: 1px solid var(--zm-border);
+      color: var(--zm-text);
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+    .zen-confirm-btn-cancel:hover {
+      background: var(--zm-surface-hover);
+    }
+    .zen-confirm-btn-ok {
+      height: 34px;
+      padding: 0 18px;
+      font-size: 12.5px;
+      font-weight: 700;
+      background: var(--zm-accent);
+      border: none;
+      color: var(--zm-accent-contrast);
+      border-radius: 9px;
+      cursor: pointer;
+      transition: filter 0.15s ease;
+    }
+    .zen-confirm-btn-ok:hover {
+      filter: brightness(0.94);
+    }
+    .zen-confirm-btn-ok.is-danger {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    /* [V1.4.0] 특수문자 & 하이퍼링크 모달 18px Zen + 화이트/다크 대응 */
+    dialog#specialCharModal {
+      width: 356px;
+      max-width: 92vw;
+      padding: 0;
+      border-radius: 18px !important;
+      border: 1px solid #e2e8f0 !important;
+      background: #ffffff !important;
+      color: #0f172a !important;
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.22) !important;
+      overflow: hidden;
+    }
+    dialog#specialCharModal .spec-head {
+      padding: 12px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+    }
+    dialog#specialCharModal #specialCharGrid {
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      max-height: 210px;
+      overflow-y: auto;
+      background: #ffffff;
+    }
+    dialog#specialCharModal #specialCharRecentBar {
+      padding: 9px 16px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 11.5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 42px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    dialog#specialCharModal .spec-recent-label {
+      font-weight: 700;
+      color: #475569;
+      flex: none;
+      font-size: 11.5px;
+    }
+    [data-theme="dark"] dialog#specialCharModal {
+      border-color: #3a4254 !important;
+      background: #1e222b !important;
+      color: #f1f5f9 !important;
+      box-shadow: 0 24px 52px rgba(0, 0, 0, 0.56) !important;
+    }
+    [data-theme="dark"] dialog#specialCharModal .spec-head,
+    [data-theme="dark"] dialog#specialCharModal #specialCharGrid {
+      background: #1e222b;
+      border-bottom-color: #3a4254;
+    }
+    [data-theme="dark"] dialog#specialCharModal #specialCharRecentBar {
+      background: #252a35;
+      border-top-color: #3a4254;
+    }
+    [data-theme="dark"] dialog#specialCharModal .spec-recent-label {
+      color: #94a3b8;
+    }
+    [data-theme="dark"] dialog#specialCharModal .spec-tab-btn {
+      background: #252a35;
+      border-color: #3a4254;
+      color: #cbd5e1;
+    }
+    [data-theme="dark"] dialog#specialCharModal .spec-tab-btn:hover {
+      background: #2f3644;
+      color: #ffffff;
+    }
+    [data-theme="dark"] dialog#specialCharModal .spec-tab-btn.active {
+      background: #78a9ff;
+      border-color: #78a9ff;
+      color: #0f172a;
+    }
+    [data-theme="dark"] dialog#specialCharModal .spec-close-btn {
+      background: transparent;
+      border-color: transparent;
+      color: #94a3b8;
+    }
+    [data-theme="dark"] dialog#specialCharModal .spec-close-btn:hover {
+      background: #2f3644;
+      color: #f1f5f9;
+    }
+    [data-theme="dark"] dialog#specialCharModal .special-char-btn,
+    [data-theme="dark"] dialog#specialCharModal .recent-char-item {
+      background: #252a35;
+      border-color: #3a4254;
+      color: #f1f5f9;
+    }
+    [data-theme="dark"] dialog#specialCharModal .special-char-btn:hover,
+    [data-theme="dark"] dialog#specialCharModal .recent-char-item:hover {
+      background: #2f3644;
+      border-color: #78a9ff;
+      color: #93c5fd;
+    }
+
+    dialog#linkInputModal {
+      border-radius: 18px !important;
+      overflow: hidden;
+    }
+    [data-theme="dark"] dialog#linkInputModal {
+      background: #1e222b !important;
+      border-color: #3a4254 !important;
+      color: #f1f5f9 !important;
+      box-shadow: 0 24px 52px rgba(0, 0, 0, 0.56) !important;
+    }
+    [data-theme="dark"] dialog#linkInputModal #linkInputForm,
+    [data-theme="dark"] dialog#linkInputModal .modal-head,
+    [data-theme="dark"] dialog#linkInputModal .modal-body {
+      background: #1e222b !important;
+      border-color: #3a4254 !important;
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] dialog#linkInputModal .modal-foot {
+      background: #252a35 !important;
+      border-color: #3a4254 !important;
+    }
+    [data-theme="dark"] dialog#linkInputModal h2,
+    [data-theme="dark"] dialog#linkInputModal strong {
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] dialog#linkInputModal label,
+    [data-theme="dark"] dialog#linkInputModal div {
+      color: #94a3b8;
+    }
+    [data-theme="dark"] dialog#linkInputModal input.control {
+      background: #252a35 !important;
+      border-color: #3a4254 !important;
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] dialog#linkInputModal #pickLinkFileBtn,
+    [data-theme="dark"] dialog#linkInputModal #pickLinkFolderBtn,
+    [data-theme="dark"] dialog#linkInputModal #cancelLinkInputBtn {
+      background: #252a35 !important;
+      border-color: #3a4254 !important;
+      color: #f1f5f9 !important;
+    }
+    [data-theme="dark"] dialog#linkInputModal #unlinkLinkInputBtn {
+      background: #252a35 !important;
+      border-color: rgba(248, 113, 113, 0.4) !important;
+      color: #f87171 !important;
+    }
+    [data-theme="dark"] dialog#linkInputModal button[type="submit"] {
+      background: #78a9ff !important;
+      border-color: #78a9ff !important;
+      color: #0f172a !important;
     }
 
     /* PRINT PROTECTION: ALWAYS PURE WHITE PAPER WITH BLACK TEXT */
@@ -5215,8 +5529,9 @@
   <dialog id="settings"></dialog>
   <dialog id="reportModal" class="modal"><div id="reportModalContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="dailyBriefingModal" class="modal"><div id="dailyBriefingContainer" style="width:100%; height:100%;"></div></dialog>
-  <dialog id="linkInputModal" class="modal" style="width:390px; max-width:calc(100vw - 24px); padding:0; border-radius:12px; border:1px solid #cbd5e1; box-shadow:0 20px 25px -5px rgba(15,23,42,0.18);"></dialog>
+  <dialog id="linkInputModal" class="modal" style="width:390px; max-width:calc(100vw - 24px); padding:0; border-radius:18px; border:1px solid #cbd5e1; box-shadow:0 20px 25px -5px rgba(15,23,42,0.18);"></dialog>
   <dialog id="markdownHelpModal"></dialog>
+  <dialog id="videoInsertModal"></dialog>
   <dialog id="urgentAlertModal" class="modal"><div id="urgentAlertContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="overtimeAlertModal" class="modal"><div id="overtimeAlertContainer" style="width:100%; height:100%;"></div></dialog>
   <dialog id="ddayAlertModal" class="modal"><div id="ddayAlertContainer" style="width:100%; height:100%;"></div></dialog>
@@ -5224,20 +5539,20 @@
   <dialog id="storeModal"></dialog>
 
   
-  <!-- 특수문자 팔레트 팝업 모달 [V1.3.3: 상하좌우 여백 확대, 28px 컴팩트 버튼 & 스쿼클 12px 프레임] -->
-  <dialog id="specialCharModal" style="border:1px solid #cbd5e1; border-radius:12px; padding:0; box-shadow:0 12px 30px -4px rgba(0,0,0,0.18); width:350px; max-width:92vw; background:#ffffff;">
-    <div style="padding:10px 14px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-top-left-radius:11px; border-top-right-radius:11px;">
+  <!-- 특수문자 팔레트 팝업 모달 [V1.4.0: 18px Zen 카드, 화이트/다크 통합 대응] -->
+  <dialog id="specialCharModal">
+    <div class="spec-head">
       <div style="display:flex; gap:6px; align-items:center;">
         <button type="button" id="tabSpecialChar1" class="spec-tab-btn active">특수문자1</button>
         <button type="button" id="tabSpecialChar2" class="spec-tab-btn">특수문자2</button>
         <button type="button" id="tabSpecialChar3" class="spec-tab-btn">이모티콘</button>
       </div>
-      <button type="button" id="closeSpecialCharBtn" class="spec-close-btn" title="닫기 (Esc)">✕</button>
+      <button type="button" id="closeSpecialCharBtn" class="spec-close-btn" title="닫기 (Esc)" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div id="specialCharGrid" style="padding:12px 14px; display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; max-height:210px; overflow-y:auto;">
+    <div id="specialCharGrid">
     </div>
-    <div id="specialCharRecentBar" style="padding:8px 14px; border-top:1px solid #f1f5f9; background:#f8fafc; font-size:11.5px; display:flex; align-items:center; gap:6px; min-height:42px; box-sizing:border-box; border-bottom-left-radius:11px; border-bottom-right-radius:11px; overflow:hidden;">
-      <span style="font-weight:700; color:#475569; flex:none; font-size:11.5px;">최근 입력:</span>
+    <div id="specialCharRecentBar">
+      <span class="spec-recent-label">최근 입력:</span>
       <div id="recentCharList" style="display:flex; gap:4px; align-items:center; flex:1; overflow-x:auto; -webkit-overflow-scrolling:touch;"></div>
     </div>
   </dialog>
@@ -5251,7 +5566,7 @@
 
   <script src="./lib/highlight/highlight.min.js"></script>
   <script src="./lib/quill/quill.js"></script>
-  <script src="./lib/little-note-editor.js?v=1.3.0"></script>
+  <script src="./lib/little-note-editor.js?v=1.4.0"></script>
 
   <script>
     (function () {
@@ -5260,7 +5575,7 @@
       /* =====================================================================
        * 앱 버전 식별 정보 (F12 개발자 도구 콘솔 확인용)
        * ===================================================================== */
-      window.APP_VERSION = 'v1.3.0';
+      window.APP_VERSION = 'v1.4.0';
 window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title); var tm = t.time ? String(t.time).trim() : ''; var loc = t.location ? String(t.location).trim() : ''; return (tm ? '[' + tm + '] ' : '') + s + (loc ? ' (' + loc + ')' : ''); };
       window.APP_MODE = '오프라인 로컬 전용';
       console.log(
@@ -7346,8 +7661,15 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         const delBtn = $('deleteStoreModalBtn');
         if (delBtn && isEdit) {
-          delBtn.onclick = () => {
-            if (confirm(`[${target.name}] 일정표를 삭제하시겠습니까?\n이 일정표에 등록된 일정 데이터가 함께 삭제됩니다.`)) {
+          delBtn.onclick = async () => {
+            const ok = await appConfirm({
+              title: '일정표 삭제',
+              message: `[${target.name}] 일정표를 삭제하시겠습니까?\n이 일정표에 등록된 일정 데이터가 함께 삭제됩니다.`,
+              confirmText: '삭제',
+              cancelText: '취소',
+              isDanger: true
+            });
+            if (ok) {
               storageRemove(getStoreKey(target.id));
               const remaining = list.filter(s => String(s.id) !== String(target.id));
               saveStoreList(remaining);
@@ -7364,11 +7686,11 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           };
         }
 
-        $('storeModalForm').onsubmit = (e) => {
+        $('storeModalForm').onsubmit = async (e) => {
           e.preventDefault();
           const nameVal = ($('storeModalNameInput')?.value || '').trim();
           if (!nameVal) {
-            alert('일정표 이름을 입력하세요.');
+            await appAlert('일정표 이름을 입력하세요.');
             $('storeModalNameInput')?.focus();
             return;
           }
@@ -8303,61 +8625,73 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
       }
 
       
-      /* [V1.7.0] Zen 커스텀 모달 다이얼로그 시스템 (브라우저 기본 confirm/alert 완전 대체) */
-      function appConfirm({ title = 'MY 일정관리', message = '', confirmText = '확인', cancelText = '취소', isDanger = false } = {}) {
+      /* [V1.4.0] 통합 Zen 커스텀 모달 다이얼로그 시스템 (화이트/다크 완벽 대응, OS 기본 confirm/alert 100% 대체) */
+      function appConfirm({ title = 'MY 일정관리', message = '', confirmText = '확인', cancelText = '취소', isDanger = false, isAlertOnly = false } = {}) {
         return new Promise((resolve) => {
           let modal = $('appConfirmModal');
           if (!modal) {
             modal = document.createElement('dialog');
             modal.id = 'appConfirmModal';
-            modal.style.border = 'none';
-            modal.style.padding = '0';
-            modal.style.background = 'transparent';
-            modal.style.borderRadius = '14px';
-            modal.style.boxShadow = '0 25px 50px -12px rgba(15, 23, 42, 0.25)';
-            modal.style.maxWidth = '90vw';
-            modal.style.overflow = 'hidden';
             document.body.appendChild(modal);
           }
+          if (modal.open) {
+            try { modal.close(); } catch (_) {}
+          }
+          const iconClass = isDanger ? 'is-danger' : (isAlertOnly ? 'is-info' : '');
+          const iconSvg = isDanger
+            ? '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+            : (isAlertOnly
+              ? '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+              : '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>');
           modal.innerHTML = `
-            <div class="modal-frame" style="width:360px; max-width:100%; background:#ffffff; border-radius:14px; box-sizing:border-box; overflow:hidden; border:1px solid #e2e8f0; font-family:inherit;">
-              <div class="modal-head" style="padding:16px 24px 14px; display:flex; align-items:center; gap:8px; border-bottom:1px solid #f1f5f9; background:#ffffff;">
-                <div style="width:26px; height:26px; border-radius:7px; background:#eef2ff; display:flex; align-items:center; justify-content:center; color:#4f46e5; flex-shrink:0;">
-                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                </div>
-                <h3 style="margin:0; font-size:14px; font-weight:700; color:#0f172a; flex:1;">${esc(title)}</h3>
+            <div class="zen-confirm-card">
+              <div class="zen-confirm-head">
+                <div class="zen-confirm-icon ${iconClass}">${iconSvg}</div>
+                <h3 class="zen-confirm-title">${esc(title)}</h3>
+                <button type="button" id="appConfirmCloseBtn" class="zen-confirm-close" aria-label="닫기" title="닫기 (Esc)"><i class="fa-solid fa-xmark"></i></button>
               </div>
-              <div class="modal-body" style="padding:20px 24px; color:#334155; font-size:13.5px; line-height:1.6; background:#ffffff;">
+              <div class="zen-confirm-body">
                 ${typeof message === 'string' && message.includes('<') ? message : esc(message).replace(/\n/g, '<br>')}
               </div>
-              <div class="modal-foot" style="padding:12px 24px 16px; display:flex; justify-content:flex-end; gap:8px; background:#f8fafc; border-top:1px solid #f1f5f9;">
-                <button type="button" id="appConfirmCancelBtn" class="btn" style="height:32px; padding:0 14px; font-size:12.5px; font-weight:600; background:#ffffff; border:1px solid #cbd5e1; color:#475569; border-radius:10px; cursor:pointer;">${esc(cancelText)}</button>
-                <button type="button" id="appConfirmOkBtn" class="btn" style="height:32px; padding:0 18px; font-size:12.5px; font-weight:700; background:${isDanger ? '#ef4444' : '#4f46e5'}; border:1px solid ${isDanger ? '#dc2626' : '#4338ca'}; color:#ffffff; border-radius:10px; box-shadow:0 2px 6px rgba(79,70,229,0.28); cursor:pointer;">${esc(confirmText)}</button>
+              <div class="zen-confirm-foot">
+                ${isAlertOnly ? '' : `<button type="button" id="appConfirmCancelBtn" class="zen-confirm-btn-cancel">${esc(cancelText)}</button>`}
+                <button type="button" id="appConfirmOkBtn" class="zen-confirm-btn-ok ${isDanger ? 'is-danger' : ''}">${esc(confirmText)}</button>
               </div>
             </div>`;
 
+          let settled = false;
           const cleanup = (result) => {
-            modal.close();
+            if (settled) return;
+            settled = true;
+            if (modal.open) modal.close();
+            safeHistoryBack('appConfirmModal');
             resolve(result);
           };
+          modal._closeHandler = () => cleanup(isAlertOnly ? true : false);
 
           const okBtn = $('appConfirmOkBtn');
           const cancelBtn = $('appConfirmCancelBtn');
+          const closeBtn = $('appConfirmCloseBtn');
           if (okBtn) okBtn.onclick = () => cleanup(true);
           if (cancelBtn) cancelBtn.onclick = () => cleanup(false);
+          if (closeBtn) closeBtn.onclick = () => cleanup(isAlertOnly ? true : false);
+          modal.onclick = (e) => { if (e.target === modal) cleanup(isAlertOnly ? true : false); };
           modal.oncancel = (e) => {
             e.preventDefault();
-            cleanup(false);
+            cleanup(isAlertOnly ? true : false);
           };
 
           modal.showModal();
+          safePushModalState('appConfirmModal');
           if (okBtn) okBtn.focus();
         });
       }
 
-      function appAlert(message, title = 'MY 일정관리') {
-        toast(typeof message === 'string' ? message.replace(/<[^>]*>/g, '') : String(message));
+      function appAlert(message, title = '안내') {
+        return appConfirm({ title, message, confirmText: '확인', isAlertOnly: true });
       }
+      window.appConfirm = appConfirm;
+      window.appAlert = appAlert;
 
       function toast(message) {
         const host = $('toasts');
@@ -9367,6 +9701,8 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           }
         } catch (e) {}
       }
+      window.safePushModalState = safePushModalState;
+      window.safeHistoryBack = safeHistoryBack;
 
       let editTarget = null;
       let holidayHasTask = false;
@@ -9518,7 +9854,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
   <meta charset="utf-8">
   <title>${esc(t.title || '일정 보고서')}</title>
   <link rel="stylesheet" href="${esc(libBase)}lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.3.0">
+  <link rel="stylesheet" href="${esc(libBase)}lib/little-note-editor.css?v=1.4.0">
   <style>
     @page { size: A4; margin: 20mm; }
     body {
@@ -10059,10 +10395,10 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
         }
 
         // [V1.5.1] 일정 저장 핵심 함수 (버튼 클릭 및 Enter 키 공통 호출)
-        function doSaveTask() {
+        async function doSaveTask() {
           const title = ($('modalTitle')?.value || '').trim();
           if (!title) {
-            alert('일정 제목을 입력하세요.');
+            await appAlert('일정 제목을 입력하세요.');
             $('modalTitle')?.focus();
             return;
           }
@@ -10070,7 +10406,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
           const startDate = $('modalStartDate')?.value || editTarget.startDate || editTarget.dueDate || today();
           const dueDate = $('modalDueDate')?.value || editTarget.dueDate || editTarget.startDate || today();
           if (dueDate < startDate) {
-            alert('마감일은 시작일 이후여야 합니다.');
+            await appAlert('마감일은 시작일 이후여야 합니다.');
             return;
           }
 
@@ -10701,15 +11037,25 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
         ['recModalStartDate', 'recModalEndDate'].forEach(id => attachDate4Digits($(id)));
 
-        $('recurringForm').onsubmit = e => {
+        $('recurringForm').onsubmit = async e => {
           e.preventDefault();
           const title = $('recModalTitle').value.trim();
-          if (!title) return alert('제목을 입력하세요.');
+          if (!title) {
+            await appAlert('제목을 입력하세요.');
+            $('recModalTitle')?.focus();
+            return;
+          }
 
           const startDate = $('recModalStartDate').value;
           const endDate = $('recModalEndDate').value;
-          if (!startDate) return alert('시작일을 입력하세요.');
-          if (endDate && endDate < startDate) return alert('종료일이 시작일보다 빠릅니다.');
+          if (!startDate) {
+            await appAlert('시작일을 입력하세요.');
+            return;
+          }
+          if (endDate && endDate < startDate) {
+            await appAlert('종료일이 시작일보다 빠릅니다.');
+            return;
+          }
 
           const checkedRec = document.querySelector('#editor .rec-check:checked');
           let rec = 'none';
@@ -10721,7 +11067,14 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
 
           const next = clone(data);
           if (rec === 'none') {
-            if (confirm('반복 주기가 선택되지 않았습니다.\n반복 일정을 해제하시겠습니까?\n\n- 확인: 앞으로 새 반복 일정이 생성되지 않으며, 이미 달력에 있는 일정들은 일반 일정으로 전환됩니다.\n- 취소: 반복 주기를 다시 선택합니다.')) {
+            const ok = await appConfirm({
+              title: '반복 일정 해제',
+              message: '반복 주기가 선택되지 않았습니다.\n반복 일정을 해제하시겠습니까?\n\n- 확인: 앞으로 새 반복 일정이 생성되지 않으며, 이미 달력에 있는 일정들은 일반 일정으로 전환됩니다.\n- 취소: 반복 주기를 다시 선택합니다.',
+              confirmText: '해제',
+              cancelText: '취소',
+              isDanger: true
+            });
+            if (ok) {
               if (next.recurrings) {
                 next.recurrings = next.recurrings.filter(x => x.id !== editingRule.id);
               }
@@ -11157,7 +11510,7 @@ window.chipLabel = function (t) { var s = String(t.title == null ? '' : t.title)
                 <div style="display:flex; flex-direction:column; gap:1px;">
                   <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:12.5px; font-weight:700; color:#1e293b;">MY 일정관리</span>
-                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.3.0</span>
+                    <span style="font-size:11px; font-weight:500; color:#64748b;">v1.4.0</span>
                   </div>
                   <div style="font-size:10.5px; color:#64748b; line-height:1.3;">
                     스마트 일정 관리 및 D-Day 업무 도구
@@ -16101,7 +16454,7 @@ function getRandomAppQuote() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${esc(title)}</title>
   <link rel="stylesheet" href="./lib/quill/quill.snow.css">
-  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.3.0">
+  <link rel="stylesheet" href="./lib/little-note-editor.css?v=1.4.0">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
@@ -17265,7 +17618,7 @@ function getRandomAppQuote() {
         } catch (e) {}
         return {
           backupType: 'my_todo_full_v1',
-          version: window.APP_VERSION || 'v1.3.0',
+          version: window.APP_VERSION || 'v1.4.0',
           exportedAt: latestUpdatedAt,
           activeStoreId,
           storeList,
@@ -17388,7 +17741,7 @@ function getRandomAppQuote() {
             const parsed = JSON.parse(content);
             executeImportMerge(parsed, file.name);
           } catch (err) {
-            alert('유효한 .dday 또는 JSON 파일이 아닙니다.');
+            appAlert('유효한 .dday 또는 JSON 파일이 아닙니다.', '파일 오류');
           }
         };
         reader.readAsText(file);
@@ -17401,8 +17754,8 @@ function getRandomAppQuote() {
           const ok = await appConfirm({
             title: 'MY 일정관리 전체 백업 복원',
             message: `
-              <div style="font-weight:700; color:#1e293b; margin-bottom:8px; font-size:14px; word-break:break-all;">[${esc(fileName || '전체 백업 파일')}]에서</div>
-              <div style="color:#475569; font-size:13.5px; line-height:1.5;">총 <b style="color:#4f46e5;">${storeEntries.length}개 일정표 (${totalTasks}건)</b>로 전체 복원하시겠습니까?</div>
+              <div style="font-weight:700; color:var(--zm-text, #1e293b); margin-bottom:8px; font-size:14px; word-break:break-all;">[${esc(fileName || '전체 백업 파일')}]에서</div>
+              <div style="color:var(--zm-muted, #475569); font-size:13.5px; line-height:1.5;">총 <b style="color:var(--zm-accent, #4f46e5);">${storeEntries.length}개 일정표 (${totalTasks}건)</b>로 전체 복원하시겠습니까?</div>
             `,
             confirmText: '전체 복원',
             cancelText: '취소'
@@ -17446,8 +17799,8 @@ function getRandomAppQuote() {
 
         const count = tasksToMerge.length;
         const confirmMsg = `
-          <div style="font-weight:700; color:#1e293b; margin-bottom:8px; font-size:14px; word-break:break-all;">[${esc(fileName || '선택한 파일')}]에서</div>
-          <div style="color:#475569; font-size:13.5px; line-height:1.5;">총 <b style="color:#4f46e5; font-size:15px;">${count}건</b>의 일정을 현재 일정표에 추가하시겠습니까?</div>
+          <div style="font-weight:700; color:var(--zm-text, #1e293b); margin-bottom:8px; font-size:14px; word-break:break-all;">[${esc(fileName || '선택한 파일')}]에서</div>
+          <div style="color:var(--zm-muted, #475569); font-size:13.5px; line-height:1.5;">총 <b style="color:var(--zm-accent, #4f46e5); font-size:15px;">${count}건</b>의 일정을 현재 일정표에 추가하시겠습니까?</div>
         `;
 
         const ok = await appConfirm({
@@ -17570,7 +17923,7 @@ function getRandomAppQuote() {
         });
       }
 
-      function handleAction(e) {
+      async function handleAction(e) {
         const b = e.target.closest('[data-action]');
         if (!b) return;
         const a = b.dataset.action;
@@ -17658,7 +18011,7 @@ function getRandomAppQuote() {
           safeHistoryBack('detail');
         }
         else if (a === 'deleteTask') {
-          if (confirm('일정을 삭제하시겠습니까?')) {
+          if (await appConfirm({ title: '일정 삭제', message: '일정을 삭제하시겠습니까?', confirmText: '삭제', cancelText: '취소', isDanger: true })) {
             const next = clone(data);
             const taskId = b.dataset.id;
             const t = next.tasks.find(x => x.id === taskId);
@@ -17682,7 +18035,7 @@ function getRandomAppQuote() {
         }
         else if (a === 'deleteRecurringRule') {
           const ruleId = b.dataset.id;
-          if (confirm('반복 일정을 해제(삭제)하시겠습니까?\n\n- 앞으로 새로운 반복 일정이 더 이상 생성되지 않습니다.\n- 이미 달력에 생성된 일정들은 그대로 유지됩니다.')) {
+          if (await appConfirm({ title: '반복 일정 해제', message: '반복 일정을 해제(삭제)하시겠습니까?\n\n- 앞으로 새로운 반복 일정이 더 이상 생성되지 않습니다.\n- 이미 달력에 생성된 일정들은 그대로 유지됩니다.', confirmText: '해제', cancelText: '취소', isDanger: true })) {
             const next = clone(data);
             if (next.recurrings) {
               next.recurrings = next.recurrings.filter(r => r.id !== ruleId);
@@ -17779,7 +18132,7 @@ function getRandomAppQuote() {
           showNotifications();
         }
         else if (a === 'clearNotifications') {
-          if (confirm('알림 기록을 모두 삭제하시겠습니까?')) {
+          if (await appConfirm({ title: '알림 기록 삭제', message: '알림 기록을 모두 삭제하시겠습니까?', confirmText: '삭제', cancelText: '취소', isDanger: true })) {
             const next = clone(data);
             next.notifications = [];
             if (commit(next)) {
@@ -17924,7 +18277,7 @@ function getRandomAppQuote() {
             toast('이미 삭제된 일정입니다.');
             return;
           }
-          if (!confirm('이 일정을 삭제하시겠습니까?')) return;
+          if (!(await appConfirm({ title: '일정 삭제', message: '이 일정을 삭제하시겠습니까?', confirmText: '삭제', cancelText: '취소', isDanger: true }))) return;
 
           if (found.isActive) {
             const next = clone(data);
@@ -18006,15 +18359,22 @@ function getRandomAppQuote() {
         else if (a === 'exportRangeBackup') {
           const sDate = $('exportRangeStart')?.value;
           const eDate = $('exportRangeEnd')?.value;
-          if (!sDate || !eDate) return alert('내보낼 시작일과 종료일을 모두 선택하세요.');
-          if (eDate < sDate) return alert('종료일은 시작일 이후여야 합니다.');
+          if (!sDate || !eDate) {
+            await appAlert('내보낼 시작일과 종료일을 모두 선택하세요.');
+            return;
+          }
+          if (eDate < sDate) {
+            await appAlert('종료일은 시작일 이후여야 합니다.');
+            return;
+          }
           const filteredTasks = (data.tasks || []).filter(t => {
             const start = t.startDate || t.dueDate;
             const end = t.dueDate;
             return end >= sDate && start <= eDate;
           });
           if (!filteredTasks.length) {
-            return alert('선택한 기간에 해당하는 일정이 없습니다.');
+            await appAlert('선택한 기간에 해당하는 일정이 없습니다.');
+            return;
           }
           const list = getStoreList();
           const curStore = list.find(s => String(s.id) === String(getActiveStoreId())) || { name: '일정표' };
@@ -18035,7 +18395,7 @@ function getRandomAppQuote() {
         else if (a === 'resetData') {
           const list = getStoreList();
           const curStore = list.find(s => String(s.id) === String(getActiveStoreId())) || { name: '현재 일정표' };
-          if (confirm(`[${curStore.name}]의 모든 일정을 초기화하시겠습니까? 되돌릴 수 없습니다.`)) {
+          if (await appConfirm({ title: '일정 초기화', message: `[${curStore.name}]의 모든 일정을 초기화하시겠습니까?\n되돌릴 수 없습니다.`, confirmText: '초기화', cancelText: '취소', isDanger: true })) {
             commit(blank());
             $('settings').close();
             safeHistoryBack('settings');
@@ -18175,14 +18535,18 @@ function getRandomAppQuote() {
         }, 360);
       }
 
-      function triggerCamouflageAuth() {
+      async function triggerCamouflageAuth() {
         if (!currentUser) {
           loginGoogle();
         } else {
           const emailStr = currentUser.email || 'Google 계정';
-          const wantLogout = confirm(
-            `[클라우드 동기화 연결됨]\n계정: ${emailStr}\n\n로그아웃하시겠습니까?\n(취소를 누르면 현재 일정을 즉시 클라우드에 동기화합니다)`
-          );
+          const wantLogout = await appConfirm({
+            title: '클라우드 동기화',
+            message: `[클라우드 동기화 연결됨]\n계정: ${emailStr}\n\n로그아웃하시겠습니까?\n(취소를 누르면 현재 일정을 즉시 클라우드에 동기화합니다)`,
+            confirmText: '로그아웃',
+            cancelText: '지금 동기화',
+            isDanger: true
+          });
           if (wantLogout) {
             logoutGoogle();
           } else {
@@ -18561,11 +18925,11 @@ function getRandomAppQuote() {
 
       async function loginGoogle() {
         if (typeof firebase === 'undefined' || !firebaseAuth) {
-          alert('클라우드 모듈을 불러오지 못했습니다. 네트워크 연결 상태를 확인해 주세요.');
+          await appAlert('클라우드 모듈을 불러오지 못했습니다. 네트워크 연결 상태를 확인해 주세요.', '클라우드 연결 오류');
           return;
         }
         if (window.location.protocol === 'file:') {
-          alert('구글 로그인은 웹 보안 정책상 로컬 파일(file://)에서는 실행할 수 없습니다.\nGitHub Pages 웹 호스팅 주소로 접속해 주세요.');
+          await appAlert('구글 로그인은 웹 보안 정책상 로컬 파일(file://)에서는 실행할 수 없습니다.\nGitHub Pages 웹 호스팅 주소로 접속해 주세요.', '접속 환경 안내');
           return;
         }
         try {
@@ -18579,11 +18943,11 @@ function getRandomAppQuote() {
         } catch (err) {
           console.error('로그인 오류:', err);
           if (err.code === 'auth/popup-blocked') {
-            alert('브라우저의 팝업 차단을 해제한 후 다시 시도해 주세요.');
+            await appAlert('브라우저의 팝업 차단을 해제한 후 다시 시도해 주세요.', '팝업 차단 안내');
           } else if (err.code === 'auth/unauthorized-domain') {
-            alert('현재 접속 도메인이 Firebase 콘솔 승인된 도메인에 등록되지 않았습니다.');
+            await appAlert('현재 접속 도메인이 Firebase 콘솔 승인된 도메인에 등록되지 않았습니다.', '인증 도메인 오류');
           } else if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-            alert('로그인 실패: ' + err.message);
+            await appAlert('로그인 실패: ' + err.message, '로그인 오류');
           }
         }
       }
@@ -18601,7 +18965,7 @@ function getRandomAppQuote() {
           syncStatus = 'unauthenticated';
           toast('로그아웃되었습니다.');
         } catch (err) {
-          alert('로그아웃 오류: ' + err.message);
+          await appAlert('로그아웃 오류: ' + err.message, '로그아웃 오류');
         }
       }
 
@@ -18675,7 +19039,7 @@ function getRandomAppQuote() {
             const fName = filePath ? filePath.split(/[\\/]/).pop() : '일정파일.dday';
             executeImportMerge(parsed, fName);
           } catch (err) {
-            alert('일정 파일을 읽는 중 오류가 발생했습니다.');
+            appAlert('일정 파일을 읽는 중 오류가 발생했습니다.', '파일 오류');
           }
         };
 
@@ -18861,10 +19225,60 @@ function getRandomAppQuote() {
 
         document.addEventListener('click', handleAction);
 
+        let _isClosingEditorConfirm = false;
+        async function confirmCloseEditorWithDraft(fromPopstate = false) {
+          if (_isClosingEditorConfirm) return;
+          const editorEl = $('editor');
+          if (!editorEl || !editorEl.open) return;
+          const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
+          const memoVal = window.LittleNoteEditor
+            ? (window.LittleNoteEditor.getPlainText() || (window.LittleNoteEditor.hasMediaOrEmbeds() ? 'media' : ''))
+            : '';
+          if (titleVal || memoVal) {
+            _isClosingEditorConfirm = true;
+            let confirmed = false;
+            try {
+              confirmed = await appConfirm({
+                title: '작성 중인 일정 닫기',
+                message: '입력 중인 내용이 있습니다. 정말 닫으시겠습니까?',
+                confirmText: '닫기',
+                cancelText: '계속 작성',
+                isDanger: true
+              });
+            } finally {
+              _isClosingEditorConfirm = false;
+            }
+            if (!confirmed) {
+              if (fromPopstate) safePushModalState('editor');
+              return;
+            }
+          }
+          if (editorEl.open) editorEl.close();
+          if (!fromPopstate) safeHistoryBack('editor');
+        }
+
         /* [V1.3.3] 모바일 뒤로가기(popstate) 및 히스토리 방어 */
         window.addEventListener('popstate', e => {
           if (isProgrammaticHistoryBack) {
             isProgrammaticHistoryBack = false;
+            return;
+          }
+          if ($('appConfirmModal') && $('appConfirmModal').open) {
+            if (typeof $('appConfirmModal')._closeHandler === 'function') {
+              $('appConfirmModal')._closeHandler();
+            } else {
+              $('appConfirmModal').close();
+            }
+            return;
+          }
+          if ($('videoInsertModal') && $('videoInsertModal').open) {
+            if (window.LittleNoteEditor) window.LittleNoteEditor.handleEscape();
+            else $('videoInsertModal').close();
+            return;
+          }
+          if ($('markdownHelpModal') && $('markdownHelpModal').open) {
+            if (window.LittleNoteEditor) window.LittleNoteEditor.closeMarkdownHelpModal();
+            else $('markdownHelpModal').close();
             return;
           }
           if ($('linkInputModal') && $('linkInputModal').open) {
@@ -18909,17 +19323,7 @@ function getRandomAppQuote() {
             return;
           }
           if ($('editor') && $('editor').open) {
-            const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
-            const memoVal = window.LittleNoteEditor
-              ? (window.LittleNoteEditor.getPlainText() || (window.LittleNoteEditor.hasMediaOrEmbeds() ? 'media' : ''))
-              : '';
-            if (titleVal || memoVal) {
-              if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
-                safePushModalState('editor');
-                return;
-              }
-            }
-            $('editor').close();
+            confirmCloseEditorWithDraft(true);
             return;
           }
           if ($('storeModal') && $('storeModal').open) {
@@ -18952,6 +19356,21 @@ function getRandomAppQuote() {
         });
 
         $('editor')?.addEventListener('cancel', e => {
+          if ($('appConfirmModal') && $('appConfirmModal').open) {
+            e.preventDefault();
+            if (typeof $('appConfirmModal')._closeHandler === 'function') {
+              $('appConfirmModal')._closeHandler();
+            } else {
+              $('appConfirmModal').close();
+            }
+            return;
+          }
+          if ($('videoInsertModal') && $('videoInsertModal').open) {
+            e.preventDefault();
+            if (window.LittleNoteEditor) window.LittleNoteEditor.handleEscape();
+            else $('videoInsertModal').close();
+            return;
+          }
           if ($('linkInputModal') && $('linkInputModal').open) {
             e.preventDefault();
             if (typeof $('linkInputModal')._closeHandler === 'function') {
@@ -18973,17 +19392,8 @@ function getRandomAppQuote() {
             e.preventDefault();
             return;
           }
-          const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
-          const memoVal = window.LittleNoteEditor
-            ? (window.LittleNoteEditor.getPlainText() || (window.LittleNoteEditor.hasMediaOrEmbeds() ? 'media' : ''))
-            : '';
-          if (titleVal || memoVal) {
-            if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
-              e.preventDefault();
-              return;
-            }
-          }
-          safeHistoryBack('editor');
+          e.preventDefault();
+          confirmCloseEditorWithDraft(false);
         });
 
         $('editor')?.addEventListener('close', () => {
@@ -19004,6 +19414,24 @@ function getRandomAppQuote() {
         /* [V1.3.3] 키보드 단축키 지원 및 계층형 ESC 방어 */
         document.addEventListener('keydown', e => {
           if (e.key === 'Escape') {
+            if ($('appConfirmModal') && $('appConfirmModal').open) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (typeof $('appConfirmModal')._closeHandler === 'function') {
+                $('appConfirmModal')._closeHandler();
+              } else {
+                $('appConfirmModal').close();
+                safeHistoryBack('appConfirmModal');
+              }
+              return;
+            }
+            if ($('videoInsertModal') && $('videoInsertModal').open) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.LittleNoteEditor) window.LittleNoteEditor.handleEscape();
+              else $('videoInsertModal').close();
+              return;
+            }
             const isLinkModalOpen = $('linkInputModal') && $('linkInputModal').open;
             if (isLinkModalOpen) {
               e.preventDefault();
@@ -19044,7 +19472,7 @@ function getRandomAppQuote() {
               return;
             }
 
-            // 1-2순위: 리틀 MY 노트 내부 오버레이(라이트박스 / MD 도움말 / 컨텍스트 메뉴 / 리사이저)
+            // 1-2순위: 리틀 MY 노트 내부 오버레이(라이트박스 / 동영상 / MD 도움말 / 컨텍스트 메뉴 / 리사이저)
             if (isEditorOpen && window.LittleNoteEditor && window.LittleNoteEditor.handleEscape()) {
               e.preventDefault();
               e.stopPropagation();
@@ -19095,17 +19523,7 @@ function getRandomAppQuote() {
             // 2순위: 일정 입력/수정 창 닫기 (내용 작성 중이면 사용자 확인)
             if (isEditorOpen) {
               e.preventDefault();
-              const titleVal = ($('modalTitle') ? $('modalTitle').value.trim() : '') || ($('recModalTitle') ? $('recModalTitle').value.trim() : '');
-              const memoVal = window.LittleNoteEditor
-                ? (window.LittleNoteEditor.getPlainText() || (window.LittleNoteEditor.hasMediaOrEmbeds() ? 'media' : ''))
-                : '';
-              if (titleVal || memoVal) {
-                if (!confirm('입력 중인 내용이 있습니다. 정말 닫으시겠습니까?')) {
-                  return;
-                }
-              }
-              $('editor').close();
-              safeHistoryBack('editor');
+              confirmCloseEditorWithDraft(false);
               return;
             }
 
@@ -19130,7 +19548,10 @@ function getRandomAppQuote() {
           const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
           if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
 
-          const anyModalOpen = ($('linkInputModal') && $('linkInputModal').open) ||
+          const anyModalOpen = ($('appConfirmModal') && $('appConfirmModal').open) ||
+                               ($('videoInsertModal') && $('videoInsertModal').open) ||
+                               ($('markdownHelpModal') && $('markdownHelpModal').open) ||
+                               ($('linkInputModal') && $('linkInputModal').open) ||
                                ($('specialCharModal') && $('specialCharModal').open) ||
                                ($('urgentAlertModal') && $('urgentAlertModal').open) ||
                                ($('overtimeAlertModal') && $('overtimeAlertModal').open) ||
