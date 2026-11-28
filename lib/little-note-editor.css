@@ -91,7 +91,7 @@
    ============================================================================ */
 .little-note-scope .ql-toolbar.ql-snow {
     border: none !important;
-    padding: 6px 10px !important;
+    padding: 6px 8px !important;
     margin: 0 !important;
     border-bottom: 1px solid var(--border) !important;
     border-top-left-radius: 8px;
@@ -102,7 +102,7 @@
     box-sizing: border-box;
     display: flex !important;
     align-items: center;
-    gap: 2px !important;
+    gap: 0px !important;
     row-gap: 4px !important;
     justify-content: flex-start !important;
     user-select: none !important;
@@ -113,7 +113,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    margin: 0 8px 0 0 !important;
+    margin: 0 6px 0 0 !important;
     gap: 0px;
     flex-wrap: nowrap !important;
     flex-shrink: 0;
@@ -130,7 +130,7 @@
 .little-note-scope .ql-toolbar.ql-snow .ql-formats:nth-child(9)::after {
     content: "";
     position: absolute;
-    right: -4px;
+    right: -3.5px;
     top: 50%;
     transform: translateY(-50%);
     width: 1px;
@@ -143,8 +143,8 @@
 }
 
 .little-note-scope .ql-toolbar.ql-snow button {
-    width: 26px !important;
-    height: 26px !important;
+    width: 25px !important;
+    height: 25px !important;
     padding: 0px !important;
     border-radius: 4px !important;
     display: inline-flex !important;
@@ -227,8 +227,8 @@
 
 .little-note-scope .ql-snow .ql-picker {
     color: var(--text-muted) !important;
-    height: 26px !important;
-    line-height: 26px !important;
+    height: 25px !important;
+    line-height: 25px !important;
 }
 
 .little-note-scope .ql-snow .ql-picker-label {
@@ -250,7 +250,7 @@
 
 /* [V1.4.0 / MY 노트 V1.9.1] iOS Safari(WebKit) Flexbox 내 글자색/배경색 SVG 0px 축소 방어 */
 .little-note-scope .ql-toolbar.ql-snow .ql-color-picker {
-    width: 26px !important;
+    width: 25px !important;
 }
 
 .little-note-scope .ql-toolbar.ql-snow .ql-color-picker .ql-picker-label {
@@ -271,7 +271,7 @@
 
 /* [V1.4.0 / MY 노트 V1.9.2] 제목 드롭다운 한글화 & 12색 Zen Editorial 팔레트 */
 .little-note-scope .ql-snow .ql-picker.ql-header {
-    width: 68px !important;
+    width: 64px !important;
 }
 
 .little-note-scope .ql-snow .ql-picker.ql-header .ql-picker-label::before,
@@ -373,11 +373,11 @@
 }
 
 .little-note-scope .ql-toolbar.ql-snow .ql-picker.ql-align {
-    width: 28px !important;
+    width: 26px !important;
 }
 
 .little-note-scope .ql-toolbar.ql-snow .ql-picker.ql-align .ql-picker-options {
-    width: 28px !important;
+    width: 26px !important;
     padding: 4px 0 !important;
 }
 

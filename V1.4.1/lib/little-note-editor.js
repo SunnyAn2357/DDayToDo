@@ -1,0 +1,4557 @@
+/* ============================================================================
+   Little MY Note Editor Engine (window.LittleNoteEditor)
+   Transplanted verbatim from MY 노트 V1.5.1 (js/editor.js) for MY 일정관리 V1.2.0
+   ============================================================================ */
+(function (global) {
+    'use strict';
+
+    let _quillRegistered = false;
+    let _activeQuill = null;
+    let _mountOpts = null;
+    let _activeOverlayHost = null;
+    let _cleanupFns = [];
+    let _lastAutoConvertedList = null;
+    let _lastActiveTableCellTd = null;
+    let _savedSpecialCharRange = null;
+    let _pendingLinkState = null;
+
+    // Resizer & Lightbox handles for Top-Layer lifecycle + Escape priority
+    let _hideResizerFn = null;
+    let _hideTableMenuFn = null;
+    let _hideImageMenuFn = null;
+    let _closeLightboxFn = null;
+    let _isLightboxOpenFn = null;
+    let _hasImageSelectionFn = null;
+    let _tableInsertRowBelowFn = null;
+    let _tableDeleteRowFn = null;
+    let _tableInsertColumnRightFn = null;
+    let _tableDeleteColumnFn = null;
+    let _createDefaultTableFn = null;
+    let _toggleTableToolbarMenuFn = null;
+    let _closeTableToolbarMenuFn = null;
+    let _closeVideoModalFn = null;
+
+    // [V1.4.0 / MY 노트 V1.9.2] 12색 Zen Editorial 팔레트 (2행 x 6열 + 초기화)
+    const ZEN_TEXT_COLORS = [
+        '#111827', '#475569', '#dc2626', '#c2410c', '#b45309', '#15803d',
+        '#0f766e', '#1d4ed8', '#4338ca', '#7e22ce', '#be185d', false
+    ];
+    const ZEN_BG_COLORS = [
+        '#fef08a', '#fed7aa', '#fecdd3', '#fbcfe8', '#e9d5ff', '#c7d2fe',
+        '#bfdbfe', '#a7f3d0', '#bbf7d0', '#e2e8f0', '#fef9c3', false
+    ];
+
+    const TOOLBAR_CONTAINER = [
+        ['undo', 'redo'],
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike', 'strike-line', 'highlight', { 'color': ZEN_TEXT_COLORS }, { 'background': ZEN_BG_COLORS }],
+        [{ 'list': 'check' }, { 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'align': [] }],
+        ['table'],
+        ['special-char', 'blockquote', 'code-block', 'divider'],
+        ['link', 'image', 'video'],
+        ['clean'],
+        ['markdown-help']
+    ];
+
+    const CODE_LANGUAGES = [
+        { key: 'plain', label: 'Plain Text' },
+        { key: 'javascript', label: 'JavaScript' },
+        { key: 'typescript', label: 'TypeScript' },
+        { key: 'html', label: 'HTML / XML' },
+        { key: 'css', label: 'CSS' },
+        { key: 'json', label: 'JSON' },
+        { key: 'python', label: 'Python' },
+        { key: 'java', label: 'Java' },
+        { key: 'cpp', label: 'C / C++' },
+        { key: 'csharp', label: 'C#' },
+        { key: 'sql', label: 'SQL' },
+        { key: 'bash', label: 'Bash / Shell' },
+        { key: 'markdown', label: 'Markdown' },
+        { key: 'yaml', label: 'YAML' },
+        { key: 'rust', label: 'Rust' },
+        { key: 'go', label: 'Go' },
+        { key: 'php', label: 'PHP' },
+        { key: 'kotlin', label: 'Kotlin' },
+        { key: 'swift', label: 'Swift' }
+    ];
+
+    // ========================================================================
+    // 1. Verbatim Helpers & Blots from MY 노트 V1.5.1
+    // ========================================================================
+    function isLocalFileOrFolderPath(val) {
+        if (!val || typeof val !== 'string') return false;
+        const cleaned = val.trim().replace(/^["']|["']$/g, '');
+        return /^[a-zA-Z]:[\\/]/.test(cleaned) ||
+            /^[a-zA-Z]:$/.test(cleaned) ||
+            /^\\\\/.test(cleaned) ||
+            /^%[^%]+%[\\/]/.test(cleaned) ||
+            /^file:\/\//i.test(cleaned);
+    }
+
+    function normalizeLinkInput(v) {
+        if (!v || typeof v !== 'string') return '';
+        const cleaned = v.trim().replace(/^["']|["']$/g, '');
+        if (!cleaned) return '';
+        if (isLocalFileOrFolderPath(cleaned) || /^(https?:\/\/|mailto:|tel:)/i.test(cleaned)) {
+            return cleaned;
+        }
+        return 'http://' + cleaned;
+    }
+
+    function isLineCodeBlock(line, formats) {
+        return Boolean(
+            (formats && formats['code-block']) ||
+            (line && line.domNode && line.domNode.classList && line.domNode.classList.contains('ql-code-block'))
+        );
+    }
+
+    function isLineInQuote(line, formats) {
+        return Boolean(
+            (formats && (formats.blockquote || formats['quote-item'])) ||
+            (line && line.domNode && (
+                line.domNode.tagName === 'BLOCKQUOTE' ||
+                (line.domNode.classList && (line.domNode.classList.contains('ql-quote-item') || line.domNode.classList.contains('ql-quote-item-true')))
+            ))
+        );
+    }
+
+    function getCodeBlockPrefixKind(prefix) {
+        if (!prefix) return null;
+        if (prefix === '\u2610 ' || prefix === '\u2611 ') return 'check';
+        if (prefix === '\u2022 ') return 'bullet';
+        if (/^\d+\. $/.test(prefix)) return 'ordered';
+        return null;
+    }
+
+    function toggleCodeBlockListPrefix(quillInstance, range, listType) {
+        if (!quillInstance || !range) return false;
+        const Quill = global.Quill;
+        const rawLines = quillInstance.getLines(range.index, range.length > 0 ? range.length : 1) || [];
+        const codeLines = rawLines.filter((l) => isLineCodeBlock(l, typeof l.formats === 'function' ? l.formats() : null));
+        if (codeLines.length === 0) return false;
+
+        const lineInfos = codeLines.map((l) => {
+            const start = quillInstance.getIndex(l);
+            const text = l.domNode ? (l.domNode.textContent || '') : '';
+            const m = text.match(/^([ \t]*)(\u2610 |\u2611 |\u2022 |\d+\. )?(.*)$/);
+            const indent = m ? m[1] : '';
+            const prefix = (m && m[2]) ? m[2] : '';
+            const kind = getCodeBlockPrefixKind(prefix);
+            return { line: l, start, text, indent, prefix, kind, newPrefix: '' };
+        });
+
+        const allAlreadySame = lineInfos.every((info) => info.kind === listType);
+        let nextNum = 1;
+        if (!allAlreadySame && listType === 'ordered') {
+            const firstLine = lineInfos[0].line;
+            const prev = firstLine ? firstLine.prev : null;
+            if (prev && isLineCodeBlock(prev, typeof prev.formats === 'function' ? prev.formats() : null) && prev.domNode) {
+                const pm = (prev.domNode.textContent || '').match(/^([ \t]*)(\d+)\. /);
+                if (pm && pm[1] === lineInfos[0].indent) {
+                    nextNum = parseInt(pm[2], 10) + 1;
+                }
+            }
+        }
+
+        lineInfos.forEach((info) => {
+            if (allAlreadySame) {
+                info.newPrefix = '';
+            } else if (listType === 'check') {
+                info.newPrefix = '\u2610 ';
+            } else if (listType === 'bullet') {
+                info.newPrefix = '\u2022 ';
+            } else if (listType === 'ordered') {
+                info.newPrefix = `${nextNum++}. `;
+            }
+        });
+
+        const Delta = Quill.import('delta');
+        const delta = new Delta();
+        let cursor = 0;
+        lineInfos.forEach((info) => {
+            const prefixStart = info.start + info.indent.length;
+            if (prefixStart > cursor) delta.retain(prefixStart - cursor);
+            if (info.prefix.length > 0) delta.delete(info.prefix.length);
+            if (info.newPrefix.length > 0) delta.insert(info.newPrefix);
+            cursor = prefixStart + info.prefix.length;
+        });
+
+        quillInstance.updateContents(delta, Quill.sources.USER);
+
+        const first = lineInfos[0];
+        if (range.length === 0) {
+            const prefixEnd = first.start + first.indent.length + first.prefix.length;
+            const targetPos = range.index <= prefixEnd
+                ? first.start + first.indent.length + first.newPrefix.length
+                : Math.max(first.start + first.indent.length, range.index + first.newPrefix.length - first.prefix.length);
+            quillInstance.setSelection(targetPos, 0, Quill.sources.SILENT);
+        } else {
+            const firstShift = first.newPrefix.length - first.prefix.length;
+            const totalShift = lineInfos.reduce((acc, it) => acc + it.newPrefix.length - it.prefix.length, 0);
+            const newStart = range.index > first.start + first.indent.length
+                ? Math.max(first.start + first.indent.length, range.index + firstShift)
+                : range.index;
+            const newEnd = Math.max(newStart, range.index + range.length + totalShift);
+            quillInstance.setSelection(newStart, newEnd - newStart, Quill.sources.SILENT);
+        }
+        return true;
+    }
+
+    function registerQuillOnce() {
+        if (_quillRegistered) return;
+        const Quill = global.Quill;
+        if (!Quill) throw new Error('Quill library not loaded');
+
+        if (global.hljs && typeof global.hljs.configure === 'function') {
+            global.hljs.configure({ languages: ['javascript', 'python', 'html', 'css', 'typescript', 'bash'] });
+        }
+
+        const Link = Quill.import('formats/link');
+        class CustomLink extends Link {
+            static create(v) {
+                return super.create(normalizeLinkInput(v));
+            }
+            static sanitize(url) {
+                if (isLocalFileOrFolderPath(url)) {
+                    return normalizeLinkInput(url);
+                }
+                return super.sanitize(url);
+            }
+        }
+        Quill.register(CustomLink, true);
+
+        const BlockEmbed = Quill.import('blots/block/embed');
+        class DividerBlot extends BlockEmbed {}
+        DividerBlot.blotName = 'divider';
+        DividerBlot.tagName = 'hr';
+        Quill.register(DividerBlot);
+
+        const BaseImage = Quill.import('formats/image');
+        const IMAGE_FORMAT_ATTRIBUTES = ['alt', 'height', 'width', 'style', 'data-size'];
+        class CustomImage extends BaseImage {
+            static formats(domNode) {
+                return IMAGE_FORMAT_ATTRIBUTES.reduce((formats, attribute) => {
+                    if (domNode.hasAttribute(attribute)) {
+                        formats[attribute] = domNode.getAttribute(attribute);
+                    }
+                    return formats;
+                }, {});
+            }
+            format(name, value) {
+                if (IMAGE_FORMAT_ATTRIBUTES.indexOf(name) > -1) {
+                    if (value) {
+                        this.domNode.setAttribute(name, value);
+                    } else {
+                        this.domNode.removeAttribute(name);
+                    }
+                } else {
+                    super.format(name, value);
+                }
+            }
+        }
+        Quill.register(CustomImage, true);
+
+        const Embed = Quill.import('blots/embed');
+        class SoftBreakBlot extends Embed {
+            length() { return 1; }
+            value() { return true; }
+        }
+        SoftBreakBlot.blotName = 'softbreak';
+        SoftBreakBlot.tagName = 'br';
+        SoftBreakBlot.className = 'ql-softbreak';
+        Quill.register(SoftBreakBlot, true);
+
+        const Parchment = Quill.import('parchment');
+        const StrikeLineStyle = new Parchment.ClassAttributor('strike-line', 'ql-strike-line', {
+            scope: Parchment.Scope.INLINE
+        });
+        Quill.register(StrikeLineStyle, true);
+
+        const QuoteItemStyle = new Parchment.ClassAttributor('quote-item', 'ql-quote-item', {
+            scope: Parchment.Scope.BLOCK
+        });
+        QuoteItemStyle.add = function (domNode, value) {
+            if (value) {
+                domNode.classList.add('ql-quote-item');
+                return true;
+            }
+            domNode.classList.remove('ql-quote-item');
+            domNode.classList.remove('ql-quote-item-true');
+            return true;
+        };
+        QuoteItemStyle.remove = function (domNode) {
+            domNode.classList.remove('ql-quote-item');
+            domNode.classList.remove('ql-quote-item-true');
+        };
+        QuoteItemStyle.value = function (domNode) {
+            return (domNode.classList.contains('ql-quote-item') || domNode.classList.contains('ql-quote-item-true')) ? true : undefined;
+        };
+        Quill.register(QuoteItemStyle, true);
+
+        const icons = Quill.import('ui/icons');
+        icons['special-char'] = '<i class="fa-regular fa-face-smile" style="font-size: 14px; color: var(--text-muted);" title="특수문자 / 이모티콘 (Ctrl+F10)"></i>';
+        icons['strike-line'] = '<i class="fa-solid fa-pen-slash" style="font-size: 14px; color: var(--text-muted);"></i>';
+        icons['highlight'] = '<svg viewBox="0 0 18 18"><line class="ql-stroke" x1="5" x2="5" y1="3" y2="12"></line><line class="ql-stroke" x1="13" x2="13" y1="3" y2="12"></line><line class="ql-stroke" x1="5" x2="13" y1="7.5" y2="7.5"></line><rect class="ql-highlight-bar" x="3" y="14.5" width="12" height="2.4" rx="1.2" fill="#facc15"></rect></svg>';
+        icons['divider'] = '<i class="fa-solid fa-minus" style="font-size: 14px; color: var(--text-muted);"></i>';
+        icons['markdown-help'] = '<i class="fa-brands fa-markdown" style="font-size: 15px; color: var(--text-muted);" title="마크다운 문법 (MD)"></i>';
+
+        icons['table'] = '<i class="fa-solid fa-table" style="font-size: 14px; color: var(--text-muted);" title="표 삽입 (3x3) (Ctrl+Alt+T)"></i>';
+        icons['table-insert-row'] = '<svg viewBox="0 0 18 18"><title>아래에 행 추가 (Alt+↓)</title><rect class="ql-stroke" x="2" y="2" width="14" height="8.5" rx="1" stroke-width="1.2" fill="none"/><line class="ql-stroke" x1="2" y1="6.25" x2="16" y2="6.25" stroke-width="1"/><line class="ql-stroke" x1="9" y1="2" x2="9" y2="10.5" stroke-width="1"/><path class="ql-stroke" d="M9 12.5v4M7 14.5h4" stroke-width="1.5" stroke-linecap="round"/></svg>';
+        icons['table-delete-row'] = '<svg viewBox="0 0 18 18"><title>현재 행 삭제 (Alt+↑)</title><rect class="ql-stroke" x="2" y="2" width="14" height="8.5" rx="1" stroke-width="1.2" fill="none"/><line class="ql-stroke" x1="2" y1="6.25" x2="16" y2="6.25" stroke-width="1"/><line class="ql-stroke" x1="9" y1="2" x2="9" y2="10.5" stroke-width="1"/><line class="ql-stroke" x1="7" y1="14.5" x2="11" y2="14.5" stroke-width="1.5" stroke-linecap="round"/></svg>';
+        icons['table-insert-column'] = '<svg viewBox="0 0 18 18"><title>오른쪽에 열 추가 (Alt+→)</title><rect class="ql-stroke" x="2" y="2" width="8.5" height="14" rx="1" stroke-width="1.2" fill="none"/><line class="ql-stroke" x1="6.25" y1="2" x2="6.25" y2="16" stroke-width="1"/><line class="ql-stroke" x1="2" y1="9" x2="10.5" y2="9" stroke-width="1"/><path class="ql-stroke" d="M14.5 7v4M12.5 9h4" stroke-width="1.5" stroke-linecap="round"/></svg>';
+        icons['table-delete-column'] = '<svg viewBox="0 0 18 18"><title>현재 열 삭제 (Alt+←)</title><rect class="ql-stroke" x="2" y="2" width="8.5" height="14" rx="1" stroke-width="1.2" fill="none"/><line class="ql-stroke" x1="6.25" y1="2" x2="6.25" y2="16" stroke-width="1"/><line class="ql-stroke" x1="2" y1="9" x2="10.5" y2="9" stroke-width="1"/><line class="ql-stroke" x1="12.5" y1="9" x2="16.5" y2="9" stroke-width="1.5" stroke-linecap="round"/></svg>';
+
+        icons['undo'] = '<i class="fa-solid fa-rotate-left" style="font-size: 14px; color: var(--text-muted);"></i>';
+        icons['redo'] = '<i class="fa-solid fa-rotate-right" style="font-size: 14px; color: var(--text-muted);"></i>';
+        icons['code-block'] = '<i class="fa-solid fa-code" style="font-size: 14px; color: var(--text-muted);"></i>';
+
+        if (!icons['list']) icons['list'] = {};
+        icons['list']['check'] = '<i class="fa-solid fa-list-check" style="font-size: 14px; color: var(--text-muted);"></i>';
+
+        if (!icons['align']) icons['align'] = {};
+        icons['align'][''] = '<i class="fa-solid fa-align-left" style="font-size: 14px; color: var(--text-muted);"></i>';
+        icons['align']['center'] = '<i class="fa-solid fa-align-center" style="font-size: 14px; color: var(--text-muted);"></i>';
+        icons['align']['right'] = '<i class="fa-solid fa-align-right" style="font-size: 14px; color: var(--text-muted);"></i>';
+        icons['align']['justify'] = '<i class="fa-solid fa-align-justify" style="font-size: 14px; color: var(--text-muted);"></i>';
+
+        _quillRegistered = true;
+    }
+
+    // ========================================================================
+    // 2. HTML Detection & Legacy Markdown <-> Quill HTML Converters
+    // ========================================================================
+    function isQuillHtml(raw) {
+        if (!raw || typeof raw !== 'string') return false;
+        const s = raw.trim();
+        if (!s) return false;
+        return /^<(?:p|h[1-6]|ol|ul|blockquote|pre|table|div|hr)\b/i.test(s) ||
+            /class="[^"]*ql-(?:code-block|quote-item|strike-line|softbreak|align|indent|ui)[^"]*"/i.test(s) ||
+            /<li[^>]+data-list="(?:checked|unchecked|check|bullet|ordered)"/i.test(s) ||
+            /<iframe[^>]+class="[^"]*ql-video[^"]*"/i.test(s) ||
+            /<\s*(?:p|div)\s*>\s*<\s*br\s*\/?>\s*<\/\s*(?:p|div)\s*>/i.test(s);
+    }
+
+    function escapeHtmlStr(str) {
+        return String(str || '').replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    function convertLegacyInlineToQuill(text) {
+        let s = String(text || '');
+        const codeTokens = [];
+        s = s.replace(/`([^`]+)`/g, function (_, c) {
+            const idx = codeTokens.length;
+            codeTokens.push('<code>' + escapeHtmlStr(c) + '</code>');
+            return '\u0002LNCODE' + idx + '\u0003';
+        });
+
+        const htmlTokens = [];
+        // Preserve safe legacy inline tags if already embedded in markdown lines
+        s = s.replace(/<mark>([\s\S]*?)<\/mark>/gi, function (_, inner) {
+            const idx = htmlTokens.length;
+            htmlTokens.push('<span style="background-color: rgb(254, 240, 138);">' + convertLegacyInlineToQuill(inner) + '</span>');
+            return '\u0002LNHTML' + idx + '\u0003';
+        });
+        s = s.replace(/<u>([\s\S]*?)<\/u>/gi, function (_, inner) {
+            const idx = htmlTokens.length;
+            htmlTokens.push('<u>' + convertLegacyInlineToQuill(inner) + '</u>');
+            return '\u0002LNHTML' + idx + '\u0003';
+        });
+        s = s.replace(/<(?:del|s)>([\s\S]*?)<\/(?:del|s)>/gi, function (_, inner) {
+            const idx = htmlTokens.length;
+            htmlTokens.push('<s>' + convertLegacyInlineToQuill(inner) + '</s>');
+            return '\u0002LNHTML' + idx + '\u0003';
+        });
+        s = s.replace(/<(?:b|strong)>([\s\S]*?)<\/(?:b|strong)>/gi, function (_, inner) {
+            const idx = htmlTokens.length;
+            htmlTokens.push('<strong>' + convertLegacyInlineToQuill(inner) + '</strong>');
+            return '\u0002LNHTML' + idx + '\u0003';
+        });
+        s = s.replace(/<(?:i|em)>([\s\S]*?)<\/(?:i|em)>/gi, function (_, inner) {
+            const idx = htmlTokens.length;
+            htmlTokens.push('<em>' + convertLegacyInlineToQuill(inner) + '</em>');
+            return '\u0002LNHTML' + idx + '\u0003';
+        });
+        s = s.replace(/<a\b[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, function (_, href, label) {
+            const idx = htmlTokens.length;
+            const cleanUrl = normalizeLinkInput(href.replace(/&amp;/g, '&'));
+            htmlTokens.push('<a href="' + escapeHtmlStr(cleanUrl) + '" rel="noopener noreferrer" target="_blank">' + escapeHtmlStr(label.replace(/<[^>]+>/g, '')) + '</a>');
+            return '\u0002LNHTML' + idx + '\u0003';
+        });
+
+        s = escapeHtmlStr(s);
+        // Images ![alt](src)
+        s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function (_, alt, src) {
+            const cleanSrc = String(src || '').replace(/&amp;/g, '&').trim();
+            if (/^(https?:\/\/|data:image\/)/i.test(cleanSrc)) {
+                return '<img src="' + escapeHtmlStr(cleanSrc) + '" alt="' + escapeHtmlStr(alt) + '">';
+            }
+            return escapeHtmlStr('![' + alt + '](' + src + ')');
+        });
+        // Markdown links [label](url)
+        s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (_, label, url) {
+            const cleanUrl = normalizeLinkInput(url.replace(/&amp;/g, '&'));
+            return '<a href="' + escapeHtmlStr(cleanUrl) + '" rel="noopener noreferrer" target="_blank">' + label + '</a>';
+        });
+        s = s.replace(/==([^\n]+?)==/g, '<span style="background-color: rgb(254, 240, 138);">$1</span>');
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/~~(.+?)~~/g, '<s>$1</s>');
+        s = s.replace(/__(.+?)__/g, '<u>$1</u>');
+        s = s.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+
+        s = s.replace(/\u0002LNHTML(\d+)\u0003/g, function (_, idx) { return htmlTokens[Number(idx)] || ''; });
+        s = s.replace(/\u0002LNCODE(\d+)\u0003/g, function (_, idx) { return codeTokens[Number(idx)] || ''; });
+        return s;
+    }
+
+    function legacyMarkdownToQuillHtml(raw) {
+        if (!raw || typeof raw !== 'string' || !raw.trim()) return '';
+        if (isQuillHtml(raw)) return raw;
+
+        const normLines = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        const isTableSep = (s) => /^\s*\|?\s*:?-{2,}:?\s*(?:\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(String(s || ''));
+        const splitTableRow = (line) => {
+            let s = String(line || '').trim();
+            if (s.startsWith('|')) s = s.slice(1);
+            if (s.endsWith('|')) s = s.slice(0, -1);
+            return s.split('|').map(c => c.trim());
+        };
+        const calcIndent = (ws) => Math.min(8, Math.floor(String(ws || '').replace(/\t/g, '    ').length / 2));
+
+        let out = '';
+        let i = 0;
+        while (i < normLines.length) {
+            const line = normLines[i];
+
+            // 1. Fenced code block -> Quill 2.x .ql-code-block-container
+            const fenceMatch = line.match(/^\s*```([a-zA-Z0-9_+#-]*)\s*$/);
+            if (fenceMatch) {
+                let lang = (fenceMatch[1] || 'plain').toLowerCase().trim();
+                if (lang === 'js') lang = 'javascript';
+                else if (lang === 'ts') lang = 'typescript';
+                else if (lang === 'py') lang = 'python';
+                const codeLines = [];
+                i++;
+                while (i < normLines.length && !/^\s*```\s*$/.test(normLines[i])) {
+                    codeLines.push(normLines[i]);
+                    i++;
+                }
+                if (i < normLines.length) i++;
+                if (codeLines.length === 0) codeLines.push('');
+                out += '<div class="ql-code-block-container" spellcheck="false">';
+                codeLines.forEach(cl => {
+                    out += `<div class="ql-code-block" data-language="${escapeHtmlStr(lang)}">${escapeHtmlStr(cl) || '<br>'}</div>`;
+                });
+                out += '</div>';
+                continue;
+            }
+
+            // 2. Markdown Table -> Quill table
+            if (line.includes('|') && i + 1 < normLines.length && isTableSep(normLines[i + 1])) {
+                const headers = splitTableRow(line);
+                const colCount = Math.max(1, headers.length);
+                i += 2;
+                const bodyRows = [];
+                while (i < normLines.length && normLines[i].includes('|') && !/^\s*```/.test(normLines[i]) && !/^\s*>/.test(normLines[i])) {
+                    bodyRows.push(splitTableRow(normLines[i]));
+                    i++;
+                }
+                let tHtml = '<table><tbody><tr>';
+                for (let c = 0; c < colCount; c++) {
+                    const cellHtml = convertLegacyInlineToQuill(headers[c] || '') || '<br>';
+                    tHtml += `<td data-row="row-0">${cellHtml}</td>`;
+                }
+                tHtml += '</tr>';
+                bodyRows.forEach((row, rIdx) => {
+                    tHtml += '<tr>';
+                    for (let c = 0; c < colCount; c++) {
+                        const cellHtml = convertLegacyInlineToQuill(row[c] || '') || '<br>';
+                        tHtml += `<td data-row="row-${rIdx + 1}">${cellHtml}</td>`;
+                    }
+                    tHtml += '</tr>';
+                });
+                tHtml += '</tbody></table>';
+                out += tHtml;
+                continue;
+            }
+
+            // 3. Horizontal Rule
+            if (/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(line)) {
+                out += '<hr>';
+                i++;
+                continue;
+            }
+
+            // 4. Blockquote (> ... or > - ... / > 1. ... / > [ ] ...)
+            if (/^\s*>\s?(.*)$/.test(line)) {
+                const quoteInner = line.replace(/^\s*>\s?/, '');
+                const qChk = quoteInner.match(/^([ \t]*)(?:[-*+]\s+)?\[( |x|X)\]\s+(.*)$/);
+                const qUl = quoteInner.match(/^([ \t]*)[-*+]\s+(.*)$/);
+                const qOl = quoteInner.match(/^([ \t]*)\d+\.\s+(.*)$/);
+                if (qChk || qUl || qOl) {
+                    out += '<ol>';
+                    while (i < normLines.length && /^\s*>\s?(.*)$/.test(normLines[i])) {
+                        const ql = normLines[i].replace(/^\s*>\s?/, '');
+                        const mC = ql.match(/^([ \t]*)(?:[-*+]\s+)?\[( |x|X)\]\s+(.*)$/);
+                        const mU = !mC && ql.match(/^([ \t]*)[-*+]\s+(.*)$/);
+                        const mO = !mC && !mU && ql.match(/^([ \t]*)\d+\.\s+(.*)$/);
+                        if (!mC && !mU && !mO) break;
+                        let listType = 'bullet', ws = '', txt = '';
+                        if (mC) { listType = mC[2].toLowerCase() === 'x' ? 'checked' : 'unchecked'; ws = mC[1]; txt = mC[3]; }
+                        else if (mU) { listType = 'bullet'; ws = mU[1]; txt = mU[2]; }
+                        else { listType = 'ordered'; ws = mO[1]; txt = mO[2]; }
+                        const ind = calcIndent(ws);
+                        const indCls = ind > 0 ? ` ql-indent-${ind}` : '';
+                        out += `<li data-list="${listType}" class="ql-quote-item${indCls}"><span class="ql-ui" contenteditable="false"></span>${convertLegacyInlineToQuill(txt) || '<br>'}</li>`;
+                        i++;
+                    }
+                    out += '</ol>';
+                } else {
+                    out += `<blockquote>${convertLegacyInlineToQuill(quoteInner) || '<br>'}</blockquote>`;
+                    i++;
+                }
+                continue;
+            }
+
+            // 5. Lists & Checklists (contiguous lines grouped into <ol>)
+            const isChk = /^([ \t]*)(?:[-*+]\s+)?\[( |x|X)\]\s+(.*)$/.test(line);
+            const isUl = /^([ \t]*)[-*+]\s+(.*)$/.test(line);
+            const isOl = /^([ \t]*)\d+\.\s+(.*)$/.test(line);
+            if (isChk || isUl || isOl) {
+                out += '<ol>';
+                while (i < normLines.length) {
+                    const cur = normLines[i];
+                    const mC = cur.match(/^([ \t]*)(?:[-*+]\s+)?\[( |x|X)\]\s+(.*)$/);
+                    const mU = !mC && cur.match(/^([ \t]*)[-*+]\s+(.*)$/);
+                    const mO = !mC && !mU && cur.match(/^([ \t]*)\d+\.\s+(.*)$/);
+                    if (!mC && !mU && !mO) break;
+                    let listType = 'bullet', ws = '', txt = '';
+                    if (mC) { listType = mC[2].toLowerCase() === 'x' ? 'checked' : 'unchecked'; ws = mC[1]; txt = mC[3]; }
+                    else if (mU) { listType = 'bullet'; ws = mU[1]; txt = mU[2]; }
+                    else { listType = 'ordered'; ws = mO[1]; txt = mO[2]; }
+                    const ind = calcIndent(ws);
+                    const indCls = ind > 0 ? ` class="ql-indent-${ind}"` : '';
+                    out += `<li data-list="${listType}"${indCls}><span class="ql-ui" contenteditable="false"></span>${convertLegacyInlineToQuill(txt) || '<br>'}</li>`;
+                    i++;
+                }
+                out += '</ol>';
+                continue;
+            }
+
+            // 6. Headings #..######
+            const hMatch = line.match(/^\s*(#{1,6})\s+(.*)$/);
+            if (hMatch) {
+                const lvl = Math.min(6, hMatch[1].length);
+                out += `<h${lvl}>${convertLegacyInlineToQuill(hMatch[2]) || '<br>'}</h${lvl}>`;
+                i++;
+                continue;
+            }
+
+            // 7. Plain paragraph line
+            out += `<p>${convertLegacyInlineToQuill(line) || '<br>'}</p>`;
+            i++;
+        }
+
+        return out || '';
+    }
+
+    function stripHtmlToPlainText(raw) {
+        if (!raw || typeof raw !== 'string') return '';
+        if (!/<[a-zA-Z!/]/.test(raw)) return raw;
+        return raw
+            .replace(/<select\b[^>]*class="[^"]*ql-ui[^"]*"[^>]*>[\s\S]*?<\/select>/gi, '')
+            .replace(/<br\s*\/?>/gi, ' ')
+            .replace(/<\/(?:p|div|li|tr|h[1-6]|blockquote)>/gi, ' ')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/&amp;/gi, '&')
+            .replace(/&lt;/gi, '<')
+            .replace(/&gt;/gi, '>')
+            .replace(/&quot;/gi, '"')
+            .replace(/&#39;/gi, "'")
+            .replace(/\u200B/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    // ========================================================================
+    // 2B. Paste Normalization & Smart Markdown Clipboard Engine (MY 노트 V1.8.11~V1.8.14)
+    // ========================================================================
+    function extractClipboardFiles(clipboard) {
+        const collected = [];
+        const seen = new Set();
+        const addFile = (f) => {
+            if (!f) return;
+            const key = `${f.name || ''}|${f.size}|${f.type || ''}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                collected.push(f);
+            }
+        };
+        if (clipboard.files && clipboard.files.length) {
+            Array.from(clipboard.files).forEach(addFile);
+        }
+        if (clipboard.items && clipboard.items.length) {
+            Array.from(clipboard.items).forEach(item => {
+                if (item.kind === 'file') {
+                    const file = item.getAsFile();
+                    if (file) addFile(file);
+                }
+            });
+        }
+        return collected;
+    }
+
+    function dataUrlToImageFile(dataUrl, index = 0) {
+        try {
+            const parts = dataUrl.split(',');
+            if (parts.length < 2) return null;
+            const mimeMatch = parts[0].match(/data:(image\/[a-zA-Z0-9.+-]+);base64/i);
+            if (!mimeMatch) return null;
+            const mime = mimeMatch[1].toLowerCase();
+            const ext = (mime.split('/')[1] || 'png').replace('jpeg', 'jpg');
+            const bin = atob(parts[1]);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return new File([bytes], `pasted_image_${Date.now()}_${index}.${ext}`, { type: mime });
+        } catch (e) {
+            return null;
+        }
+    }
+
+    const ZEN_QUILL_CODE_LANGUAGES = new Set([
+        'plain', 'javascript', 'typescript', 'html', 'css', 'json',
+        'python', 'java', 'cpp', 'csharp', 'sql', 'bash', 'markdown',
+        'yaml', 'rust', 'go', 'php', 'kotlin', 'swift'
+    ]);
+
+    const ZEN_CODE_LANG_ALIASES = {
+        js: 'javascript', jsx: 'javascript', mjs: 'javascript', cjs: 'javascript', node: 'javascript',
+        ts: 'typescript', tsx: 'typescript',
+        py: 'python', py3: 'python', python3: 'python',
+        sh: 'bash', shell: 'bash', zsh: 'bash', console: 'bash', terminal: 'bash', shellsession: 'bash',
+        cmd: 'bash', bat: 'bash', batch: 'bash', dos: 'bash', powershell: 'bash', ps1: 'bash', pwsh: 'bash',
+        htm: 'html', xml: 'html', svg: 'html', xhtml: 'html',
+        scss: 'css', sass: 'css', less: 'css',
+        jsonc: 'json', json5: 'json',
+        c: 'cpp', 'c++': 'cpp', cc: 'cpp', cxx: 'cpp', h: 'cpp', hpp: 'cpp',
+        'c#': 'csharp', cs: 'csharp', dotnet: 'csharp',
+        mysql: 'sql', postgresql: 'sql', postgres: 'sql', pgsql: 'sql', sqlite: 'sql', tsql: 'sql', plsql: 'sql',
+        yml: 'yaml',
+        md: 'markdown', mdx: 'markdown',
+        rs: 'rust',
+        golang: 'go',
+        kt: 'kotlin', kts: 'kotlin',
+        txt: 'plain', text: 'plain', plaintext: 'plain', 'plain text': 'plain', nohighlight: 'plain', none: 'plain',
+        'bash / shell': 'bash', 'shell script': 'bash', 'c / c++': 'cpp', 'html / xml': 'html',
+        dockerfile: 'bash', makefile: 'bash', toml: 'yaml', dotenv: 'bash', env: 'bash'
+    };
+
+    function normalizePastedCodeLanguage(raw) {
+        if (!raw || typeof raw !== 'string') return '';
+        const cleaned = raw.toLowerCase().trim().replace(/^[.:#]+/, '');
+        if (!cleaned) return '';
+        if (ZEN_QUILL_CODE_LANGUAGES.has(cleaned)) return cleaned;
+        if (ZEN_CODE_LANG_ALIASES[cleaned]) return ZEN_CODE_LANG_ALIASES[cleaned];
+        return '';
+    }
+
+    function detectCodeLanguageFromElement(el) {
+        if (!el || el.nodeType !== 1) return '';
+        const attrNames = ['data-language', 'data-lang', 'lang', 'data-code-language'];
+        for (const attr of attrNames) {
+            const val = el.getAttribute && el.getAttribute(attr);
+            const norm = normalizePastedCodeLanguage(val);
+            if (norm) return norm;
+        }
+        const cls = (el.getAttribute && el.getAttribute('class')) || '';
+        if (cls) {
+            const tokens = cls.split(/\s+/);
+            for (const tok of tokens) {
+                const m = tok.match(/^(?:language-|lang-|brush:|highlight-source-)([a-zA-Z0-9_+#.-]+)$/i);
+                if (m && m[1]) {
+                    const norm = normalizePastedCodeLanguage(m[1]);
+                    if (norm) return norm;
+                }
+            }
+            if (/\bhljs\b/i.test(cls)) {
+                for (const tok of tokens) {
+                    if (tok === 'hljs') continue;
+                    const norm = normalizePastedCodeLanguage(tok);
+                    if (norm && norm !== 'plain') return norm;
+                }
+            }
+        }
+        return '';
+    }
+
+    function tryParseCodeHeaderText(headerEl) {
+        if (!headerEl || headerEl.nodeType !== 1) return { matched: false, lang: '' };
+        if (headerEl.querySelector && headerEl.querySelector('table, pre, ul, ol, h1, h2, h3, h4, h5, h6')) {
+            return { matched: false, lang: '' };
+        }
+        const rawText = (headerEl.textContent || '').replace(/\s+/g, ' ').trim();
+        if (!rawText || rawText.length > 45) return { matched: false, lang: '' };
+
+        const copyRegex = /(코드\s*복사|복사하기|복사됨|복사|copy\s*code|copied!?|copy|자동\s*줄바꿈|줄바꿈|wrap|다운로드|download|실행|run|접기|펼치기|확장|expand|collapse|미리보기|preview)/gi;
+        const hasCopyWord = copyRegex.test(rawText) || Boolean(headerEl.querySelector && headerEl.querySelector('button'));
+        const remainder = rawText
+            .replace(copyRegex, ' ')
+            .replace(/[|·•:/\\()[\]]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (hasCopyWord) {
+            if (!remainder || remainder === '코드' || remainder.toLowerCase() === 'code') {
+                return { matched: true, lang: '' };
+            }
+            const norm = normalizePastedCodeLanguage(remainder);
+            if (norm) return { matched: true, lang: norm };
+            return { matched: false, lang: '' };
+        }
+
+        const exactLang = normalizePastedCodeLanguage(rawText);
+        if (exactLang && rawText.length <= 24 && !/[.?!,:;]/.test(rawText)) {
+            return { matched: true, lang: exactLang };
+        }
+        return { matched: false, lang: '' };
+    }
+
+    function isEmptyDecorativeEl(el) {
+        if (!el || el.nodeType !== 1) return false;
+        if ((el.textContent || '').trim()) return false;
+        return !el.querySelector || !el.querySelector('img, table, pre, hr');
+    }
+
+    function tryExtractAndRemoveCodeHeaderSibling(preEl, doc) {
+        if (!preEl || !doc || !doc.body) return '';
+        let cur = preEl;
+        let foundLang = '';
+        for (let depth = 0; depth < 6 && cur && cur !== doc.body; depth++) {
+            let prev = cur.previousElementSibling;
+            while (prev && isEmptyDecorativeEl(prev)) {
+                prev = prev.previousElementSibling;
+            }
+            if (prev) {
+                const parsed = tryParseCodeHeaderText(prev);
+                if (parsed.matched) {
+                    if (!foundLang && parsed.lang) foundLang = parsed.lang;
+                    let prev2 = prev.previousElementSibling;
+                    while (prev2 && isEmptyDecorativeEl(prev2)) {
+                        prev2 = prev2.previousElementSibling;
+                    }
+                    prev.remove();
+                    if (prev2) {
+                        const parsed2 = tryParseCodeHeaderText(prev2);
+                        if (parsed2.matched) {
+                            if (!foundLang && parsed2.lang) foundLang = parsed2.lang;
+                            prev2.remove();
+                        }
+                    }
+                    return foundLang;
+                }
+                break;
+            }
+            cur = cur.parentElement;
+        }
+        return '';
+    }
+
+    function extractCodeLinesFromElement(rootEl) {
+        const clone = rootEl.cloneNode(true);
+        clone.querySelectorAll(
+            'button, svg, select, .ql-ui, .copy-button, .hljs-ln-numbers, .line-numbers-rows, .gutter, [aria-label*="복사" i], [aria-label*="copy" i]'
+        ).forEach(el => el.remove());
+
+        let out = '';
+        let justClosedLineWrapper = false;
+        const lineWrapperClassRe = /\b(line|code-line|token-line|cm-line|view-line|hljs-ln-code|ec-line|shiki-line|ql-code-block)\b/i;
+
+        function isLineWrapper(el) {
+            const tag = el.tagName;
+            if (tag === 'DIV' || tag === 'P' || tag === 'LI' || tag === 'TR') return true;
+            if (tag === 'SPAN') {
+                const cls = (el.getAttribute && el.getAttribute('class')) || '';
+                if (lineWrapperClassRe.test(cls)) return true;
+                const style = (el.getAttribute && el.getAttribute('style')) || '';
+                if (/display\s*:\s*(block|flex|table-row)\b/i.test(style)) return true;
+            }
+            return false;
+        }
+
+        function walk(node) {
+            if (!node) return;
+            if (node.nodeType === 3) {
+                let text = (node.nodeValue || '').replace(/\r\n?/g, '\n').replace(/\u00A0/g, ' ');
+                if (justClosedLineWrapper && text.startsWith('\n')) {
+                    text = text.slice(1);
+                }
+                if (text.length > 0) {
+                    out += text;
+                    justClosedLineWrapper = false;
+                }
+                return;
+            }
+            if (node.nodeType !== 1) return;
+            const tag = node.tagName;
+            if (tag === 'BR') {
+                out += '\n';
+                justClosedLineWrapper = false;
+                return;
+            }
+            if (isLineWrapper(node)) {
+                if (out.length > 0 && !out.endsWith('\n')) {
+                    out += '\n';
+                }
+                const lenBefore = out.length;
+                Array.from(node.childNodes).forEach(walk);
+                if (out.length === lenBefore || !out.endsWith('\n')) {
+                    out += '\n';
+                }
+                justClosedLineWrapper = true;
+                return;
+            }
+            Array.from(node.childNodes).forEach(walk);
+        }
+
+        Array.from(clone.childNodes).forEach(walk);
+
+        let normalized = out.replace(/\r\n?/g, '\n');
+        if (normalized.endsWith('\n')) {
+            normalized = normalized.slice(0, -1);
+        }
+        return normalized ? normalized.split('\n') : [''];
+    }
+
+    function detectInlineTextFormatFromElement(el) {
+        if (!el || el.nodeType !== 1 || !el.getAttribute) {
+            return { bold: false, italic: false, underline: false, strike: false };
+        }
+        const style = el.getAttribute('style') || '';
+        const cls = el.getAttribute('class') || '';
+        return {
+            bold: /font-weight\s*:\s*(?:bold|bolder|[6-9]\d\d)\b/i.test(style) || /\b(font-bold|font-semibold|font-extrabold|font-black)\b/i.test(cls),
+            italic: /font-style\s*:\s*(?:italic|oblique)\b/i.test(style) || /\bitalic\b/i.test(cls),
+            underline: /text-decoration(?:-line)?\s*:[^;]*\bunderline\b/i.test(style) || /\bunderline\b/i.test(cls),
+            strike: /text-decoration(?:-line)?\s*:[^;]*\bline-through\b/i.test(style) || /\bline-through\b/i.test(cls)
+        };
+    }
+
+    function wrapNodeWithFormats(doc, nodeToWrap, fmt, skipTag) {
+        let wrapped = nodeToWrap;
+        const skip = String(skipTag || '').toUpperCase();
+        if (fmt.strike && skip !== 'S' && skip !== 'DEL' && skip !== 'STRIKE') {
+            const s = doc.createElement('s');
+            s.appendChild(wrapped);
+            wrapped = s;
+        }
+        if (fmt.underline && skip !== 'U') {
+            const u = doc.createElement('u');
+            u.appendChild(wrapped);
+            wrapped = u;
+        }
+        if (fmt.italic && skip !== 'EM' && skip !== 'I') {
+            const em = doc.createElement('em');
+            em.appendChild(wrapped);
+            wrapped = em;
+        }
+        if (fmt.bold && skip !== 'STRONG' && skip !== 'B') {
+            const strong = doc.createElement('strong');
+            strong.appendChild(wrapped);
+            wrapped = strong;
+        }
+        return wrapped;
+    }
+
+    function flattenCellContentForQuill(srcCell, destTd, doc) {
+        const blockTags = new Set(['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'LI']);
+        const inlineTags = new Set(['STRONG', 'B', 'EM', 'I', 'U', 'S', 'DEL', 'STRIKE', 'CODE', 'A', 'MARK', 'SPAN', 'SUB', 'SUP', 'SMALL']);
+
+        function appendSoftBreakIfNeeded() {
+            const last = destTd.lastChild;
+            if (!last) return;
+            if (last.nodeType === 1 && last.tagName === 'BR') return;
+            const br = doc.createElement('br');
+            br.className = 'ql-softbreak';
+            destTd.appendChild(br);
+        }
+
+        function hasMeaningfulContent(container) {
+            return Array.from(container.childNodes).some(n => {
+                if (n.nodeType === 3) return (n.nodeValue || '').trim().length > 0;
+                if (n.nodeType === 1) return n.tagName !== 'BR' || n.classList.contains('ql-softbreak');
+                return false;
+            });
+        }
+
+        function walkCell(node, target) {
+            if (!node) return;
+            if (node.nodeType === 3) {
+                const val = (node.nodeValue || '').replace(/\r?\n/g, ' ');
+                if (val.trim().length > 0 || (val === ' ' && target.lastChild && target.lastChild.nodeType === 1)) {
+                    target.appendChild(doc.createTextNode(val));
+                }
+                return;
+            }
+            if (node.nodeType !== 1) return;
+            const tag = node.tagName;
+            if (tag === 'BR') {
+                if (target === destTd) {
+                    appendSoftBreakIfNeeded();
+                } else {
+                    const br = doc.createElement('br');
+                    br.className = 'ql-softbreak';
+                    target.appendChild(br);
+                }
+                return;
+            }
+            if (tag === 'IMG') {
+                const src = node.getAttribute('src') || '';
+                if (/^(data:image\/|https?:\/\/)/i.test(src)) {
+                    const img = doc.createElement('img');
+                    img.setAttribute('src', src);
+                    if (node.hasAttribute('alt')) img.setAttribute('alt', node.getAttribute('alt'));
+                    target.appendChild(img);
+                }
+                return;
+            }
+            if (blockTags.has(tag)) {
+                if (hasMeaningfulContent(destTd)) {
+                    appendSoftBreakIfNeeded();
+                }
+                if (tag === 'LI' && node.parentElement && node.parentElement.tagName === 'UL') {
+                    destTd.appendChild(doc.createTextNode('• '));
+                }
+                const blockFmt = detectInlineTextFormatFromElement(node);
+                if (blockFmt.bold || blockFmt.italic || blockFmt.underline || blockFmt.strike) {
+                    const span = doc.createElement('span');
+                    Array.from(node.childNodes).forEach(ch => walkCell(ch, span));
+                    if (span.childNodes.length > 0) {
+                        destTd.appendChild(wrapNodeWithFormats(doc, span, blockFmt, ''));
+                    }
+                } else {
+                    Array.from(node.childNodes).forEach(ch => walkCell(ch, destTd));
+                }
+                return;
+            }
+            if (inlineTags.has(tag)) {
+                const el = doc.createElement(tag.toLowerCase());
+                if (tag === 'A' && node.hasAttribute('href')) {
+                    el.setAttribute('href', node.getAttribute('href'));
+                }
+                if (tag === 'MARK') {
+                    el.setAttribute('data-zen-highlight', '1');
+                }
+                Array.from(node.childNodes).forEach(ch => walkCell(ch, el));
+                if (el.childNodes.length > 0) {
+                    const fmt = detectInlineTextFormatFromElement(node);
+                    target.appendChild(wrapNodeWithFormats(doc, el, fmt, tag));
+                }
+                return;
+            }
+            Array.from(node.childNodes).forEach(ch => walkCell(ch, target));
+        }
+
+        Array.from(srcCell.childNodes).forEach(ch => walkCell(ch, destTd));
+
+        while (destTd.lastChild && destTd.lastChild.nodeType === 1 && destTd.lastChild.tagName === 'BR') {
+            destTd.removeChild(destTd.lastChild);
+        }
+
+        const cellFmt = detectInlineTextFormatFromElement(srcCell);
+        if (srcCell.tagName === 'TH') {
+            cellFmt.bold = true;
+        }
+        if ((destTd.textContent || '').trim().length > 0 &&
+            (cellFmt.bold || cellFmt.italic || cellFmt.underline || cellFmt.strike)) {
+            const onlyChild = destTd.childNodes.length === 1 ? destTd.firstChild : null;
+            const onlyTag = onlyChild && onlyChild.nodeType === 1 ? String(onlyChild.tagName || '').toUpperCase() : '';
+            const wrapFmt = {
+                bold: cellFmt.bold && onlyTag !== 'STRONG' && onlyTag !== 'B',
+                italic: cellFmt.italic && onlyTag !== 'EM' && onlyTag !== 'I',
+                underline: cellFmt.underline && onlyTag !== 'U',
+                strike: cellFmt.strike && onlyTag !== 'S' && onlyTag !== 'DEL' && onlyTag !== 'STRIKE'
+            };
+            if (wrapFmt.bold || wrapFmt.italic || wrapFmt.underline || wrapFmt.strike) {
+                const frag = doc.createDocumentFragment();
+                while (destTd.firstChild) frag.appendChild(destTd.firstChild);
+                destTd.appendChild(wrapNodeWithFormats(doc, frag, wrapFmt, ''));
+            }
+        }
+
+        if (destTd.childNodes.length === 0) {
+            destTd.appendChild(doc.createElement('br'));
+        }
+    }
+
+    function cleanupEmptyWrappersAndLeadingBlanks(doc) {
+        if (!doc || !doc.body) return;
+        const isBlankText = (str) => String(str || '').replace(/[\u200B-\u200D\uFEFF\u00A0\s]/g, '') === '';
+
+        doc.body.querySelectorAll('button, svg, select, input, textarea, script, style, noscript').forEach(el => {
+            if (!el.closest('pre')) {
+                el.remove();
+            }
+        });
+
+        const wrappers = Array.from(doc.body.querySelectorAll('div, header, section, aside, nav, figure, figcaption, footer, span')).reverse();
+        for (const el of wrappers) {
+            if (!el.isConnected || el.closest('pre, table')) continue;
+            if (isBlankText(el.textContent) && !el.querySelector('img, table, pre, hr, video, iframe, br')) {
+                el.remove();
+            }
+        }
+
+        const blockTargets = Array.from(doc.body.querySelectorAll('table, pre'));
+        for (const targetEl of blockTargets) {
+            if (!targetEl.isConnected) continue;
+            let cur = targetEl;
+            for (let depth = 0; depth < 6 && cur && cur !== doc.body; depth++) {
+                while (cur.previousSibling) {
+                    const prev = cur.previousSibling;
+                    if (prev.nodeType === 8) {
+                        prev.remove();
+                        continue;
+                    }
+                    if (prev.nodeType === 3) {
+                        if (isBlankText(prev.nodeValue)) {
+                            prev.remove();
+                            continue;
+                        }
+                        cur = null;
+                        break;
+                    }
+                    if (prev.nodeType === 1) {
+                        if (prev.tagName === 'BR') {
+                            prev.remove();
+                            continue;
+                        }
+                        if (/^(P|DIV|HEADER|SECTION|FIGURE|SPAN)$/.test(prev.tagName) &&
+                            isBlankText(prev.textContent) &&
+                            !prev.querySelector('img, table, pre, hr, video, iframe')) {
+                            prev.remove();
+                            continue;
+                        }
+                        cur = null;
+                        break;
+                    }
+                    cur = null;
+                    break;
+                }
+                if (!cur) break;
+                cur = cur.parentElement;
+            }
+        }
+    }
+
+    function normalizePastedHtmlForQuill(htmlData) {
+        const doc = new DOMParser().parseFromString(htmlData, 'text/html');
+        if (!doc || !doc.body) return htmlData;
+
+        const nonPreCandidates = Array.from(doc.body.querySelectorAll(
+            '.ql-code-block-container, [style*="white-space"], .prism-code, .shiki, .hljs, .code-block, .codeblock'
+        ));
+        for (const el of nonPreCandidates) {
+            if (!el.isConnected) continue;
+            if (el.closest('pre, table')) continue;
+            if (el.querySelector('pre')) continue;
+
+            const isQuillBlock = el.classList.contains('ql-code-block-container');
+            const styleAttr = el.getAttribute('style') || '';
+            const hasWhiteSpacePre = /white-space\s*:\s*(?:pre|pre-wrap|break-spaces)\b/i.test(styleAttr);
+            const isCodeClass = /\b(prism-code|shiki|hljs|code-block|codeblock)\b/i.test(el.getAttribute('class') || '');
+            const hasLineChildren = Boolean(el.querySelector('.ql-code-block, .line, .code-line, .token-line, .cm-line, .view-line, br'));
+            const hasNewlines = (el.textContent || '').includes('\n');
+
+            if (!isQuillBlock && !((hasWhiteSpacePre || isCodeClass) && (hasNewlines || hasLineChildren))) {
+                continue;
+            }
+            if (el.tagName === 'SPAN' && !hasNewlines && !hasLineChildren) continue;
+
+            let lang = detectCodeLanguageFromElement(el);
+            if (!lang && isQuillBlock) {
+                const firstCodeLine = el.querySelector('.ql-code-block[data-language]');
+                if (firstCodeLine) lang = detectCodeLanguageFromElement(firstCodeLine);
+            }
+            const siblingLang = tryExtractAndRemoveCodeHeaderSibling(el, doc);
+            if (!lang && siblingLang) lang = siblingLang;
+            const lines = extractCodeLinesFromElement(el);
+            const pre = doc.createElement('pre');
+            pre.setAttribute('data-language', lang || 'plain');
+            pre.textContent = (lines[0] === '' ? '\n' : '') + lines.join('\n');
+            el.replaceWith(pre);
+        }
+
+        const preEls = Array.from(doc.body.querySelectorAll('pre')).filter(p => !p.parentElement.closest('pre'));
+        for (const preEl of preEls) {
+            if (!preEl.isConnected) continue;
+            let lang = detectCodeLanguageFromElement(preEl);
+            if (!lang) {
+                const codeChild = preEl.querySelector('code');
+                if (codeChild) lang = detectCodeLanguageFromElement(codeChild);
+            }
+            if (preEl.firstElementChild && preEl.firstElementChild.tagName !== 'CODE') {
+                const innerHeader = tryParseCodeHeaderText(preEl.firstElementChild);
+                if (innerHeader.matched) {
+                    if (!lang && innerHeader.lang) lang = innerHeader.lang;
+                    preEl.firstElementChild.remove();
+                }
+            }
+            if (!lang && preEl.parentElement && preEl.parentElement !== doc.body) {
+                lang = detectCodeLanguageFromElement(preEl.parentElement);
+            }
+            const siblingLang = tryExtractAndRemoveCodeHeaderSibling(preEl, doc);
+            if (!lang && siblingLang) lang = siblingLang;
+
+            const lines = extractCodeLinesFromElement(preEl);
+            const cleanPre = doc.createElement('pre');
+            cleanPre.setAttribute('data-language', lang || 'plain');
+            cleanPre.textContent = (lines[0] === '' ? '\n' : '') + lines.join('\n');
+            preEl.replaceWith(cleanPre);
+        }
+
+        const tables = Array.from(doc.body.querySelectorAll('table'));
+        for (const table of tables) {
+            if (!table.isConnected) continue;
+            const rows = Array.from(table.querySelectorAll('tr')).filter(tr => tr.closest('table') === table);
+            if (rows.length === 0) continue;
+
+            const newTbody = doc.createElement('tbody');
+            for (const srcRow of rows) {
+                const cellNodes = Array.from(srcRow.children).filter(ch => ch.tagName === 'TD' || ch.tagName === 'TH');
+                if (cellNodes.length === 0) continue;
+
+                const rowId = 'row-' + Math.random().toString(36).slice(2, 8);
+                const cleanTr = doc.createElement('tr');
+                for (const srcCell of cellNodes) {
+                    const td = doc.createElement('td');
+                    td.setAttribute('data-row', rowId);
+                    flattenCellContentForQuill(srcCell, td, doc);
+                    cleanTr.appendChild(td);
+
+                    const colspan = Math.min(20, Math.max(1, parseInt(srcCell.getAttribute('colspan') || '1', 10) || 1));
+                    for (let k = 1; k < colspan; k++) {
+                        const padTd = doc.createElement('td');
+                        padTd.setAttribute('data-row', rowId);
+                        padTd.appendChild(doc.createElement('br'));
+                        cleanTr.appendChild(padTd);
+                    }
+                }
+                newTbody.appendChild(cleanTr);
+            }
+
+            if (newTbody.children.length > 0) {
+                table.innerHTML = '';
+                table.appendChild(newTbody);
+            }
+        }
+
+        cleanupEmptyWrappersAndLeadingBlanks(doc);
+        return doc.body.innerHTML;
+    }
+
+    function looksLikeMarkdownText(plainText) {
+        if (!plainText || typeof plainText !== 'string') return false;
+        const text = plainText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+        if (!text.trim()) return false;
+
+        let score = 0;
+
+        const fenceLines = text.match(/^```[a-zA-Z0-9_\-+]*\s*$/gm);
+        if (fenceLines && fenceLines.length >= 2) score += 3;
+
+        if (/^\|.+\|\s*\n\|(\s*:?-{2,}:?\s*\|)+\s*$/m.test(text)) score += 3;
+
+        if (/^#{1,6}\s+\S/m.test(text)) score += 2;
+
+        if (/^\s*(?:[-*+]\s+)?\[[ xX]\]\s+\S/m.test(text)) score += 2;
+
+        if (/!?\[[^\]\n]+\]\((?:https?:\/\/|mailto:|file:\/\/|[a-zA-Z]:[\\/])[^)\n]+\)/.test(text)) score += 2;
+
+        if (/\*\*[^*\n]+?\*\*/.test(text)) score += 2;
+        if (/==[^=\n]+?==/.test(text)) score += 2;
+        if (/~~[^~\n]+?~~/.test(text)) score += 2;
+
+        if (/^>\s+\S/m.test(text)) score += 1.5;
+
+        if (text.includes('\n') && /^(?:---+|\*\*\*+|___+)\s*$/m.test(text)) score += 1.5;
+
+        if (/`[^`\n]+`/.test(text)) score += 1;
+
+        const bulletMatches = text.match(/^\s*[-*+]\s+\S/gm);
+        if (bulletMatches) score += bulletMatches.length >= 2 ? 1 : 0.5;
+        const orderedMatches = text.match(/^\s*\d+\.\s+\S/gm);
+        if (orderedMatches && orderedMatches.length >= 2) score += 0.5;
+
+        return score >= 2;
+    }
+
+    function normalizeMarkdownCodeLang(raw) {
+        const key = String(raw || '').toLowerCase().trim();
+        if (!key) return 'plain';
+        if (ZEN_QUILL_CODE_LANGUAGES.has(key)) return key;
+        return ZEN_CODE_LANG_ALIASES[key] || 'plain';
+    }
+
+    function convertMarkdownToClipboardHtml(mdText, options = {}) {
+        if (!mdText) return '';
+        const forClipboard = Boolean(options && options.forClipboard);
+        const lines = mdText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        const htmlParts = [];
+        let i = 0;
+
+        if (lines.length > 0 && lines[0].trim() === '---') {
+            let endFmIdx = -1;
+            for (let j = 1; j < lines.length; j++) {
+                if (lines[j].trim() === '---') {
+                    endFmIdx = j;
+                    break;
+                }
+            }
+            if (endFmIdx !== -1) {
+                i = endFmIdx + 1;
+            }
+        }
+
+        function formatInlineStyles(str) {
+            let out = str;
+            out = out.replace(/==([^=\n]+?)==/g, forClipboard
+                ? '<mark data-zen-highlight="1">$1</mark>'
+                : '<span style="background-color: #fef08a;">$1</span>');
+            out = out.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            out = out.replace(/(?<![\p{L}\p{N}_])__([^_\n]+?)__(?![\p{L}\p{N}_])/gu, '<u>$1</u>');
+            out = out.replace(/&lt;u&gt;(.*?)&lt;\/u&gt;/gi, '<u>$1</u>');
+            out = out.replace(/&lt;ins&gt;(.*?)&lt;\/ins&gt;/gi, '<u>$1</u>');
+            out = out.replace(/~~(.+?)~~/g, '<s>$1</s>');
+            out = out.replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+            out = out.replace(/(?<![\p{L}\p{N}_])_([^_\n]+?)_(?![\p{L}\p{N}_])/gu, '<em>$1</em>');
+            return out;
+        }
+
+        function parseInline(raw) {
+            let s = raw
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            const placeholders = [];
+            const pushPlaceholder = (html) => {
+                const token = `\u0000ZENINL${placeholders.length}\u0000`;
+                placeholders.push(html);
+                return token;
+            };
+
+            s = s.replace(/`([^`\n]+)`/g, (_, code) => pushPlaceholder(`<code>${code}</code>`));
+            s = s.replace(/&lt;br\s*\/?&gt;/gi, '<br class="ql-softbreak">');
+            s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (_, alt, url) => pushPlaceholder(`<img src="${url}" alt="${alt}">`));
+            s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, url) => {
+                const formattedLabel = formatInlineStyles(label);
+                const cleanUrl = escapeHtmlStr(normalizeLinkInput(url.replace(/&amp;/g, '&')));
+                return pushPlaceholder(`<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${formattedLabel}</a>`);
+            });
+
+            s = formatInlineStyles(s);
+
+            while (/\u0000ZENINL(\d+)\u0000/.test(s)) {
+                s = s.replace(/\u0000ZENINL(\d+)\u0000/g, (_, idx) => placeholders[Number(idx)] ?? '');
+            }
+
+            s = s.replace(/\\\|/g, '|');
+            return s;
+        }
+
+        function getLeadingIndent(str) {
+            if (!str) return 0;
+            const spaces = str.replace(/\t/g, '  ').length;
+            return Math.min(8, Math.floor(spaces / 2));
+        }
+
+        function isListContinuationLine(nextLine) {
+            if (typeof nextLine !== 'string' || nextLine.trim() === '') return false;
+            if (!/^(?: {2,}|\t)/.test(nextLine)) return false;
+            const trimmed = nextLine.trim();
+            if (/^```/.test(trimmed)) return false;
+            if (/^\|(.+)\|$/.test(trimmed)) return false;
+            if (/^#{1,6}\s+/.test(nextLine)) return false;
+            if (/^>\s?/.test(nextLine)) return false;
+            if (/^(\-{3,}|\*{3,}|_{3,})$/.test(trimmed)) return false;
+            if (/^\s*(?:(\*|-|\+)\s+)?\[([ xX])\]\s*/.test(nextLine)) return false;
+            if (/^\s*\d+\.\s+/.test(nextLine)) return false;
+            if (/^\s*(\*|-|\+)\s+/.test(nextLine)) return false;
+            return true;
+        }
+
+        while (i < lines.length) {
+            const line = lines[i];
+
+            if (/^```/.test(line.trim())) {
+                const langMatch = line.trim().match(/^```([a-zA-Z0-9_\-+]+)?/);
+                const lang = normalizeMarkdownCodeLang(langMatch && langMatch[1] ? langMatch[1] : 'plain');
+                const dataLangAttr = (lang && lang !== 'plain') ? ` data-language="${lang}"` : '';
+
+                const codeLines = [];
+                i++;
+                while (i < lines.length && !/^```/.test(lines[i].trim())) {
+                    codeLines.push(
+                        lines[i]
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                    );
+                    i++;
+                }
+                i++;
+
+                if (forClipboard) {
+                    const prefixNewline = (codeLines.length > 0 && codeLines[0] === '') ? '\n' : '';
+                    htmlParts.push(`<pre data-language="${lang}">${prefixNewline}${codeLines.join('\n')}</pre>`);
+                } else {
+                    const codeHtml = codeLines
+                        .map((cl) => `<div class="ql-code-block"${dataLangAttr}>${cl || '<br>'}</div>`)
+                        .join('');
+                    htmlParts.push(`<div class="ql-code-block-container" spellcheck="false"${dataLangAttr}>${codeHtml}</div>`);
+                }
+                continue;
+            }
+
+            if (/^\|(.+)\|$/.test(line.trim())) {
+                const rows = [];
+                let hasSeparator = false;
+                while (i < lines.length && /^\|(.+)\|$/.test(lines[i].trim())) {
+                    const curLine = lines[i].trim();
+                    if (/^\|(\s*[-:]+[-|\s:]*)\|$/.test(curLine)) {
+                        hasSeparator = true;
+                        i++;
+                        continue;
+                    }
+                    const safeLine = curLine.slice(1, -1).replace(/\\\|/g, '___ZEN_PIPE___');
+                    const cells = safeLine
+                        .split('|')
+                        .map((c) => c.replace(/___ZEN_PIPE___/g, '\\|').trim());
+                    rows.push(cells);
+                    i++;
+                }
+
+                if (rows.length > 0) {
+                    const maxCols = rows.reduce((m, r) => Math.max(m, r.length), 0);
+                    let tableHtml = '<table><tbody>';
+                    rows.forEach((r, rIdx) => {
+                        const rowId = `row-${Math.random().toString(36).slice(2, 8)}`;
+                        tableHtml += '<tr>';
+                        for (let cIdx = 0; cIdx < maxCols; cIdx++) {
+                            const cell = r[cIdx] ?? '';
+                            let cellContent = parseInline(cell);
+                            if (rIdx === 0 && hasSeparator && cellContent) {
+                                if (!/^<strong>(?:(?!<\/strong>).)*<\/strong>$/i.test(cellContent)) {
+                                    cellContent = `<strong>${cellContent}</strong>`;
+                                }
+                            }
+                            tableHtml += `<td data-row="${rowId}">${cellContent || '<br>'}</td>`;
+                        }
+                        tableHtml += '</tr>';
+                    });
+                    tableHtml += '</tbody></table>';
+                    htmlParts.push(tableHtml);
+                }
+                continue;
+            }
+
+            const headerMatch = line.match(/^(#{1,6})\s+(.+)$/);
+            if (headerMatch) {
+                const level = headerMatch[1].length;
+                htmlParts.push(`<h${level}>${parseInline(headerMatch[2])}</h${level}>`);
+                i++;
+                continue;
+            }
+
+            if (/^>\s?(.*)$/.test(line)) {
+                while (i < lines.length && /^>\s?(.*)$/.test(lines[i])) {
+                    const qm = lines[i].match(/^>\s?(.*)$/);
+                    const innerLine = qm[1] || '';
+                    const checkMatch = innerLine.match(/^\s*(?:(\*|-|\+)\s+)?\[([ xX])\]\s*(.*)$/);
+                    const orderedMatch = innerLine.match(/^\s*(\d+)\.\s+(.*)$/);
+                    const bulletMatch = innerLine.match(/^\s*(\*|-|\+)\s+(.*)$/);
+
+                    if (checkMatch) {
+                        const isChecked = checkMatch[2].toLowerCase() === 'x';
+                        htmlParts.push(`<li data-list="${isChecked ? 'checked' : 'unchecked'}" class="ql-quote-item">${parseInline(checkMatch[3]) || '<br>'}</li>`);
+                    } else if (orderedMatch) {
+                        htmlParts.push(`<li data-list="ordered" class="ql-quote-item">${parseInline(orderedMatch[2]) || '<br>'}</li>`);
+                    } else if (bulletMatch) {
+                        htmlParts.push(`<li data-list="bullet" class="ql-quote-item">${parseInline(bulletMatch[2]) || '<br>'}</li>`);
+                    } else {
+                        htmlParts.push(`<blockquote>${parseInline(innerLine) || '<br>'}</blockquote>`);
+                    }
+                    i++;
+                }
+                continue;
+            }
+
+            if (/^\s*(?:(\*|-|\+)\s+)?\[([ xX])\]\s*(.*)$/.test(line)) {
+                while (i < lines.length && /^\s*(?:(\*|-|\+)\s+)?\[([ xX])\]\s*(.*)$/.test(lines[i])) {
+                    const cm = lines[i].match(/^(\s*)(?:(\*|-|\+)\s+)?\[([ xX])\]\s*(.*)$/);
+                    const indentLvl = getLeadingIndent(cm[1]);
+                    const isChecked = cm[3].toLowerCase() === 'x';
+                    let itemText = parseInline(cm[4]);
+                    i++;
+                    while (i < lines.length && isListContinuationLine(lines[i])) {
+                        itemText += `<br class="ql-softbreak">${parseInline(lines[i].trim())}`;
+                        i++;
+                    }
+                    const indentClass = indentLvl > 0 ? ` class="ql-indent-${indentLvl}"` : '';
+                    htmlParts.push(`<li data-list="${isChecked ? 'checked' : 'unchecked'}"${indentClass}>${itemText || '<br>'}</li>`);
+                }
+                continue;
+            }
+
+            if (/^\s*\d+\.\s+(.*)$/.test(line)) {
+                while (i < lines.length && /^\s*\d+\.\s+(.*)$/.test(lines[i])) {
+                    const om = lines[i].match(/^(\s*)\d+\.\s+(.*)$/);
+                    const indentLvl = getLeadingIndent(om[1]);
+                    let itemText = parseInline(om[2]);
+                    i++;
+                    while (i < lines.length && isListContinuationLine(lines[i])) {
+                        itemText += `<br class="ql-softbreak">${parseInline(lines[i].trim())}`;
+                        i++;
+                    }
+                    const indentClass = indentLvl > 0 ? ` class="ql-indent-${indentLvl}"` : '';
+                    htmlParts.push(`<li data-list="ordered"${indentClass}>${itemText || '<br>'}</li>`);
+                }
+                continue;
+            }
+
+            if (/^\s*(\*|-|\+)\s+(.*)$/.test(line) && !/^\s*(\*|-|\+)\s+\[([ xX])\]/.test(line)) {
+                while (
+                    i < lines.length &&
+                    /^\s*(\*|-|\+)\s+(.*)$/.test(lines[i]) &&
+                    !/^\s*(\*|-|\+)\s+\[([ xX])\]/.test(lines[i])
+                ) {
+                    const bm = lines[i].match(/^(\s*)(\*|-|\+)\s+(.*)$/);
+                    const indentLvl = getLeadingIndent(bm[1]);
+                    let itemText = parseInline(bm[3]);
+                    i++;
+                    while (i < lines.length && isListContinuationLine(lines[i])) {
+                        itemText += `<br class="ql-softbreak">${parseInline(lines[i].trim())}`;
+                        i++;
+                    }
+                    const indentClass = indentLvl > 0 ? ` class="ql-indent-${indentLvl}"` : '';
+                    htmlParts.push(`<li data-list="bullet"${indentClass}>${itemText || '<br>'}</li>`);
+                }
+                continue;
+            }
+
+            if (/^(\-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
+                htmlParts.push('<hr>');
+                i++;
+                continue;
+            }
+
+            if (line.trim() === '') {
+                i++;
+                continue;
+            }
+
+            htmlParts.push(`<p>${parseInline(line)}</p>`);
+            i++;
+        }
+
+        if (forClipboard) {
+            const grouped = [];
+            let openList = false;
+            for (const part of htmlParts) {
+                if (part.startsWith('<li')) {
+                    if (!openList) {
+                        grouped.push('<ol>');
+                        openList = true;
+                    }
+                    grouped.push(part);
+                } else {
+                    if (openList) {
+                        grouped.push('</ol>');
+                        openList = false;
+                    }
+                    grouped.push(part);
+                }
+            }
+            if (openList) grouped.push('</ol>');
+            return grouped.join('');
+        }
+
+        return htmlParts.join('');
+    }
+
+    // ========================================================================
+    // 3. Tooltips, Context Menus, Code Block Helpers & Image Resizer/Lightbox
+    // ========================================================================
+    function initToolbarTooltips(toolbarRoot) {
+        if (!toolbarRoot) return;
+        const tooltipMap = {
+            '.ql-toolbar button.ql-undo': '실행 취소 (Ctrl+Z)',
+            '.ql-toolbar button.ql-redo': '다시 실행 (Ctrl+Y)',
+            '.ql-toolbar .ql-header .ql-picker-label': '문단 제목 (H1~H3)',
+            '.ql-toolbar button.ql-bold': '굵게 (**텍스트** 또는 Ctrl+B)',
+            '.ql-toolbar button.ql-italic': '기울임 (*텍스트* 또는 Ctrl+I)',
+            '.ql-toolbar button.ql-underline': '밑줄 (__텍스트__ 또는 Ctrl+U)',
+            '.ql-toolbar button.ql-strike': '부분 취소선 (~~텍스트~~)',
+            '.ql-toolbar button.ql-strike-line': '한 줄 전체 취소선 (클릭 토글)',
+            '.ql-toolbar button.ql-highlight': '형광펜 (==텍스트==)',
+            '.ql-toolbar .ql-color .ql-picker-label': '글자 색상',
+            '.ql-toolbar .ql-background .ql-picker-label': '배경색',
+            '.ql-toolbar button.ql-list[value="check"]': '체크리스트 ([ ] 입력)',
+            '.ql-toolbar button.ql-list[value="ordered"]': '번호 매기기 (1. 입력)',
+            '.ql-toolbar button.ql-list[value="bullet"]': '글머리 기호 (- 입력)',
+            '.ql-toolbar .ql-align .ql-picker-label': '문단 정렬',
+            '.ql-toolbar button.ql-special-char': '특수문자 및 이모티콘 (Ctrl+F10)',
+            '.ql-toolbar button.ql-blockquote': '인용구 (> 입력)',
+            '.ql-toolbar button.ql-code-block': '코드 블록 (``` 입력)',
+            '.ql-toolbar button.ql-divider': '가로 구분선 (--- 입력)',
+            '.ql-toolbar button.ql-link': '하이퍼링크 연결 (URL·파일·폴더 또는 [이름](링크))',
+            '.ql-toolbar button.ql-image': '이미지 첨부 (드래그/붙여넣기)',
+            '.ql-toolbar button.ql-video': '동영상 삽입 (YouTube/iframe)',
+            '.ql-toolbar button.ql-table': '표 삽입 및 행/열 편집 (Ctrl+Alt+T)',
+            '.ql-toolbar button.ql-clean': '선택 영역 서식 지우기',
+            '.ql-toolbar button.ql-markdown-help': '마크다운 단축키 도움말'
+        };
+        const scopeRoot = toolbarRoot.closest('.little-note-scope') || document;
+        Object.entries(tooltipMap).forEach(([selector, text]) => {
+            const el = scopeRoot.querySelector(selector);
+            if (el) el.setAttribute('title', text);
+        });
+    }
+
+    function openExternalTarget(rawHref, opts) {
+        if (!rawHref) return false;
+        const clean = String(rawHref).trim();
+        if (!clean) return false;
+        if (opts && typeof opts.onOpenExternal === 'function') {
+            opts.onOpenExternal(clean);
+            return true;
+        }
+        if (global.chrome && global.chrome.webview && typeof global.chrome.webview.postMessage === 'function') {
+            global.chrome.webview.postMessage(JSON.stringify({ type: 'openExternal', url: clean }));
+            return true;
+        }
+        if (/^(https?:\/\/|mailto:|tel:)/i.test(clean)) {
+            global.open(clean, '_blank', 'noopener,noreferrer');
+            return true;
+        }
+        return false;
+    }
+
+    function setupTableEngine(quill, overlayHost, opts) {
+        const Quill = global.Quill;
+        function toastMsg(m) {
+            if (opts && typeof opts.onToast === 'function') opts.onToast(m);
+        }
+
+        function updateLastActiveTableCell() {
+            if (!_activeQuill) return;
+            const sel = global.getSelection();
+            if (sel && sel.anchorNode) {
+                const node = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
+                if (node && quill.root.contains(node)) {
+                    const td = node.closest('td, th');
+                    _lastActiveTableCellTd = td || null;
+                    return;
+                }
+            }
+            const range = quill.getSelection();
+            if (range) {
+                try {
+                    const [line] = quill.getLine(range.index);
+                    const td = line && line.domNode && line.domNode.closest ? line.domNode.closest('td, th') : null;
+                    _lastActiveTableCellTd = td || null;
+                } catch (e) {}
+            }
+        }
+
+        function isCursorInTable() {
+            const tableModule = quill.getModule('table');
+            const range = quill.getSelection();
+            if (tableModule && range) {
+                try {
+                    const [table] = tableModule.getTable(range);
+                    if (table) return true;
+                } catch (e) {}
+            }
+            const sel = global.getSelection();
+            if (sel && sel.anchorNode) {
+                const node = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
+                if (node && quill.root.contains(node) && node.closest('table')) return true;
+            }
+            if (_lastActiveTableCellTd && _lastActiveTableCellTd.isConnected && quill.root.contains(_lastActiveTableCellTd)) {
+                return true;
+            }
+            return false;
+        }
+
+        function getValidTableContext() {
+            const tableModule = quill.getModule('table');
+            if (!tableModule) return null;
+
+            let range = quill.getSelection();
+            if (!range) {
+                const sel = global.getSelection();
+                if (sel && sel.anchorNode) {
+                    const el = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
+                    const td = el && el.closest ? el.closest('td, th') : null;
+                    if (td && quill.root.contains(td)) {
+                        const blot = Quill.find(td);
+                        if (blot) {
+                            const idx = blot.offset(quill.scroll);
+                            range = { index: idx, length: 0 };
+                            quill.setSelection(idx, 0, Quill.sources.SILENT);
+                        }
+                    }
+                }
+            }
+            if (!range && _lastActiveTableCellTd && _lastActiveTableCellTd.isConnected && quill.root.contains(_lastActiveTableCellTd)) {
+                const blot = Quill.find(_lastActiveTableCellTd);
+                if (blot) {
+                    const idx = blot.offset(quill.scroll);
+                    range = { index: idx, length: 0 };
+                    quill.setSelection(idx, 0, Quill.sources.SILENT);
+                }
+            }
+            if (!range) {
+                quill.focus();
+                range = quill.getSelection();
+            }
+            if (!range) return null;
+
+            try {
+                const [table, row, cell] = tableModule.getTable(range);
+                if (table && row && cell) {
+                    if (cell.domNode) _lastActiveTableCellTd = cell.domNode;
+                    return { tableModule, table, row, cell, range };
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        function tableInsertRowBelowSafe(moveToFirstCell) {
+            const ctx = getValidTableContext();
+            if (!ctx) return;
+            const { table, row, cell } = ctx;
+            const rows = table.rows();
+            const rowIndex = rows.indexOf(row);
+            const colIndex = moveToFirstCell ? 0 : Math.max(0, row.children.indexOf(cell));
+
+            table.insertRow(rowIndex + 1);
+            quill.update(Quill.sources.USER);
+
+            try {
+                const updatedRows = table.rows();
+                const newRow = updatedRows[rowIndex + 1];
+                if (newRow && newRow.children) {
+                    const targetCell = newRow.children.at(colIndex) || newRow.children.head;
+                    if (targetCell) {
+                        const targetOffset = targetCell.offset(quill.scroll);
+                        quill.setSelection(targetOffset, 0, Quill.sources.USER);
+                        quill.focus();
+                        if (targetCell.domNode) _lastActiveTableCellTd = targetCell.domNode;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function tableDeleteRowSafe() {
+            const ctx = getValidTableContext();
+            if (!ctx) return;
+            const { tableModule, table, row, cell } = ctx;
+            const rows = table.rows();
+
+            const isOneByOne = (rows.length === 1 && row.children.length === 1);
+            if (isOneByOne) {
+                tableModule.deleteTable();
+                _lastActiveTableCellTd = null;
+                quill.focus();
+                return;
+            }
+            if (rows.length <= 1) return;
+
+            const rowIndex = rows.indexOf(row);
+            const colIndex = Math.max(0, row.children.indexOf(cell));
+            const survivingRowIndex = Math.min(rowIndex, rows.length - 2);
+
+            row.remove();
+            quill.update(Quill.sources.USER);
+
+            try {
+                const survivingRows = table.rows();
+                const targetRow = survivingRows[survivingRowIndex];
+                if (targetRow && targetRow.children) {
+                    const targetCell = targetRow.children.at(colIndex) || targetRow.children.head;
+                    if (targetCell) {
+                        const targetOffset = targetCell.offset(quill.scroll);
+                        quill.setSelection(targetOffset, 0, Quill.sources.USER);
+                        quill.focus();
+                        if (targetCell.domNode) _lastActiveTableCellTd = targetCell.domNode;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function tableInsertColumnRightSafe() {
+            const ctx = getValidTableContext();
+            if (!ctx) return;
+            const { table, row, cell } = ctx;
+            const rows = table.rows();
+            const rowIndex = Math.max(0, rows.indexOf(row));
+            const colIndex = Math.max(0, row.children.indexOf(cell));
+
+            table.insertColumn(colIndex + 1);
+            quill.update(Quill.sources.USER);
+
+            try {
+                const updatedRows = table.rows();
+                const curRow = updatedRows[rowIndex] || updatedRows[0];
+                if (curRow && curRow.children) {
+                    const targetCell = curRow.children.at(colIndex + 1) || curRow.children.at(colIndex) || curRow.children.head;
+                    if (targetCell) {
+                        const targetOffset = targetCell.offset(quill.scroll);
+                        quill.setSelection(targetOffset, 0, Quill.sources.USER);
+                        quill.focus();
+                        if (targetCell.domNode) _lastActiveTableCellTd = targetCell.domNode;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function tableDeleteColumnSafe() {
+            const ctx = getValidTableContext();
+            if (!ctx) return;
+            const { tableModule, table, row, cell } = ctx;
+            const rows = table.rows();
+
+            const isOneByOne = (rows.length === 1 && row.children.length === 1);
+            if (isOneByOne) {
+                tableModule.deleteTable();
+                _lastActiveTableCellTd = null;
+                quill.focus();
+                return;
+            }
+            if (row.children.length <= 1) return;
+
+            const rowIndex = Math.max(0, rows.indexOf(row));
+            const colIndex = Math.max(0, row.children.indexOf(cell));
+            const beforeCols = row.children.length;
+            const survivingColIndex = Math.min(colIndex, beforeCols - 2);
+
+            table.deleteColumn(colIndex);
+            quill.update(Quill.sources.USER);
+
+            try {
+                const survivingRows = table.rows();
+                const curRow = survivingRows[rowIndex] || survivingRows[0];
+                if (curRow && curRow.children) {
+                    const targetCell = curRow.children.at(survivingColIndex) || curRow.children.head;
+                    if (targetCell) {
+                        const targetOffset = targetCell.offset(quill.scroll);
+                        quill.setSelection(targetOffset, 0, Quill.sources.USER);
+                        quill.focus();
+                        if (targetCell.domNode) _lastActiveTableCellTd = targetCell.domNode;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function createDefaultTable() {
+            const tableModule = quill.getModule('table');
+            if (!tableModule) return;
+            let range = quill.getSelection();
+            if (!range) {
+                quill.focus();
+                range = quill.getSelection();
+                if (!range) {
+                    const len = quill.getLength();
+                    quill.setSelection(Math.max(0, len - 1), 0);
+                }
+            }
+            tableModule.insertTable(3, 3);
+            setTimeout(() => {
+                quill.focus();
+                updateLastActiveTableCell();
+            }, 10);
+        }
+
+        _tableInsertRowBelowFn = tableInsertRowBelowSafe;
+        _tableDeleteRowFn = tableDeleteRowSafe;
+        _tableInsertColumnRightFn = tableInsertColumnRightSafe;
+        _tableDeleteColumnFn = tableDeleteColumnSafe;
+        _createDefaultTableFn = createDefaultTable;
+
+        const onSelChange = () => updateLastActiveTableCell();
+        const onMouseDownCell = () => setTimeout(updateLastActiveTableCell, 0);
+        const onKeyUpCell = () => updateLastActiveTableCell();
+        document.addEventListener('selectionchange', onSelChange);
+        quill.root.addEventListener('mousedown', onMouseDownCell);
+        quill.root.addEventListener('keyup', onKeyUpCell);
+        _cleanupFns.push(() => {
+            document.removeEventListener('selectionchange', onSelChange);
+            quill.root.removeEventListener('mousedown', onMouseDownCell);
+            quill.root.removeEventListener('keyup', onKeyUpCell);
+        });
+
+        // Build #table-context-menu inside overlayHost (dialog#editor Top Layer!)
+        let tableContextMenu = overlayHost.querySelector('#table-context-menu');
+        if (tableContextMenu) tableContextMenu.remove();
+        tableContextMenu = document.createElement('div');
+        tableContextMenu.id = 'table-context-menu';
+        tableContextMenu.className = 'table-context-menu';
+        tableContextMenu.style.display = 'none';
+        tableContextMenu.innerHTML = `
+            <div class="table-menu-item" data-action="insert-softbreak"><i class="fa-solid fa-turn-down"></i><span>셀 내부 줄바꿈 (Shift+Enter)</span></div>
+            <div class="table-menu-divider"></div>
+            <div class="table-menu-item" data-action="insert-row-above"><i class="fa-solid fa-arrow-up"></i><span>위에 행 추가</span></div>
+            <div class="table-menu-item" data-action="insert-row-below"><i class="fa-solid fa-arrow-down"></i><span>아래에 행 추가</span></div>
+            <div class="table-menu-item" data-action="insert-col-left"><i class="fa-solid fa-arrow-left"></i><span>왼쪽에 열 추가</span></div>
+            <div class="table-menu-item" data-action="insert-col-right"><i class="fa-solid fa-arrow-right"></i><span>오른쪽에 열 추가</span></div>
+            <div class="table-menu-divider"></div>
+            <div class="table-menu-item text-danger" data-action="delete-row"><i class="fa-solid fa-minus"></i><span>현재 행 삭제</span></div>
+            <div class="table-menu-item text-danger" data-action="delete-col"><i class="fa-solid fa-minus"></i><span>현재 열 삭제</span></div>
+            <div class="table-menu-divider"></div>
+            <div class="table-menu-item text-danger" data-action="delete-table"><i class="fa-regular fa-trash-can"></i><span>표 전체 삭제</span></div>
+        `;
+        overlayHost.appendChild(tableContextMenu);
+
+        _hideTableMenuFn = () => {
+            tableContextMenu.style.display = 'none';
+        };
+
+        function showTableContextMenu(cell, clientX, clientY) {
+            if (_hideImageMenuFn) _hideImageMenuFn();
+            const curSel = quill.getSelection();
+            let isInsideCell = false;
+            if (curSel) {
+                const [line] = quill.getLine(curSel.index);
+                isInsideCell = (line && line.domNode && line.domNode.closest && line.domNode.closest('td, th') === cell);
+            }
+            if (!isInsideCell) {
+                const blot = Quill.find(cell);
+                if (blot && typeof blot.offset === 'function') {
+                    quill.setSelection(blot.offset(quill.scroll), 0, Quill.sources.USER);
+                }
+            }
+            _lastActiveTableCellTd = cell;
+
+            tableContextMenu.style.visibility = 'hidden';
+            tableContextMenu.style.display = 'block';
+            const menuWidth = tableContextMenu.offsetWidth || 195;
+            const menuHeight = tableContextMenu.offsetHeight || 310;
+            tableContextMenu.style.visibility = '';
+
+            let x = clientX;
+            let y = clientY;
+            if (x + menuWidth > global.innerWidth) x = global.innerWidth - menuWidth - 10;
+            if (y + menuHeight > global.innerHeight) y = global.innerHeight - menuHeight - 10;
+
+            tableContextMenu.style.left = `${Math.max(10, x)}px`;
+            tableContextMenu.style.top = `${Math.max(10, y)}px`;
+        }
+
+        const onContextMenu = (e) => {
+            if (e.target.closest('img')) return;
+            const cell = e.target.closest('td, th');
+            if (!cell || !quill.root.contains(cell)) {
+                tableContextMenu.style.display = 'none';
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            showTableContextMenu(cell, e.clientX, e.clientY);
+        };
+
+        let touchTimer = null;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        const onTouchStart = (e) => {
+            if (e.target.closest('img')) return;
+            const cell = e.target.closest('td, th');
+            if (!cell || !quill.root.contains(cell) || e.touches.length > 1) return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            touchTimer = setTimeout(() => {
+                if (navigator.vibrate) navigator.vibrate(40);
+                showTableContextMenu(cell, touchStartX, touchStartY);
+            }, 450);
+        };
+        const onTouchMove = (e) => {
+            if (touchTimer && e.touches.length > 0) {
+                if (Math.abs(e.touches[0].clientX - touchStartX) > 10 || Math.abs(e.touches[0].clientY - touchStartY) > 10) {
+                    clearTimeout(touchTimer);
+                    touchTimer = null;
+                }
+            }
+        };
+        const onTouchEnd = () => {
+            if (touchTimer) {
+                clearTimeout(touchTimer);
+                touchTimer = null;
+            }
+        };
+        const onDocClick = (e) => {
+            if (!e.target.closest('#table-context-menu')) {
+                tableContextMenu.style.display = 'none';
+            }
+        };
+
+        quill.root.addEventListener('contextmenu', onContextMenu);
+        quill.root.addEventListener('touchstart', onTouchStart, { passive: true });
+        quill.root.addEventListener('touchmove', onTouchMove, { passive: true });
+        quill.root.addEventListener('touchend', onTouchEnd, { passive: true });
+        document.addEventListener('click', onDocClick);
+
+        tableContextMenu.querySelectorAll('.table-menu-item').forEach((item) => {
+            item.addEventListener('click', async () => {
+                const action = item.dataset.action;
+                tableContextMenu.style.display = 'none';
+                const tableModule = quill.getModule('table');
+                if (!tableModule) return;
+                quill.focus();
+                switch (action) {
+                    case 'insert-softbreak': {
+                        const sel = quill.getSelection(true) || quill.getSelection();
+                        if (sel) {
+                            quill.insertEmbed(sel.index, 'softbreak', true, Quill.sources.USER);
+                            quill.setSelection(sel.index + 1, 0, Quill.sources.USER);
+                        }
+                        break;
+                    }
+                    case 'insert-row-above': tableModule.insertRowAbove(); break;
+                    case 'insert-row-below': tableInsertRowBelowSafe(); break;
+                    case 'insert-col-left': tableModule.insertColumnLeft(); break;
+                    case 'insert-col-right': tableInsertColumnRightSafe(); break;
+                    case 'delete-row': tableDeleteRowSafe(); break;
+                    case 'delete-col': tableDeleteColumnSafe(); break;
+                    case 'delete-table': {
+                        const confirmed = (typeof global.appConfirm === 'function')
+                            ? await global.appConfirm({
+                                title: '표 전체 삭제',
+                                message: '현재 표를 전체 삭제하시겠습니까?',
+                                confirmText: '삭제',
+                                cancelText: '취소',
+                                isDanger: true
+                            })
+                            : false;
+                        if (confirmed) {
+                            tableModule.deleteTable();
+                            _lastActiveTableCellTd = null;
+                        }
+                        break;
+                    }
+                }
+            });
+        });
+
+        // [V1.4.0 / MY 노트 V1.9.0] 에디터 툴바 '표' 통합 드롭다운 팝오버 (#zen-table-toolbar-menu)
+        let pendingTableToolbarRange = null;
+        let tableToolbarMenu = overlayHost.querySelector('#zen-table-toolbar-menu');
+        if (tableToolbarMenu) tableToolbarMenu.remove();
+        tableToolbarMenu = document.createElement('div');
+        tableToolbarMenu.id = 'zen-table-toolbar-menu';
+        tableToolbarMenu.className = 'table-context-menu zen-table-toolbar-menu';
+        tableToolbarMenu.style.display = 'none';
+        tableToolbarMenu.innerHTML = `
+            <div class="table-menu-item" data-table-action="insert-table">
+                <span class="zen-tm-label"><i class="fa-solid fa-table"></i> 표 삽입 (3×3)</span>
+                <span class="zen-tm-shortcut">Ctrl+Alt+T</span>
+            </div>
+            <div class="table-menu-divider"></div>
+            <div class="table-menu-item" data-table-action="insert-row">
+                <span class="zen-tm-label"><i class="fa-solid fa-arrow-down"></i> 아래에 행 추가</span>
+                <span class="zen-tm-shortcut">Alt+↓</span>
+            </div>
+            <div class="table-menu-item text-danger" data-table-action="delete-row">
+                <span class="zen-tm-label"><i class="fa-solid fa-minus"></i> 현재 행 삭제</span>
+                <span class="zen-tm-shortcut">Alt+↑</span>
+            </div>
+            <div class="table-menu-item" data-table-action="insert-col">
+                <span class="zen-tm-label"><i class="fa-solid fa-arrow-right"></i> 오른쪽에 열 추가</span>
+                <span class="zen-tm-shortcut">Alt+→</span>
+            </div>
+            <div class="table-menu-item text-danger" data-table-action="delete-col">
+                <span class="zen-tm-label"><i class="fa-solid fa-minus"></i> 현재 열 삭제</span>
+                <span class="zen-tm-shortcut">Alt+←</span>
+            </div>
+        `;
+        overlayHost.appendChild(tableToolbarMenu);
+
+        function closeTableToolbarMenu() {
+            const btn = overlayHost.querySelector('.ql-toolbar button.ql-table') || document.querySelector('.ql-toolbar button.ql-table');
+            if (tableToolbarMenu) tableToolbarMenu.style.display = 'none';
+            if (btn) btn.classList.remove('ql-active');
+        }
+
+        function toggleTableToolbarMenu() {
+            const scopeRoot = quill.container ? (quill.container.closest('.little-note-scope') || document) : document;
+            const btn = scopeRoot.querySelector('.ql-toolbar button.ql-table') || document.querySelector('.ql-toolbar button.ql-table');
+            if (!tableToolbarMenu || !btn) {
+                createDefaultTable();
+                return;
+            }
+            if (tableToolbarMenu.style.display === 'block') {
+                closeTableToolbarMenu();
+                return;
+            }
+            if (_hideTableMenuFn) _hideTableMenuFn();
+            if (_hideImageMenuFn) _hideImageMenuFn();
+
+            const curSel = quill.getSelection() || (quill.selection && quill.selection.savedRange);
+            if (curSel) {
+                pendingTableToolbarRange = { index: curSel.index, length: curSel.length };
+            }
+
+            const rect = btn.getBoundingClientRect();
+            tableToolbarMenu.style.visibility = 'hidden';
+            tableToolbarMenu.style.display = 'block';
+            const menuWidth = tableToolbarMenu.offsetWidth || 214;
+            const menuHeight = tableToolbarMenu.offsetHeight || 220;
+            tableToolbarMenu.style.visibility = '';
+            const left = Math.max(8, Math.min(rect.left, global.innerWidth - menuWidth - 8));
+            const top = Math.min(rect.bottom + 6, global.innerHeight - menuHeight - 8);
+            tableToolbarMenu.style.left = `${left}px`;
+            tableToolbarMenu.style.top = `${top}px`;
+            btn.classList.add('ql-active');
+        }
+
+        _toggleTableToolbarMenuFn = toggleTableToolbarMenu;
+        _closeTableToolbarMenuFn = closeTableToolbarMenu;
+
+        tableToolbarMenu.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const item = e.target.closest('[data-table-action]');
+            if (!item) return;
+            const action = item.dataset.tableAction;
+            const savedRange = pendingTableToolbarRange;
+            closeTableToolbarMenu();
+
+            if (savedRange) {
+                try {
+                    quill.setSelection(savedRange.index, savedRange.length, Quill.sources.SILENT);
+                } catch (_) {}
+            }
+
+            if (action === 'insert-table') createDefaultTable();
+            else if (action === 'insert-row') tableInsertRowBelowSafe();
+            else if (action === 'delete-row') tableDeleteRowSafe();
+            else if (action === 'insert-col') tableInsertColumnRightSafe();
+            else if (action === 'delete-col') tableDeleteColumnSafe();
+        });
+
+        const onTableToolbarDocClick = (e) => {
+            if (tableToolbarMenu.style.display !== 'block') return;
+            if (e.target.closest('#zen-table-toolbar-menu') || e.target.closest('.ql-toolbar button.ql-table')) return;
+            closeTableToolbarMenu();
+        };
+        const onTableToolbarResize = () => closeTableToolbarMenu();
+        document.addEventListener('click', onTableToolbarDocClick);
+        global.addEventListener('resize', onTableToolbarResize, { passive: true });
+
+        // Global table & special-char keyboard shortcuts (Ctrl+Alt+T, Alt+Arrows)
+        const onTableShortcutKey = (e) => {
+            if (!_activeQuill) return;
+            if ((e.ctrlKey || e.metaKey) && e.altKey && (e.key === 't' || e.key === 'T' || e.code === 'KeyT')) {
+                e.preventDefault();
+                e.stopPropagation();
+                createDefaultTable();
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'F10' || e.keyCode === 121)) {
+                e.preventDefault();
+                e.stopPropagation();
+                _savedSpecialCharRange = quill.getSelection();
+                if (opts && typeof opts.onOpenSpecialChar === 'function') opts.onOpenSpecialChar();
+                return;
+            }
+            if (e.altKey && !e.shiftKey) {
+                const isDown = e.key === 'ArrowDown' || e.key === 'Down' || e.code === 'ArrowDown' || e.code === 'Numpad2' || e.keyCode === 40;
+                const isUp = e.key === 'ArrowUp' || e.key === 'Up' || e.code === 'ArrowUp' || e.code === 'Numpad8' || e.keyCode === 38;
+                const isRight = e.key === 'ArrowRight' || e.key === 'Right' || e.code === 'ArrowRight' || e.code === 'Numpad6' || e.keyCode === 39;
+                const isLeft = e.key === 'ArrowLeft' || e.key === 'Left' || e.code === 'ArrowLeft' || e.code === 'Numpad4' || e.keyCode === 37;
+                if ((isDown || isUp || isRight || isLeft) && isCursorInTable()) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isDown) tableInsertRowBelowSafe();
+                    else if (isUp) tableDeleteRowSafe();
+                    else if (isRight) tableInsertColumnRightSafe();
+                    else if (isLeft) tableDeleteColumnSafe();
+                }
+            }
+        };
+        global.addEventListener('keydown', onTableShortcutKey, true);
+
+        _cleanupFns.push(() => {
+            quill.root.removeEventListener('contextmenu', onContextMenu);
+            quill.root.removeEventListener('touchstart', onTouchStart);
+            quill.root.removeEventListener('touchmove', onTouchMove);
+            quill.root.removeEventListener('touchend', onTouchEnd);
+            document.removeEventListener('click', onDocClick);
+            document.removeEventListener('click', onTableToolbarDocClick);
+            global.removeEventListener('resize', onTableToolbarResize);
+            global.removeEventListener('keydown', onTableShortcutKey, true);
+            tableContextMenu.remove();
+            tableToolbarMenu.remove();
+            _hideTableMenuFn = null;
+            _toggleTableToolbarMenuFn = null;
+            _closeTableToolbarMenuFn = null;
+        });
+
+        return { toastMsg, isCursorInTable, tableInsertRowBelowSafe };
+    }
+
+    function setupImageResizerLightboxAndMenu(quill, editorContainerEl, overlayHost, opts) {
+        const Quill = global.Quill;
+        function toastMsg(m) {
+            if (opts && typeof opts.onToast === 'function') opts.onToast(m);
+        }
+
+        let activeResizingImg = null;
+        const selectedImages = new Set();
+        let isDraggingResize = false;
+        let dragDir = 'se';
+        let dragStartX = 0;
+        let dragStartWidth = 0;
+        let dragEditorMaxWidth = 0;
+        let dragCurrentPct = 100;
+        let rafId = null;
+
+        let resizerEl = overlayHost.querySelector('#zen-image-resizer');
+        if (resizerEl) resizerEl.remove();
+        resizerEl = document.createElement('div');
+        resizerEl.id = 'zen-image-resizer';
+        resizerEl.innerHTML = `
+            <div class="zen-img-toolbar" id="zen-img-toolbar">
+                <button type="button" class="zen-img-tb-btn" data-size="25%" title="너비 25%">25%</button>
+                <button type="button" class="zen-img-tb-btn" data-size="50%" title="너비 50%">50%</button>
+                <button type="button" class="zen-img-tb-btn" data-size="75%" title="너비 75%">75%</button>
+                <button type="button" class="zen-img-tb-btn" data-size="100%" title="최대 너비 (100%)">100%</button>
+                <div class="zen-img-tb-divider"></div>
+                <button type="button" class="zen-img-tb-btn" data-action="copy" title="이미지 복사 (Ctrl+C)">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>Copy</span>
+                </button>
+                <button type="button" class="zen-img-tb-btn" data-action="cut" title="이미지 잘라내기 (Ctrl+X)">
+                    <i class="fa-solid fa-scissors"></i>
+                    <span>Cut</span>
+                </button>
+                <div class="zen-img-tb-divider"></div>
+                <button type="button" class="zen-img-tb-btn" data-action="zoom" title="원본 크게 확대 보기 (더블클릭)">
+                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                    <span>확대</span>
+                </button>
+                <button type="button" class="zen-img-tb-btn danger" data-action="delete" title="이미지 삭제 (Delete / Backspace)">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </div>
+            <div class="zen-resize-badge" id="zen-resize-badge">100%</div>
+            <div class="zen-resize-handle nw" data-dir="nw"></div>
+            <div class="zen-resize-handle ne" data-dir="ne"></div>
+            <div class="zen-resize-handle sw" data-dir="sw"></div>
+            <div class="zen-resize-handle se" data-dir="se"></div>
+        `;
+        overlayHost.appendChild(resizerEl);
+
+        const toolbarEl = resizerEl.querySelector('#zen-img-toolbar');
+        const badgeEl = resizerEl.querySelector('#zen-resize-badge');
+
+        let lightboxEl = overlayHost.querySelector('#zen-image-lightbox');
+        if (lightboxEl) lightboxEl.remove();
+        lightboxEl = document.createElement('div');
+        lightboxEl.id = 'zen-image-lightbox';
+        lightboxEl.innerHTML = `
+            <button type="button" class="zen-lightbox-top-close" id="zen-lb-top-close" title="닫기 (ESC)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="zen-lightbox-stage" id="zen-lightbox-stage">
+                <img id="zen-lightbox-img" src="" alt="확대 이미지" draggable="false" />
+            </div>
+            <div class="zen-lightbox-controls">
+                <button type="button" class="zen-lb-btn" id="zen-lb-zoom-out" title="축소 (-)">
+                    <i class="fa-solid fa-minus"></i>
+                </button>
+                <button type="button" class="zen-lb-btn zen-lb-zoom-label" id="zen-lb-zoom-reset" title="100% 원본 비율로 초기화">100%</button>
+                <button type="button" class="zen-lb-btn" id="zen-lb-zoom-in" title="확대 (+)">
+                    <i class="fa-solid fa-plus"></i>
+                </button>
+                <div class="zen-img-tb-divider"></div>
+                <button type="button" class="zen-lb-btn" id="zen-lb-close-btn" title="닫기 (ESC)">
+                    <i class="fa-solid fa-xmark"></i>
+                    <span>닫기</span>
+                </button>
+            </div>
+        `;
+        overlayHost.appendChild(lightboxEl);
+
+        const lbControls = lightboxEl.querySelector('.zen-lightbox-controls');
+        if (lbControls) lbControls.addEventListener('click', (e) => e.stopPropagation());
+        const lbStage = lightboxEl.querySelector('#zen-lightbox-stage');
+        const lbImg = lightboxEl.querySelector('#zen-lightbox-img');
+        const lbZoomLabel = lightboxEl.querySelector('#zen-lb-zoom-reset');
+
+        let imgMenu = overlayHost.querySelector('#image-context-menu');
+        if (imgMenu) imgMenu.remove();
+        imgMenu = document.createElement('div');
+        imgMenu.id = 'image-context-menu';
+        imgMenu.className = 'table-context-menu image-context-menu';
+        imgMenu.style.display = 'none';
+        imgMenu.innerHTML = `
+            <div class="table-menu-item" data-action="zoom-view"><i class="fa-solid fa-magnifying-glass-plus"></i><span>크게 확대 보기</span></div>
+            <div class="table-menu-divider"></div>
+            <div class="table-menu-item" data-action="copy"><i class="fa-regular fa-copy"></i><span>복사</span><span class="menu-shortcut-hint">Ctrl+C</span></div>
+            <div class="table-menu-item" data-action="cut"><i class="fa-solid fa-scissors"></i><span>잘라내기</span><span class="menu-shortcut-hint">Ctrl+X</span></div>
+            <div class="table-menu-item" data-action="save-as"><i class="fa-solid fa-download"></i><span>이미지 저장 (다른 이름으로)</span></div>
+            <div class="table-menu-divider"></div>
+            <div class="image-menu-size-row">
+                <button type="button" class="image-menu-size-btn" data-size="25%">25%</button>
+                <button type="button" class="image-menu-size-btn" data-size="50%">50%</button>
+                <button type="button" class="image-menu-size-btn" data-size="75%">75%</button>
+                <button type="button" class="image-menu-size-btn" data-size="100%">100%</button>
+            </div>
+            <div class="table-menu-item" data-action="replace-image"><i class="fa-regular fa-images"></i><span>이미지 교체</span></div>
+            <div class="table-menu-divider"></div>
+            <div class="table-menu-item text-danger" data-action="delete"><i class="fa-regular fa-trash-can"></i><span>삭제</span><span class="menu-shortcut-hint">Delete</span></div>
+            <input type="file" id="image-replace-input" accept="image/*" style="display:none;" />
+        `;
+        overlayHost.appendChild(imgMenu);
+        const replaceInput = imgMenu.querySelector('#image-replace-input');
+
+        function getEditorAvailableWidth() {
+            if (!quill || !quill.root) return 600;
+            const style = global.getComputedStyle(quill.root);
+            const padLeft = parseFloat(style.paddingLeft) || 0;
+            const padRight = parseFloat(style.paddingRight) || 0;
+            const unzoomedAvail = Math.max(120, quill.root.clientWidth - padLeft - padRight);
+            const rootRect = quill.root.getBoundingClientRect();
+            const zoomFactor = (quill.root.offsetWidth > 0 && rootRect.width > 0) ? (rootRect.width / quill.root.offsetWidth) : 1;
+            return Math.max(120, unzoomedAvail * zoomFactor);
+        }
+
+        function getCurrentImgPercent(img) {
+            if (!img) return 100;
+            const dataSize = img.getAttribute('data-size');
+            if (dataSize && dataSize.endsWith('%')) {
+                const parsed = parseInt(dataSize, 10);
+                if (!isNaN(parsed)) return parsed;
+            }
+            const inlineWidth = img.style && img.style.width;
+            if (inlineWidth && inlineWidth.endsWith('%')) {
+                const parsed = parseInt(inlineWidth, 10);
+                if (!isNaN(parsed)) return parsed;
+            }
+            const availW = getEditorAvailableWidth();
+            const rectW = img.getBoundingClientRect().width;
+            if (availW > 0 && rectW > 0) {
+                return Math.min(100, Math.max(10, Math.round((rectW / availW) * 100)));
+            }
+            return 100;
+        }
+
+        function updateToolbarActiveButtons(pct) {
+            const sizeStr = `${pct}%`;
+            toolbarEl.querySelectorAll('.zen-img-tb-btn[data-size]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.size === sizeStr);
+            });
+        }
+
+        function syncMultiSelectedClasses() {
+            if (!quill || !quill.root) return;
+            Array.from(selectedImages).forEach((img) => {
+                if (!img || !img.isConnected || !quill.root.contains(img)) selectedImages.delete(img);
+            });
+            quill.root.querySelectorAll('img.zen-img-multi-selected').forEach((img) => {
+                if (selectedImages.size < 2 || !selectedImages.has(img)) {
+                    img.classList.remove('zen-img-multi-selected');
+                    if (img.classList.length === 0) img.removeAttribute('class');
+                }
+            });
+            if (selectedImages.size >= 2) {
+                selectedImages.forEach((img) => img.classList.add('zen-img-multi-selected'));
+            }
+        }
+
+        function getSelectedImagesOrdered() {
+            const imgs = [];
+            if (quill && quill.root) {
+                selectedImages.forEach((img) => {
+                    if (img && img.isConnected && quill.root.contains(img)) imgs.push(img);
+                    else selectedImages.delete(img);
+                });
+                if (imgs.length === 0 && activeResizingImg && activeResizingImg.isConnected && quill.root.contains(activeResizingImg)) {
+                    imgs.push(activeResizingImg);
+                }
+            }
+            imgs.sort((a, b) => {
+                try {
+                    const blotA = Quill.find(a);
+                    const blotB = Quill.find(b);
+                    if (blotA && blotB) return quill.getIndex(blotA) - quill.getIndex(blotB);
+                } catch (e) {}
+                const pos = a.compareDocumentPosition(b);
+                if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+                if (pos & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+                return 0;
+            });
+            return imgs;
+        }
+
+        function buildCleanImageHtml(img) {
+            const clone = img.cloneNode(false);
+            clone.classList.remove('zen-img-multi-selected');
+            if (clone.classList.length === 0) clone.removeAttribute('class');
+            return clone.outerHTML;
+        }
+
+        function hideZenImageResizer() {
+            activeResizingImg = null;
+            selectedImages.clear();
+            syncMultiSelectedClasses();
+            isDraggingResize = false;
+            resizerEl.classList.remove('is-dragging');
+            resizerEl.style.display = 'none';
+        }
+        _hideResizerFn = hideZenImageResizer;
+        _hasImageSelectionFn = () => Boolean(activeResizingImg || selectedImages.size > 0);
+
+        function syncZenImageResizerPosition() {
+            if (selectedImages.size > 1) {
+                resizerEl.style.display = 'none';
+                return;
+            }
+            if (!activeResizingImg || !activeResizingImg.isConnected || !quill.root.contains(activeResizingImg)) {
+                hideZenImageResizer();
+                return;
+            }
+            const imgRect = activeResizingImg.getBoundingClientRect();
+            const boundsEl = editorContainerEl || quill.root;
+            const containerRect = boundsEl.getBoundingClientRect();
+
+            // Intersect container bounds with any scrollable/clipped ancestor boxes (e.g. dialog .modal-body)
+            let visTop = containerRect.top;
+            let visBottom = containerRect.bottom;
+            let visLeft = containerRect.left;
+            let visRight = containerRect.right;
+            let p = boundsEl.parentElement;
+            while (p && p !== document.body && p !== document.documentElement) {
+                const st = global.getComputedStyle(p);
+                const ovY = st.overflowY || st.overflow || '';
+                const ovX = st.overflowX || st.overflow || '';
+                if (/(auto|scroll|hidden|clip)/.test(ovY)) {
+                    const pr = p.getBoundingClientRect();
+                    visTop = Math.max(visTop, pr.top);
+                    visBottom = Math.min(visBottom, pr.bottom);
+                }
+                if (/(auto|scroll|hidden|clip)/.test(ovX)) {
+                    const pr = p.getBoundingClientRect();
+                    visLeft = Math.max(visLeft, pr.left);
+                    visRight = Math.min(visRight, pr.right);
+                }
+                p = p.parentElement;
+            }
+
+            const clampedTop = Math.max(imgRect.top, visTop);
+            const clampedBottom = Math.min(imgRect.bottom, visBottom);
+            const clampedLeft = Math.max(imgRect.left, visLeft);
+            const clampedRight = Math.min(imgRect.right, visRight);
+            const clampedW = clampedRight - clampedLeft;
+            const clampedH = clampedBottom - clampedTop;
+
+            if (imgRect.width <= 0 || imgRect.height <= 0 || clampedH < 8 || clampedW < 8) {
+                resizerEl.style.visibility = 'hidden';
+                resizerEl.style.opacity = '0';
+                return;
+            }
+
+            resizerEl.style.visibility = 'visible';
+            resizerEl.style.opacity = '1';
+            resizerEl.style.top = `${clampedTop}px`;
+            resizerEl.style.left = `${clampedLeft}px`;
+            resizerEl.style.width = `${clampedW}px`;
+            resizerEl.style.height = `${clampedH}px`;
+
+            toolbarEl.classList.remove('pos-bottom', 'pos-inside-top');
+            const spaceAbove = clampedTop - visTop;
+            const spaceBelow = visBottom - clampedBottom;
+            if (spaceAbove < 48) {
+                if (spaceBelow >= 48) toolbarEl.classList.add('pos-bottom');
+                else toolbarEl.classList.add('pos-inside-top');
+            }
+
+            toolbarEl.style.left = '50%';
+            toolbarEl.style.transform = 'translateX(-50%)';
+            const tbRect = toolbarEl.getBoundingClientRect();
+            const viewportW = global.innerWidth;
+            if (tbRect.left < 8) {
+                toolbarEl.style.transform = `translateX(calc(-50% + ${8 - tbRect.left}px))`;
+            } else if (tbRect.right > viewportW - 8) {
+                toolbarEl.style.transform = `translateX(calc(-50% - ${tbRect.right - (viewportW - 8)}px))`;
+            }
+        }
+
+        function requestSyncPosition() {
+            if (!activeResizingImg || selectedImages.size > 1) return;
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = requestAnimationFrame(syncZenImageResizerPosition);
+        }
+
+        function showZenImageResizer(img) {
+            if (!img) return;
+            selectedImages.clear();
+            selectedImages.add(img);
+            syncMultiSelectedClasses();
+
+            activeResizingImg = img;
+            resizerEl.style.display = 'block';
+            const pct = getCurrentImgPercent(img);
+            updateToolbarActiveButtons(pct);
+            badgeEl.textContent = `${pct}%`;
+            syncZenImageResizerPosition();
+        }
+
+        function applyImageWidthPercent(imgOrPct, maybePct) {
+            let pct = maybePct;
+            let explicitImg = imgOrPct;
+            if (typeof imgOrPct === 'number' && maybePct === undefined) {
+                pct = imgOrPct;
+                explicitImg = null;
+            }
+            if (typeof pct !== 'number' || isNaN(pct)) return;
+
+            const clamped = Math.max(10, Math.min(100, Math.round(pct)));
+            const styleVal = `width: ${clamped}%; height: auto;`;
+            const sizeVal = `${clamped}%`;
+
+            let targets = getSelectedImagesOrdered();
+            if (explicitImg && (!targets.length || (targets.length === 1 && targets[0] !== explicitImg && selectedImages.size <= 1))) {
+                targets = [explicitImg];
+            }
+            if (!targets.length) return;
+
+            targets.forEach((targetImg) => {
+                targetImg.setAttribute('style', styleVal);
+                targetImg.setAttribute('data-size', sizeVal);
+                targetImg.removeAttribute('width');
+                targetImg.removeAttribute('height');
+                try {
+                    const blot = Quill.find(targetImg);
+                    if (blot && typeof blot.format === 'function') {
+                        blot.format('style', styleVal);
+                        blot.format('data-size', sizeVal);
+                        blot.format('width', false);
+                        blot.format('height', false);
+                    }
+                } catch (err) {}
+            });
+
+            if (targets.length === 1 && resizerEl.style.display === 'block') {
+                updateToolbarActiveButtons(clamped);
+                badgeEl.textContent = sizeVal;
+                syncZenImageResizerPosition();
+                setTimeout(syncZenImageResizerPosition, 20);
+            }
+        }
+
+        function deleteActiveImage() {
+            const targets = getSelectedImagesOrdered();
+            if (!targets.length) return;
+            const items = targets.map((img) => {
+                let idx = -1;
+                try {
+                    const blot = Quill.find(img);
+                    if (blot) idx = quill.getIndex(blot);
+                } catch (e) {}
+                return { img, idx };
+            });
+            hideZenImageResizer();
+
+            const validItems = items.filter(it => it.idx >= 0).sort((a, b) => b.idx - a.idx);
+            const invalidItems = items.filter(it => it.idx < 0);
+            if (validItems.length > 0) {
+                const minIdx = validItems[validItems.length - 1].idx;
+                try {
+                    if (quill.history && typeof quill.history.cutoff === 'function') quill.history.cutoff();
+                    validItems.forEach(({ idx }) => quill.deleteText(idx, 1, Quill.sources.USER));
+                    if (quill.history && typeof quill.history.cutoff === 'function') quill.history.cutoff();
+                    quill.setSelection(Math.min(minIdx, Math.max(0, quill.getLength() - 1)), 0, Quill.sources.SILENT);
+                } catch (e) {
+                    validItems.forEach(({ img }) => { if (img && img.parentNode) img.remove(); });
+                }
+            }
+            invalidItems.forEach(({ img }) => { if (img && img.parentNode) img.remove(); });
+        }
+
+        async function copyActiveImage(showToastMsg = true) {
+            const targets = getSelectedImagesOrdered();
+            if (!targets.length) return false;
+            let copied = false;
+
+            if (targets.length === 1) {
+                const targetImg = targets[0];
+                const src = targetImg.src;
+                if (!src) return false;
+                const cleanHtml = buildCleanImageHtml(targetImg);
+
+                if (navigator.clipboard && global.isSecureContext !== false) {
+                    try {
+                        let blob = null;
+                        if (src.startsWith('data:image/') || src.startsWith('blob:')) {
+                            const res = await fetch(src);
+                            blob = await res.blob();
+                        } else {
+                            blob = await new Promise((resolve, reject) => {
+                                const tempImg = new Image();
+                                tempImg.crossOrigin = 'anonymous';
+                                tempImg.onload = () => {
+                                    try {
+                                        const cvs = document.createElement('canvas');
+                                        cvs.width = tempImg.naturalWidth || tempImg.width || 300;
+                                        cvs.height = tempImg.naturalHeight || tempImg.height || 150;
+                                        cvs.getContext('2d').drawImage(tempImg, 0, 0);
+                                        cvs.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas null')), 'image/png');
+                                    } catch (err) { reject(err); }
+                                };
+                                tempImg.onerror = reject;
+                                tempImg.src = src;
+                            });
+                        }
+                        if (blob && typeof ClipboardItem !== 'undefined') {
+                            const pngBlob = blob.type === 'image/png' ? blob : new Blob([await blob.arrayBuffer()], { type: 'image/png' });
+                            await navigator.clipboard.write([new ClipboardItem({
+                                'image/png': pngBlob,
+                                'text/html': new Blob([cleanHtml], { type: 'text/html' })
+                            })]);
+                            copied = true;
+                        }
+                    } catch (e) {}
+                }
+                if (!copied) {
+                    try {
+                        if (navigator.clipboard && navigator.clipboard.writeText) {
+                            await navigator.clipboard.writeText(src);
+                            copied = true;
+                        }
+                    } catch (e) {}
+                }
+            } else {
+                const htmlPayload = targets.map(img => `<p>${buildCleanImageHtml(img)}</p>`).join('');
+                if (navigator.clipboard && global.isSecureContext !== false && typeof ClipboardItem !== 'undefined') {
+                    try {
+                        await navigator.clipboard.write([new ClipboardItem({
+                            'text/html': new Blob([htmlPayload], { type: 'text/html' }),
+                            'text/plain': new Blob([''], { type: 'text/plain' })
+                        })]);
+                        copied = true;
+                    } catch (e) {}
+                }
+            }
+
+            if (showToastMsg) toastMsg(copied ? '이미지가 복사되었습니다.' : '클립보드 복사에 실패했습니다.');
+            return copied;
+        }
+
+        async function cutActiveImage() {
+            const targets = getSelectedImagesOrdered();
+            if (!targets.length) return;
+            const success = await copyActiveImage(false);
+            if (!success) {
+                toastMsg('클립보드 복사에 실패하여 잘라내기를 취소했습니다.');
+                return;
+            }
+            deleteActiveImage();
+            toastMsg('이미지를 잘라냈습니다.');
+        }
+
+        // Lightbox controls
+        let lbScale = 1, lbTranslateX = 0, lbTranslateY = 0;
+        let isPanning = false, panStartX = 0, panStartY = 0, didMoveDuringPan = false;
+        let initialPinchDist = 0, initialPinchScale = 1;
+
+        function updateLightboxTransform() {
+            lbImg.style.transform = `translate(${lbTranslateX}px, ${lbTranslateY}px) scale(${lbScale})`;
+            lbZoomLabel.textContent = `${Math.round(lbScale * 100)}%`;
+        }
+        function setLightboxZoom(newScale, resetPan = false) {
+            lbScale = Math.max(0.5, Math.min(5, Math.round(newScale * 100) / 100));
+            if (resetPan || lbScale <= 1) { lbTranslateX = 0; lbTranslateY = 0; }
+            updateLightboxTransform();
+        }
+        function openZenImageLightbox(src) {
+            if (!src) return;
+            lbImg.src = src;
+            lbScale = 1; lbTranslateX = 0; lbTranslateY = 0;
+            updateLightboxTransform();
+            lightboxEl.classList.add('is-open');
+        }
+        function closeZenImageLightbox() {
+            if (!lightboxEl.classList.contains('is-open')) return;
+            lightboxEl.classList.remove('is-open');
+            isPanning = false;
+            lbStage.classList.remove('is-panning');
+        }
+        _closeLightboxFn = closeZenImageLightbox;
+        _isLightboxOpenFn = () => lightboxEl.classList.contains('is-open');
+
+        lightboxEl.querySelector('#zen-lb-zoom-in').addEventListener('click', () => setLightboxZoom(lbScale + 0.25));
+        lightboxEl.querySelector('#zen-lb-zoom-out').addEventListener('click', () => setLightboxZoom(lbScale - 0.25));
+        lightboxEl.querySelector('#zen-lb-zoom-reset').addEventListener('click', () => setLightboxZoom(1, true));
+        lightboxEl.querySelector('#zen-lb-close-btn').addEventListener('click', closeZenImageLightbox);
+        lightboxEl.querySelector('#zen-lb-top-close').addEventListener('click', closeZenImageLightbox);
+        lightboxEl.addEventListener('wheel', (e) => {
+            if (!lightboxEl.classList.contains('is-open')) return;
+            e.preventDefault();
+            setLightboxZoom(lbScale + (e.deltaY < 0 ? 0.2 : -0.2));
+        }, { passive: false });
+        lbImg.addEventListener('dblclick', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            setLightboxZoom(lbScale > 1.05 ? 1 : 2, lbScale > 1.05);
+        });
+        lbStage.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            isPanning = true; didMoveDuringPan = false;
+            panStartX = e.clientX - lbTranslateX; panStartY = e.clientY - lbTranslateY;
+            lbStage.classList.add('is-panning');
+        });
+        const onLbMouseMove = (e) => {
+            if (!isPanning) return;
+            const nextX = e.clientX - panStartX, nextY = e.clientY - panStartY;
+            if (Math.abs(nextX - lbTranslateX) > 4 || Math.abs(nextY - lbTranslateY) > 4) didMoveDuringPan = true;
+            lbTranslateX = nextX; lbTranslateY = nextY;
+            updateLightboxTransform();
+        };
+        const onLbMouseUp = (e) => {
+            if (!isPanning) return;
+            isPanning = false;
+            lbStage.classList.remove('is-panning');
+            if (!didMoveDuringPan && e.target === lbStage) closeZenImageLightbox();
+        };
+        lbStage.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isPanning = true; didMoveDuringPan = false;
+                panStartX = e.touches[0].clientX - lbTranslateX; panStartY = e.touches[0].clientY - lbTranslateY;
+                lbStage.classList.add('is-panning');
+            } else if (e.touches.length === 2) {
+                isPanning = false; didMoveDuringPan = true;
+                initialPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                initialPinchScale = lbScale;
+            }
+        }, { passive: true });
+        lbStage.addEventListener('touchmove', (e) => {
+            if (!lightboxEl.classList.contains('is-open')) return;
+            if (e.cancelable) e.preventDefault();
+            if (e.touches.length === 1 && isPanning) {
+                const nextX = e.touches[0].clientX - panStartX, nextY = e.touches[0].clientY - panStartY;
+                if (Math.abs(nextX - lbTranslateX) > 4 || Math.abs(nextY - lbTranslateY) > 4) didMoveDuringPan = true;
+                lbTranslateX = nextX; lbTranslateY = nextY;
+                updateLightboxTransform();
+            } else if (e.touches.length === 2 && initialPinchDist > 0) {
+                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                setLightboxZoom(initialPinchScale * (dist / initialPinchDist));
+            }
+        }, { passive: false });
+        lbStage.addEventListener('touchend', (e) => {
+            if (e.touches.length === 0) {
+                isPanning = false; initialPinchDist = 0; lbStage.classList.remove('is-panning');
+            }
+        }, { passive: true });
+
+        // Resizer toolbar & corner handle drag
+        toolbarEl.addEventListener('click', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const btn = e.target.closest('.zen-img-tb-btn');
+            if (!btn || !activeResizingImg) return;
+            if (btn.dataset.size) {
+                const pct = parseInt(btn.dataset.size, 10);
+                if (!isNaN(pct)) applyImageWidthPercent(activeResizingImg, pct);
+            } else if (btn.dataset.action === 'copy') copyActiveImage(true);
+            else if (btn.dataset.action === 'cut') cutActiveImage();
+            else if (btn.dataset.action === 'zoom') openZenImageLightbox(activeResizingImg.src);
+            else if (btn.dataset.action === 'delete') deleteActiveImage();
+        });
+        ['mousedown', 'touchstart'].forEach(evt => {
+            resizerEl.addEventListener(evt, (e) => e.stopPropagation(), { passive: false });
+        });
+
+        function startResizeDrag(clientX, dir, e) {
+            if (!activeResizingImg) return;
+            if (e && e.cancelable) e.preventDefault();
+            isDraggingResize = true; dragDir = dir || 'se';
+            dragStartX = clientX;
+            dragStartWidth = activeResizingImg.getBoundingClientRect().width;
+            dragEditorMaxWidth = getEditorAvailableWidth();
+            dragCurrentPct = getCurrentImgPercent(activeResizingImg);
+            resizerEl.classList.add('is-dragging');
+            badgeEl.textContent = `${dragCurrentPct}% · ${Math.round(dragStartWidth)}px`;
+        }
+        function moveResizeDrag(clientX) {
+            if (!isDraggingResize || !activeResizingImg) return;
+            const dx = clientX - dragStartX;
+            const deltaW = (dragDir === 'nw' || dragDir === 'sw') ? -dx : dx;
+            const minPx = Math.max(48, Math.round(dragEditorMaxWidth * 0.1));
+            const newWidthPx = Math.max(minPx, Math.min(dragEditorMaxWidth, dragStartWidth + deltaW));
+            let pct = Math.max(10, Math.min(100, Math.round((newWidthPx / dragEditorMaxWidth) * 100)));
+            for (const snap of [25, 50, 75, 100]) {
+                if (Math.abs(pct - snap) <= 2) { pct = snap; break; }
+            }
+            dragCurrentPct = pct;
+            activeResizingImg.style.width = `${pct}%`;
+            activeResizingImg.style.height = 'auto';
+            activeResizingImg.setAttribute('data-size', `${pct}%`);
+            badgeEl.textContent = `${pct}% · ${Math.round(activeResizingImg.getBoundingClientRect().width)}px`;
+            updateToolbarActiveButtons(pct);
+            syncZenImageResizerPosition();
+        }
+        function endResizeDrag() {
+            if (!isDraggingResize) return;
+            isDraggingResize = false;
+            resizerEl.classList.remove('is-dragging');
+            if (activeResizingImg) applyImageWidthPercent(activeResizingImg, dragCurrentPct);
+        }
+        resizerEl.querySelectorAll('.zen-resize-handle').forEach(handle => {
+            handle.addEventListener('mousedown', (e) => startResizeDrag(e.clientX, handle.dataset.dir, e));
+            handle.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) startResizeDrag(e.touches[0].clientX, handle.dataset.dir, e);
+            }, { passive: false });
+        });
+        const onWinMouseMove = (e) => { if (isDraggingResize) { e.preventDefault(); moveResizeDrag(e.clientX); } };
+        const onWinTouchMove = (e) => { if (isDraggingResize && e.touches.length === 1) { if (e.cancelable) e.preventDefault(); moveResizeDrag(e.touches[0].clientX); } };
+
+        // Image click / multi-select / dblclick
+        const onImgMouseDownCapture = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.button === 0) {
+                const img = e.target.closest('img');
+                if (img && quill.root.contains(img)) { e.preventDefault(); e.stopPropagation(); }
+            }
+        };
+        const onImgClick = (e) => {
+            const img = e.target.closest('img');
+            const isCtrl = e.ctrlKey || e.metaKey;
+            if (!isCtrl) {
+                const qSel = quill.getSelection();
+                const domSel = global.getSelection();
+                const hasDomRange = domSel && domSel.rangeCount > 0 && !domSel.isCollapsed && quill.root.contains(domSel.anchorNode);
+                if ((qSel && qSel.length > 0) || hasDomRange) return;
+            }
+            if (img && quill.root.contains(img)) {
+                e.stopPropagation();
+                if (isCtrl) {
+                    e.preventDefault();
+                    const domSel = global.getSelection();
+                    if (domSel && !domSel.isCollapsed) domSel.removeAllRanges();
+                    if (activeResizingImg && activeResizingImg.isConnected && quill.root.contains(activeResizingImg) && !selectedImages.has(activeResizingImg)) {
+                        selectedImages.add(activeResizingImg);
+                    }
+                    if (selectedImages.has(img)) selectedImages.delete(img);
+                    else selectedImages.add(img);
+                    if (selectedImages.size === 0) hideZenImageResizer();
+                    else if (selectedImages.size === 1) showZenImageResizer(Array.from(selectedImages)[0]);
+                    else {
+                        activeResizingImg = img;
+                        isDraggingResize = false;
+                        resizerEl.classList.remove('is-dragging');
+                        resizerEl.style.display = 'none';
+                        syncMultiSelectedClasses();
+                    }
+                } else {
+                    showZenImageResizer(img);
+                }
+            } else if (activeResizingImg || selectedImages.size > 0) {
+                hideZenImageResizer();
+            }
+        };
+        const onImgDblClick = (e) => {
+            const img = e.target.closest('img');
+            if (img && quill.root.contains(img) && img.src) {
+                e.preventDefault(); e.stopPropagation();
+                openZenImageLightbox(img.src);
+            }
+        };
+        const onDocOutsideMouseDown = (e) => {
+            if (!activeResizingImg && selectedImages.size === 0) return;
+            const clickedImg = e.target.closest ? e.target.closest('img') : null;
+            if ((clickedImg && (clickedImg === activeResizingImg || selectedImages.has(clickedImg))) ||
+                ((e.ctrlKey || e.metaKey) && clickedImg && quill.root.contains(clickedImg)) ||
+                e.target.closest('#zen-image-resizer') ||
+                e.target.closest('#zen-image-lightbox') ||
+                e.target.closest('#image-context-menu')) return;
+            hideZenImageResizer();
+        };
+        const onImgKeyDown = (e) => {
+            if (!activeResizingImg && selectedImages.size === 0) return;
+            if (lightboxEl.classList.contains('is-open')) return;
+            const qSel = quill.getSelection();
+            const domSel = global.getSelection();
+            if ((qSel && qSel.length > 0) || (domSel && domSel.rangeCount > 0 && !domSel.isCollapsed && quill.root.contains(domSel.anchorNode))) return;
+
+            const isCtrl = e.ctrlKey || e.metaKey;
+            const keyLower = e.key ? e.key.toLowerCase() : '';
+            if (isCtrl && keyLower === 'c') { e.preventDefault(); e.stopPropagation(); copyActiveImage(true); return; }
+            if (isCtrl && keyLower === 'x') { e.preventDefault(); e.stopPropagation(); cutActiveImage(); return; }
+            if (isCtrl && keyLower === 'z' && !e.shiftKey) {
+                e.preventDefault(); e.stopPropagation(); hideZenImageResizer();
+                try { quill.history.undo(); } catch (err) {}
+                return;
+            }
+            if (isCtrl && (keyLower === 'y' || (keyLower === 'z' && e.shiftKey))) {
+                e.preventDefault(); e.stopPropagation(); hideZenImageResizer();
+                try { quill.history.redo(); } catch (err) {}
+                return;
+            }
+            if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); e.stopPropagation(); deleteActiveImage(); }
+            else if (e.key === 'Enter') {
+                e.preventDefault(); e.stopPropagation();
+                const targetImg = activeResizingImg;
+                hideZenImageResizer();
+                try {
+                    const blot = Quill.find(targetImg);
+                    if (blot) { quill.focus(); quill.setSelection(quill.getIndex(blot) + 1, 0, Quill.sources.USER); }
+                } catch (err) {}
+            }
+        };
+
+        // Image Context Menu
+        let contextTargetImg = null;
+        function hideImageContextMenu() { imgMenu.style.display = 'none'; }
+        _hideImageMenuFn = hideImageContextMenu;
+
+        function showImageContextMenu(imgEl, clientX, clientY) {
+            if (!imgEl) return;
+            contextTargetImg = imgEl;
+            if (_hideTableMenuFn) _hideTableMenuFn();
+            const keepMulti = selectedImages.size > 1 && selectedImages.has(imgEl);
+            if (!keepMulti) showZenImageResizer(imgEl);
+
+            let curW = (imgEl.style.width || '').trim();
+            if (keepMulti) {
+                const multiImgs = Array.from(quill.root.querySelectorAll('img.zen-img-multi-selected'));
+                const widths = new Set(multiImgs.map(el => (el.style.width || '').trim()));
+                curW = widths.size === 1 ? Array.from(widths)[0] : '';
+            }
+            imgMenu.querySelectorAll('.image-menu-size-btn').forEach(btn => {
+                btn.classList.toggle('active', curW === btn.dataset.size);
+            });
+
+            imgMenu.style.visibility = 'hidden';
+            imgMenu.style.display = 'block';
+            const mw = imgMenu.offsetWidth || 215, mh = imgMenu.offsetHeight || 280;
+            imgMenu.style.visibility = '';
+            let x = clientX, y = clientY;
+            if (x + mw > global.innerWidth) x = global.innerWidth - mw - 10;
+            if (y + mh > global.innerHeight) y = global.innerHeight - mh - 10;
+            imgMenu.style.left = `${Math.max(10, x)}px`;
+            imgMenu.style.top = `${Math.max(10, y)}px`;
+        }
+
+        const onImgContextMenu = (e) => {
+            const img = e.target.closest('img');
+            if (!img || !quill.root.contains(img)) { hideImageContextMenu(); return; }
+            e.preventDefault(); e.stopPropagation();
+            showImageContextMenu(img, e.clientX, e.clientY);
+        };
+        let imgTouchTimer = null, imgTouchX = 0, imgTouchY = 0;
+        const onImgTouchStart = (e) => {
+            const img = e.target.closest('img');
+            if (!img || !quill.root.contains(img) || e.touches.length > 1) return;
+            imgTouchX = e.touches[0].clientX; imgTouchY = e.touches[0].clientY;
+            imgTouchTimer = setTimeout(() => {
+                if (navigator.vibrate) navigator.vibrate(40);
+                showImageContextMenu(img, imgTouchX, imgTouchY);
+            }, 450);
+        };
+        const onImgTouchMove = (e) => {
+            if (imgTouchTimer && e.touches.length > 0 && (Math.abs(e.touches[0].clientX - imgTouchX) > 10 || Math.abs(e.touches[0].clientY - imgTouchY) > 10)) {
+                clearTimeout(imgTouchTimer); imgTouchTimer = null;
+            }
+        };
+        const onImgTouchEnd = () => { if (imgTouchTimer) { clearTimeout(imgTouchTimer); imgTouchTimer = null; } };
+        const onDocClickImgMenu = (e) => { if (!e.target.closest('#image-context-menu')) hideImageContextMenu(); };
+
+        imgMenu.querySelectorAll('.image-menu-size-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const pct = parseInt(btn.dataset.size, 10);
+                hideImageContextMenu();
+                const keepMulti = selectedImages.size > 1 && contextTargetImg && selectedImages.has(contextTargetImg);
+                if (!keepMulti && contextTargetImg) showZenImageResizer(contextTargetImg);
+                if (!isNaN(pct)) applyImageWidthPercent(pct);
+            });
+        });
+        imgMenu.querySelectorAll('.table-menu-item').forEach(item => {
+            item.addEventListener('click', async () => {
+                const action = item.dataset.action;
+                const targetImg = contextTargetImg;
+                hideImageContextMenu();
+                if (!targetImg) return;
+                const keepMulti = selectedImages.size > 1 && selectedImages.has(targetImg);
+                if (!keepMulti) showZenImageResizer(targetImg);
+
+                if (action === 'zoom-view') openZenImageLightbox(targetImg.src);
+                else if (action === 'copy') await copyActiveImage(true);
+                else if (action === 'cut') await cutActiveImage();
+                else if (action === 'save-as') {
+                    try {
+                        const res = await fetch(targetImg.src);
+                        const blob = await res.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `일정_이미지_${new Date().toISOString().slice(0, 10).replace(/-/g, '')}.png`;
+                        a.click();
+                        setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    } catch (err) { toastMsg('이미지 저장에 실패했습니다.'); }
+                } else if (action === 'replace-image' && replaceInput) {
+                    replaceInput.value = '';
+                    replaceInput.click();
+                } else if (action === 'delete') deleteActiveImage();
+            });
+        });
+        if (replaceInput) {
+            replaceInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file || !contextTargetImg) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const newSrc = reader.result;
+                    if (typeof newSrc !== 'string') return;
+                    const keepWidth = contextTargetImg.style.width || '';
+                    const blot = Quill.find(contextTargetImg);
+                    if (blot) {
+                        const idx = quill.getIndex(blot);
+                        quill.deleteText(idx, 1, Quill.sources.USER);
+                        quill.insertEmbed(idx, 'image', newSrc, Quill.sources.USER);
+                        if (keepWidth) quill.formatText(idx, 1, 'style', `width: ${keepWidth}; height: auto;`, Quill.sources.USER);
+                        const [newLeaf] = quill.getLeaf(idx);
+                        if (newLeaf && newLeaf.domNode && newLeaf.domNode.tagName === 'IMG') {
+                            setTimeout(() => showZenImageResizer(newLeaf.domNode), 30);
+                        }
+                    } else {
+                        contextTargetImg.src = newSrc;
+                    }
+                    toastMsg('이미지가 교체되었습니다.');
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        const onTextChangeImgSync = () => {
+            if (selectedImages.size > 0) {
+                let changed = false;
+                Array.from(selectedImages).forEach((img) => {
+                    if (!img.isConnected || !quill.root.contains(img)) { selectedImages.delete(img); changed = true; }
+                });
+                if (changed) {
+                    if (selectedImages.size === 0) { hideZenImageResizer(); return; }
+                    if (selectedImages.size === 1) { showZenImageResizer(Array.from(selectedImages)[0]); return; }
+                    syncMultiSelectedClasses();
+                }
+            }
+            syncMultiSelectedClasses();
+            if (activeResizingImg) {
+                if (!activeResizingImg.isConnected || !quill.root.contains(activeResizingImg)) {
+                    if (selectedImages.size > 1) activeResizingImg = Array.from(selectedImages)[0];
+                    else hideZenImageResizer();
+                } else if (selectedImages.size <= 1) requestSyncPosition();
+            }
+        };
+        quill.on('text-change', onTextChangeImgSync);
+
+        global.addEventListener('mousemove', onLbMouseMove);
+        global.addEventListener('mouseup', onLbMouseUp);
+        global.addEventListener('mousemove', onWinMouseMove, { passive: false });
+        global.addEventListener('touchmove', onWinTouchMove, { passive: false });
+        global.addEventListener('mouseup', endResizeDrag);
+        global.addEventListener('touchend', endResizeDrag);
+        global.addEventListener('keydown', onImgKeyDown, true);
+        global.addEventListener('resize', requestSyncPosition, { passive: true });
+        quill.root.addEventListener('scroll', requestSyncPosition, { passive: true });
+        overlayHost.addEventListener('scroll', requestSyncPosition, { passive: true, capture: true });
+        quill.root.addEventListener('mousedown', onImgMouseDownCapture, true);
+        quill.root.addEventListener('click', onImgClick);
+        quill.root.addEventListener('dblclick', onImgDblClick);
+        quill.root.addEventListener('contextmenu', onImgContextMenu);
+        quill.root.addEventListener('touchstart', onImgTouchStart, { passive: true });
+        quill.root.addEventListener('touchmove', onImgTouchMove, { passive: true });
+        quill.root.addEventListener('touchend', onImgTouchEnd, { passive: true });
+        document.addEventListener('mousedown', onDocOutsideMouseDown);
+        document.addEventListener('click', onDocClickImgMenu);
+
+        _cleanupFns.push(() => {
+            if (rafId) cancelAnimationFrame(rafId);
+            global.removeEventListener('mousemove', onLbMouseMove);
+            global.removeEventListener('mouseup', onLbMouseUp);
+            global.removeEventListener('mousemove', onWinMouseMove);
+            global.removeEventListener('touchmove', onWinTouchMove);
+            global.removeEventListener('mouseup', endResizeDrag);
+            global.removeEventListener('touchend', endResizeDrag);
+            global.removeEventListener('keydown', onImgKeyDown, true);
+            global.removeEventListener('resize', requestSyncPosition);
+            quill.root.removeEventListener('scroll', requestSyncPosition);
+            overlayHost.removeEventListener('scroll', requestSyncPosition, true);
+            quill.root.removeEventListener('mousedown', onImgMouseDownCapture, true);
+            quill.root.removeEventListener('click', onImgClick);
+            quill.root.removeEventListener('dblclick', onImgDblClick);
+            quill.root.removeEventListener('contextmenu', onImgContextMenu);
+            quill.root.removeEventListener('touchstart', onImgTouchStart);
+            quill.root.removeEventListener('touchmove', onImgTouchMove);
+            quill.root.removeEventListener('touchend', onImgTouchEnd);
+            document.removeEventListener('mousedown', onDocOutsideMouseDown);
+            document.removeEventListener('click', onDocClickImgMenu);
+            resizerEl.remove();
+            lightboxEl.remove();
+            imgMenu.remove();
+            _hideResizerFn = null;
+            _hideImageMenuFn = null;
+            _closeLightboxFn = null;
+            _isLightboxOpenFn = null;
+            _hasImageSelectionFn = null;
+        });
+    }
+
+    function setupCodeBlockInteractions(quill, overlayHost, opts) {
+        const Quill = global.Quill;
+        function toastMsg(m) {
+            if (opts && typeof opts.onToast === 'function') opts.onToast(m);
+        }
+
+        let tooltipEl = overlayHost.querySelector('#zen-codeblock-tooltip');
+        if (tooltipEl) tooltipEl.remove();
+        tooltipEl = document.createElement('div');
+        tooltipEl.id = 'zen-codeblock-tooltip';
+        tooltipEl.className = 'zen-codeblock-tooltip';
+        overlayHost.appendChild(tooltipEl);
+
+        let currentKey = '';
+        function hideTooltip() {
+            currentKey = '';
+            tooltipEl.classList.remove('is-visible');
+        }
+        function showTooltipAtRect(text, rect, key) {
+            if (!text || !rect) { hideTooltip(); return; }
+            if (currentKey !== key || tooltipEl.textContent !== text) {
+                tooltipEl.textContent = text;
+                currentKey = key;
+            }
+            tooltipEl.classList.add('is-visible');
+            const tipW = tooltipEl.offsetWidth || 104, tipH = tooltipEl.offsetHeight || 28;
+            const left = Math.max(8, Math.min(Math.max(8, (global.innerWidth || 1024) - tipW - 8), rect.left + (rect.width - tipW) / 2));
+            let top = rect.top - tipH - 7;
+            if (top < 8) top = rect.bottom + 7;
+            tooltipEl.style.left = `${Math.round(left)}px`;
+            tooltipEl.style.top = `${Math.round(top)}px`;
+        }
+
+        const onPointerMove = (e) => {
+            if (e.pointerType === 'touch') return;
+            const container = e.target && e.target.closest ? e.target.closest('.ql-code-block-container') : null;
+            if (!container) { if (currentKey) hideTooltip(); return; }
+            const selectEl = e.target && e.target.closest ? e.target.closest('select.ql-ui') : null;
+            if (selectEl) {
+                if (selectEl.hasAttribute('title')) selectEl.removeAttribute('title');
+                if (document.activeElement === selectEl) { hideTooltip(); return; }
+                showTooltipAtRect('코드 언어 선택', selectEl.getBoundingClientRect(), 'lang');
+                return;
+            }
+            const rect = container.getBoundingClientRect();
+            const clickX = e.clientX - rect.left, clickY = e.clientY - rect.top;
+            if (clickX >= rect.width - 44 && clickX <= rect.width && clickY >= 0 && clickY <= 40) {
+                showTooltipAtRect('코드 전체 복사', { left: rect.right - 40, right: rect.right - 14, top: rect.top + 8, bottom: rect.top + 32, width: 26, height: 24 }, 'copy');
+                return;
+            }
+            if (currentKey) hideTooltip();
+        };
+
+        const onEditorClick = (e) => {
+            const container = e.target.closest('.ql-code-block-container');
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            if ((e.clientX - rect.left) > rect.width - 40 && (e.clientY - rect.top) < 40) {
+                e.preventDefault(); e.stopPropagation();
+                const codeText = Array.from(container.querySelectorAll('.ql-code-block')).map(l => l.textContent).join('\n');
+                navigator.clipboard.writeText(codeText).then(() => {
+                    container.classList.add('is-copied');
+                    toastMsg('코드블록이 클립보드에 복사되었습니다.');
+                    setTimeout(() => container.classList.remove('is-copied'), 2000);
+                }).catch(() => toastMsg('복사에 실패했습니다.'));
+                return;
+            }
+            if (e.target.closest('select.ql-ui') || e.shiftKey || e.ctrlKey || e.metaKey) return;
+            const domSel = global.getSelection();
+            if (domSel && !domSel.isCollapsed) return;
+            const codeLineEl = e.target.closest('.ql-code-block');
+            if (!codeLineEl) return;
+            const rawLineText = codeLineEl.textContent || '';
+            const cbMatch = rawLineText.match(/^([ \t]*)([\u2610\u2611])(?=\s|$)/);
+            if (!cbMatch) return;
+            let caretNode = null, caretOffset = 0;
+            if (typeof document.caretRangeFromPoint === 'function') {
+                const cr = document.caretRangeFromPoint(e.clientX, e.clientY);
+                if (cr) { caretNode = cr.startContainer; caretOffset = cr.startOffset; }
+            }
+            if (!caretNode || !codeLineEl.contains(caretNode)) return;
+            let charOffset = 0;
+            try {
+                const preRange = document.createRange();
+                preRange.selectNodeContents(codeLineEl);
+                preRange.setEnd(caretNode, caretOffset);
+                charOffset = preRange.toString().length;
+            } catch { return; }
+            const checkboxRelIdx = cbMatch[1].length;
+            if (charOffset < checkboxRelIdx || charOffset > checkboxRelIdx + 1) return;
+            const blot = Quill.find(codeLineEl);
+            if (!blot) return;
+            e.preventDefault();
+            const absIdx = quill.getIndex(blot) + checkboxRelIdx;
+            const nextChar = cbMatch[2] === '\u2610' ? '\u2611' : '\u2610';
+            const Delta = Quill.import('delta');
+            const delta = new Delta();
+            if (absIdx > 0) delta.retain(absIdx);
+            delta.delete(1).insert(nextChar);
+            quill.updateContents(delta, Quill.sources.USER);
+            quill.setSelection(absIdx + 1, 0, Quill.sources.SILENT);
+        };
+
+        const onSelectChange = (e) => {
+            if (!e.target || !e.target.matches('.ql-code-block-container select.ql-ui')) return;
+            const scrollEditor = quill.root.scrollTop;
+            const restore = () => {
+                quill.blur();
+                if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur();
+                quill.root.scrollTop = scrollEditor;
+            };
+            restore();
+            setTimeout(restore, 0);
+            setTimeout(restore, 50);
+        };
+
+        quill.root.addEventListener('pointermove', onPointerMove);
+        quill.root.addEventListener('mouseleave', hideTooltip);
+        quill.root.addEventListener('pointerdown', hideTooltip, true);
+        quill.root.addEventListener('click', onEditorClick);
+        quill.root.addEventListener('change', onSelectChange, true);
+        quill.root.addEventListener('scroll', hideTooltip, { passive: true });
+        _cleanupFns.push(() => {
+            quill.root.removeEventListener('pointermove', onPointerMove);
+            quill.root.removeEventListener('mouseleave', hideTooltip);
+            quill.root.removeEventListener('pointerdown', hideTooltip, true);
+            quill.root.removeEventListener('click', onEditorClick);
+            quill.root.removeEventListener('change', onSelectChange, true);
+            quill.root.removeEventListener('scroll', hideTooltip);
+            tooltipEl.remove();
+        });
+    }
+
+    // ========================================================================
+    // 4. Markdown Help Modal (MY 노트 V1.5.1 verbatim, clean Zen styling)
+    // ========================================================================
+    function openMarkdownHelpModal() {
+        const modal = document.getElementById('markdownHelpModal');
+        if (!modal) return;
+        modal.innerHTML = `
+            <div class="md-help-header">
+                <div class="md-help-title-wrap">
+                    <span class="md-help-title">
+                        <i class="fa-brands fa-markdown" style="color: var(--accent); font-size: 19px;"></i> 마크다운 단축키 안내
+                    </span>
+                    <div class="md-help-subtitle">입력 후 <b>Space</b>를 누르면 서식이 즉시 적용됩니다.</div>
+                </div>
+                <button type="button" id="closeMdHelpTopBtn" class="zen-modal-icon-close" aria-label="닫기" title="닫기 (Esc)">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="md-help-body">
+                <table class="md-help-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 14%;">툴바</th>
+                            <th style="width: 54%;">키보드 입력</th>
+                            <th style="width: 32%;">변환 결과</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="md-tb-badge">H1</span></td><td><code class="md-key"># </code></td><td><span style="font-weight: 700;">대제목 (H1)</span></td></tr>
+                        <tr><td><span class="md-tb-badge">H2</span></td><td><code class="md-key">## </code></td><td><span style="font-weight: 700;">중제목 (H2)</span></td></tr>
+                        <tr><td><span class="md-tb-badge">H3</span></td><td><code class="md-key">### </code></td><td><span style="font-weight: 600;">소제목 (H3)</span></td></tr>
+                        <tr><td><span class="md-tb-badge" style="font-weight: 800; font-size: 13px;">B</span></td><td><code class="md-key">**단어** </code></td><td><strong>굵게</strong></td></tr>
+                        <tr><td><span class="md-tb-badge" style="font-style: italic; font-family: serif; font-size: 13px;">I</span></td><td><code class="md-key">*단어* </code></td><td><em>기울임꼴</em></td></tr>
+                        <tr><td><span class="md-tb-badge" style="text-decoration: underline; font-size: 13px;">U</span></td><td><code class="md-key">__단어__ </code></td><td><u>밑줄</u></td></tr>
+                        <tr><td><span class="md-tb-badge" style="text-decoration: line-through; font-size: 13px;">S</span></td><td><code class="md-key">~~단어~~ </code></td><td><del style="color: var(--text-muted);">취소선</del></td></tr>
+                        <tr><td><span class="md-tb-badge" style="background: #fef08a; color: #854d0e; font-weight: 800; font-size: 12px; padding: 1px 4px; border-radius: 3px;">H</span></td><td><code class="md-key">==단어== </code></td><td><span style="background: #fef08a; color: #854d0e; padding: 1px 5px; border-radius: 3px; font-weight: 600;">형광펜</span></td></tr>
+                        <tr><td><i class="fa-solid fa-keyboard" style="font-size: 11px; color: var(--text-muted);"></i></td><td><code class="md-key">\`단어\` </code></td><td><code style="background-color: rgba(79, 70, 229, 0.1); color: var(--accent); padding: 2px 4px; border-radius: 4px; font-size: 12px;">인라인 코드</code></td></tr>
+                        <tr><td><i class="fa-solid fa-list-check" style="font-size: 12px; color: var(--text-muted);"></i></td><td><code class="md-key">[ ] </code>, <code class="md-key">- [ ] </code></td><td>체크리스트 (Tab으로 들여쓰기)</td></tr>
+                        <tr><td><i class="fa-solid fa-list-ol" style="font-size: 12px; color: var(--text-muted);"></i></td><td><code class="md-key">1. </code></td><td>번호 목록 (Tab으로 단계 조절)</td></tr>
+                        <tr><td><i class="fa-solid fa-list-ul" style="font-size: 12px; color: var(--text-muted);"></i></td><td><code class="md-key">- </code>, <code class="md-key">* </code>, <code class="md-key">+ </code></td><td>글머리 기호 (Tab으로 단계 조절)</td></tr>
+                        <tr><td><i class="fa-solid fa-table" style="font-size: 12px; color: var(--text-muted);"></i></td><td><code class="md-key">|제목|내용| </code>, <code class="md-key">Ctrl+Alt+T</code></td><td>표 (셀 우클릭으로 행/열/표 삭제)</td></tr>
+                        <tr>
+                            <td><i class="fa-solid fa-table-cells-large" style="font-size: 12px; color: var(--text-muted);"></i></td>
+                            <td>
+                                <div class="md-key-lines">
+                                    <div class="md-key-row">
+                                        <span class="md-key-pair"><code class="md-key">Alt+↓</code>(행+)</span>
+                                        <span class="md-key-pair"><code class="md-key">Alt+↑</code>(행-)</span>
+                                    </div>
+                                    <div class="md-key-row">
+                                        <span class="md-key-pair"><code class="md-key">Alt+→</code>(열+)</span>
+                                        <span class="md-key-pair"><code class="md-key">Alt+←</code>(열-)</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>행/열 편집</td>
+                        </tr>
+                        <tr><td><i class="fa-regular fa-face-smile" style="font-size: 12px; color: var(--text-muted);"></i></td><td><code class="md-key">Ctrl+F10</code></td><td>특수문자/이모티콘</td></tr>
+                        <tr><td><i class="fa-solid fa-quote-left" style="font-size: 12px; color: var(--text-muted);"></i></td><td><code class="md-key">&gt; </code></td><td>인용구</td></tr>
+                        <tr><td><span style="font-weight: 700; font-size: 11px; color: var(--text-muted); font-family: monospace;">&lt;/&gt;</span></td><td><code class="md-key">\`\`\` </code></td><td>코드 블록</td></tr>
+                        <tr><td><i class="fa-solid fa-minus" style="font-size: 12px; color: var(--text-muted);"></i></td><td><code class="md-key">--- </code>, <code class="md-key">___ </code></td><td>구분선</td></tr>
+                        <tr><td><i class="fa-solid fa-link" style="font-size: 12px; color: var(--text-muted);"></i></td><td><code class="md-key">[이름](링크) </code></td><td><span style="color: var(--accent);">링크</span> (Ctrl+클릭 열기)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="md-help-footer">
+                <button type="button" id="closeMdHelpBottomBtn" class="zen-modal-done-btn">닫기</button>
+            </div>
+        `;
+        const closeFn = () => closeMarkdownHelpModal();
+        modal.querySelector('#closeMdHelpTopBtn').onclick = closeFn;
+        modal.querySelector('#closeMdHelpBottomBtn').onclick = closeFn;
+        modal.onclick = (e) => { if (e.target === modal) closeFn(); };
+        modal.oncancel = (e) => { e.preventDefault(); closeFn(); };
+        if (!modal.open) {
+            modal.showModal();
+            if (typeof global.safePushModalState === 'function') global.safePushModalState('markdownHelpModal');
+        }
+    }
+
+    function closeMarkdownHelpModal() {
+        const modal = document.getElementById('markdownHelpModal');
+        if (modal && modal.open) {
+            modal.close();
+            if (typeof global.safeHistoryBack === 'function') global.safeHistoryBack('markdownHelpModal');
+        }
+        if (_activeQuill) {
+            try { _activeQuill.focus(); } catch (e) {}
+        }
+    }
+
+    // ========================================================================
+    // 5. Main Mount / Unmount / Editor API
+    // ========================================================================
+    function unmount() {
+        while (_cleanupFns.length) {
+            const fn = _cleanupFns.pop();
+            try { fn(); } catch (e) {}
+        }
+        _activeQuill = null;
+        _mountOpts = null;
+        _activeOverlayHost = null;
+        _lastAutoConvertedList = null;
+        _lastActiveTableCellTd = null;
+        _savedSpecialCharRange = null;
+        _pendingLinkState = null;
+        _tableInsertRowBelowFn = null;
+        _tableDeleteRowFn = null;
+        _tableInsertColumnRightFn = null;
+        _tableDeleteColumnFn = null;
+        _createDefaultTableFn = null;
+        _toggleTableToolbarMenuFn = null;
+        _closeTableToolbarMenuFn = null;
+        _closeVideoModalFn = null;
+    }
+
+    function mount(containerEl, opts = {}) {
+        unmount();
+        registerQuillOnce();
+        if (!containerEl) return null;
+
+        const Quill = global.Quill;
+        _mountOpts = opts;
+        _activeOverlayHost = opts.dialogHost || document.body;
+
+        containerEl.innerHTML = '';
+        containerEl.classList.add('little-note-scope');
+
+        const box = document.createElement('div');
+        box.className = 'little-note-editor-box';
+        const editorMountEl = document.createElement('div');
+        box.appendChild(editorMountEl);
+        containerEl.appendChild(box);
+
+        let quill = null;
+        const handleImageFiles = async (files) => {
+            const imgFiles = Array.from(files || []).filter(file => file && file.type && file.type.startsWith('image/'));
+            if (!imgFiles.length || !quill) return;
+            const readAsDataUrl = (file) => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => resolve(ev.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+            for (const file of imgFiles) {
+                try {
+                    const dataUrl = await readAsDataUrl(file);
+                    if (!dataUrl) continue;
+                    const range = quill.getSelection(true) || { index: Math.max(0, quill.getLength() - 1), length: 0 };
+                    const insertAt = range.index;
+                    if (range.length > 0) quill.deleteText(insertAt, range.length, Quill.sources.USER);
+                    quill.insertEmbed(insertAt, 'image', dataUrl, Quill.sources.USER);
+                    quill.insertText(insertAt + 1, '\n', Quill.sources.USER);
+                    quill.setSelection(insertAt + 2, 0, Quill.sources.SILENT);
+                } catch (err) {}
+            }
+        };
+
+        // [V1.4.0 / MY 노트 V1.9.0] 전용 Zen 동영상 삽입 모달 (#videoInsertModal)
+        let pendingVideoModalRange = null;
+
+        function ensureVideoModalElement() {
+            let modal = document.getElementById('videoInsertModal');
+            if (!modal) {
+                modal = document.createElement('dialog');
+                modal.id = 'videoInsertModal';
+                document.body.appendChild(modal);
+            }
+            return modal;
+        }
+
+        function closeVideoInsertModal(fromPopstate = false) {
+            const modal = document.getElementById('videoInsertModal');
+            if (!modal || !modal.open) return;
+            modal.close();
+            if (!fromPopstate && typeof global.safeHistoryBack === 'function') {
+                global.safeHistoryBack('videoInsertModal');
+            }
+            if (pendingVideoModalRange) {
+                const r = pendingVideoModalRange;
+                pendingVideoModalRange = null;
+                setTimeout(() => {
+                    try {
+                        quill.focus();
+                        quill.setSelection(r.index, r.length, Quill.sources.SILENT);
+                    } catch (_) {}
+                }, 20);
+            }
+        }
+        _closeVideoModalFn = closeVideoInsertModal;
+
+        function submitVideoInsertModal() {
+            const modal = document.getElementById('videoInsertModal');
+            if (!modal) return;
+            const urlInp = modal.querySelector('#video-modal-url-input');
+            const titleInp = modal.querySelector('#video-modal-title-input');
+            const input = urlInp ? urlInp.value.trim() : '';
+            if (!input) {
+                if (opts && typeof opts.onToast === 'function') opts.onToast('동영상 주소 또는 iframe 코드를 입력하세요.');
+                if (urlInp) urlInp.focus();
+                return;
+            }
+
+            let url = input;
+            let videoTitle = titleInp ? titleInp.value.trim() : '';
+
+            if (input.includes('<iframe')) {
+                const srcMatch = input.match(/src=["'](.*?)["']/);
+                if (srcMatch && srcMatch[1]) url = srcMatch[1];
+                if (!videoTitle) {
+                    const titleMatch = input.match(/title=["'](.*?)["']/);
+                    if (titleMatch && titleMatch[1]) {
+                        videoTitle = titleMatch[1].trim();
+                        if (videoTitle.toLowerCase().includes('youtube video player')) {
+                            videoTitle = '';
+                        }
+                    }
+                }
+            }
+
+            if (url.includes('youtube.com/watch?v=')) url = url.replace('watch?v=', 'embed/').split('&')[0];
+            else if (url.includes('youtu.be/')) url = url.replace('youtu.be/', 'youtube.com/embed/').split('?')[0];
+            else if (url.includes('youtube.com/shorts/')) url = url.replace('youtube.com/shorts/', 'youtube.com/embed/').split('?')[0];
+
+            if (!videoTitle) videoTitle = '첨부된 동영상';
+
+            const r = pendingVideoModalRange || quill.getSelection(true) || { index: Math.max(0, quill.getLength() - 1), length: 0 };
+            pendingVideoModalRange = null;
+            if (modal.open) {
+                modal.close();
+                if (typeof global.safeHistoryBack === 'function') global.safeHistoryBack('videoInsertModal');
+            }
+
+            quill.focus();
+            quill.insertText(r.index, videoTitle + '\n', Quill.sources.USER);
+            quill.formatLine(r.index, 1, 'header', 3, Quill.sources.USER);
+            const nextIndex = r.index + videoTitle.length + 1;
+            quill.insertEmbed(nextIndex, 'video', url, Quill.sources.USER);
+            quill.insertText(nextIndex + 1, '\n', Quill.sources.USER);
+            quill.setSelection(nextIndex + 2, 0, Quill.sources.SILENT);
+            if (opts && typeof opts.onToast === 'function') opts.onToast('동영상이 삽입되었습니다.');
+        }
+
+        const customVideoHandler = () => {
+            if (!quill) return;
+            const range = quill.getSelection() || (quill.selection && quill.selection.savedRange) || { index: Math.max(0, quill.getLength() - 1), length: 0 };
+            pendingVideoModalRange = { index: range.index, length: range.length };
+
+            const modal = ensureVideoModalElement();
+            modal.innerHTML = `
+                <div class="video-modal-card">
+                    <div class="video-modal-header">
+                        <span class="video-modal-title">
+                            <i class="fa-solid fa-film" style="color: var(--accent);"></i>
+                            <span>동영상 삽입</span>
+                        </span>
+                        <button type="button" id="video-modal-close-btn" class="zen-modal-icon-close" aria-label="닫기" title="닫기 (Esc)">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="video-modal-body">
+                        <div class="video-modal-field">
+                            <label class="video-modal-label" for="video-modal-url-input">동영상 주소(URL) 또는 iframe 코드</label>
+                            <input type="text" id="video-modal-url-input" class="video-modal-input" placeholder="https://www.youtube.com/watch?v=... 또는 <iframe...>" autocomplete="off" />
+                        </div>
+                        <div class="video-modal-field">
+                            <label class="video-modal-label" for="video-modal-title-input">동영상 제목 (선택)</label>
+                            <input type="text" id="video-modal-title-input" class="video-modal-input" placeholder="비워두면 기본 제목(또는 iframe 제목)이 들어갑니다" autocomplete="off" />
+                        </div>
+                        <div class="video-modal-hint">YouTube, Shorts, iframe 코드 지원</div>
+                    </div>
+                    <div class="video-modal-footer">
+                        <button type="button" id="video-modal-cancel-btn" class="video-modal-btn-cancel">취소</button>
+                        <button type="button" id="video-modal-submit-btn" class="video-modal-btn-submit">삽입하기</button>
+                    </div>
+                </div>
+            `;
+
+            const urlInp = modal.querySelector('#video-modal-url-input');
+            const titleInp = modal.querySelector('#video-modal-title-input');
+            titleInp.dataset.autoFilled = '1';
+            titleInp.addEventListener('input', () => {
+                titleInp.dataset.autoFilled = titleInp.value.trim() === '' ? '1' : '0';
+            });
+            urlInp.addEventListener('input', () => {
+                const raw = urlInp.value || '';
+                if (raw.includes('<iframe')) {
+                    const titleMatch = raw.match(/title=["'](.*?)["']/);
+                    if (titleMatch && titleMatch[1]) {
+                        const extracted = titleMatch[1].trim();
+                        if (extracted && !extracted.toLowerCase().includes('youtube video player')) {
+                            if (titleInp.value.trim() === '' || titleInp.dataset.autoFilled === '1') {
+                                titleInp.value = extracted;
+                                titleInp.dataset.autoFilled = '1';
+                            }
+                        }
+                    }
+                }
+            });
+            const onEnterSubmit = (ev) => {
+                if (ev.key === 'Enter' && !ev.isComposing) {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    submitVideoInsertModal();
+                }
+            };
+            urlInp.addEventListener('keydown', onEnterSubmit);
+            titleInp.addEventListener('keydown', onEnterSubmit);
+
+            modal.querySelector('#video-modal-close-btn').onclick = () => closeVideoInsertModal();
+            modal.querySelector('#video-modal-cancel-btn').onclick = () => closeVideoInsertModal();
+            modal.querySelector('#video-modal-submit-btn').onclick = () => submitVideoInsertModal();
+            modal.onclick = (e) => { if (e.target === modal) closeVideoInsertModal(); };
+            modal.oncancel = (e) => { e.preventDefault(); closeVideoInsertModal(); };
+
+            if (!modal.open) {
+                modal.showModal();
+                if (typeof global.safePushModalState === 'function') global.safePushModalState('videoInsertModal');
+            }
+            setTimeout(() => { if (urlInp) urlInp.focus(); }, 35);
+        };
+
+        const openLinkHandler = () => {
+            const range = quill.getSelection() || { index: Math.max(0, quill.getLength() - 1), length: 0 };
+            const fmt = quill.getFormat(range);
+            let linkRange = range;
+            let currentUrl = fmt && fmt.link ? fmt.link : '';
+            if (currentUrl && range.length === 0) {
+                const [leaf, offset] = quill.getLeaf(range.index);
+                if (leaf && leaf.parent && leaf.parent.domNode && leaf.parent.domNode.tagName === 'A') {
+                    const startIdx = quill.getIndex(leaf.parent);
+                    const len = leaf.parent.length();
+                    linkRange = { index: startIdx, length: len };
+                } else {
+                    void offset;
+                }
+            }
+            const selText = linkRange.length > 0 ? quill.getText(linkRange.index, linkRange.length) : '';
+            _pendingLinkState = { range: linkRange, hasSelection: linkRange.length > 0, isEdit: Boolean(currentUrl), existingUrl: currentUrl };
+            if (opts && typeof opts.onOpenLinkModal === 'function') {
+                opts.onOpenLinkModal({ selText, existingUrl: currentUrl, isEdit: Boolean(currentUrl) });
+            }
+        };
+
+        quill = new Quill(editorMountEl, {
+            theme: 'snow',
+            bounds: box,
+            placeholder: opts.placeholder || '상세 내용을 입력하세요...',
+            modules: {
+                syntax: global.hljs ? { hljs: global.hljs, languages: CODE_LANGUAGES } : false,
+                table: true,
+                history: { delay: 1000, maxStack: 100, userOnly: true },
+                keyboard: {
+                    bindings: {
+                        // Strict Tab focus-trap: handled completely by capture listener below
+                        'tab': { key: 'Tab', shiftKey: null, handler: () => false },
+                        'list autofill': {
+                            key: ' ',
+                            shiftKey: null,
+                            collapsed: true,
+                            format: { 'code-block': false, blockquote: false, table: false },
+                            prefix: /^\s*?(\d+\.|-|\*|\[ ?\]|\[x\])$/,
+                            handler: function (range, context) {
+                                if (this.quill.scroll.query('list') == null) return true;
+                                const length = context.prefix.length;
+                                const [line, offset] = this.quill.getLine(range.index);
+                                if (offset > length) return true;
+                                void line;
+                                let value;
+                                const trimmed = context.prefix.trim();
+                                switch (trimmed) {
+                                    case '[]':
+                                    case '[ ]': value = 'unchecked'; break;
+                                    case '[x]': value = 'checked'; break;
+                                    case '-':
+                                    case '*': value = 'bullet'; break;
+                                    default: value = 'ordered';
+                                }
+                                _lastAutoConvertedList = { lineIndex: range.index - length, prefix: trimmed, isInsideQuote: false, timestamp: Date.now() };
+                                this.quill.deleteText(range.index - length, length, Quill.sources.USER);
+                                this.quill.formatLine(range.index - length, 1, 'list', value, Quill.sources.USER);
+                                this.quill.setSelection(range.index - length, Quill.sources.SILENT);
+                                return false;
+                            }
+                        },
+                        'smart-list-undo': {
+                            key: 'Backspace',
+                            handler: function (range) {
+                                if (!_lastAutoConvertedList) return true;
+                                if (Date.now() - _lastAutoConvertedList.timestamp < 6000) {
+                                    const [line] = this.quill.getLine(range.index);
+                                    if (line && line.formats().list) {
+                                        const lineIndex = this.quill.getIndex(line);
+                                        const prefixToRestore = _lastAutoConvertedList.prefix + ' ';
+                                        const isInsideQuote = _lastAutoConvertedList.isInsideQuote;
+                                        _lastAutoConvertedList = null;
+                                        this.quill.formatLine(lineIndex, 1, 'list', false, Quill.sources.USER);
+                                        if (isInsideQuote) {
+                                            this.quill.formatLine(lineIndex, 1, 'quote-item', false, Quill.sources.USER);
+                                            this.quill.formatLine(lineIndex, 1, 'blockquote', true, Quill.sources.USER);
+                                        }
+                                        this.quill.insertText(lineIndex, prefixToRestore, Quill.sources.USER);
+                                        this.quill.setSelection(lineIndex + prefixToRestore.length, Quill.sources.USER);
+                                        return false;
+                                    }
+                                }
+                                _lastAutoConvertedList = null;
+                                return true;
+                            }
+                        },
+                        'table-cell-ctrl-enter': {
+                            key: 'Enter',
+                            shortKey: true,
+                            format: ['table'],
+                            handler: function (range) {
+                                const tableModule = this.quill.getModule('table');
+                                if (tableModule) {
+                                    const [table] = tableModule.getTable(range);
+                                    if (table) {
+                                        const tableEnd = table.offset() + table.length();
+                                        const Delta = Quill.import('delta');
+                                        this.quill.updateContents(new Delta().retain(tableEnd).insert('\n'), Quill.sources.USER);
+                                        this.quill.setSelection(tableEnd, Quill.sources.USER);
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            }
+                        },
+                        'table enter': {
+                            key: 'Enter',
+                            shiftKey: null,
+                            format: ['table'],
+                            handler: function (range) {
+                                const tableModule = this.quill.getModule('table');
+                                if (!tableModule) return true;
+                                const [table, row] = tableModule.getTable(range);
+                                if (!table || !row) return true;
+                                const Delta = Quill.import('delta');
+                                if (row.prev == null) {
+                                    const tableStart = table.offset();
+                                    const delta = new Delta();
+                                    if (tableStart > 0) delta.retain(tableStart);
+                                    delta.insert('\n');
+                                    this.quill.updateContents(delta, Quill.sources.USER);
+                                    this.quill.setSelection(tableStart, Quill.sources.USER);
+                                    return false;
+                                } else if (row.next == null) {
+                                    const tableEnd = table.offset() + table.length();
+                                    this.quill.updateContents(new Delta().retain(tableEnd).insert('\n'), Quill.sources.USER);
+                                    this.quill.setSelection(tableEnd, Quill.sources.USER);
+                                    return false;
+                                }
+                                return false;
+                            }
+                        },
+                        'quote-item enter': {
+                            key: 'Enter',
+                            collapsed: true,
+                            format: ['quote-item'],
+                            empty: false,
+                            handler: function (range, context) {
+                                const [line] = this.quill.getLine(range.index);
+                                const lineFormats = (line && typeof line.formats === 'function') ? line.formats() : {};
+                                const listFormat = (context.format && context.format.list) || lineFormats.list || 'bullet';
+                                const nextList = (listFormat === 'checked') ? 'unchecked' : listFormat;
+                                const indentVal = (context.format && context.format.indent) || lineFormats.indent;
+                                const fmtObj = { 'list': nextList, 'quote-item': true };
+                                if (indentVal) fmtObj.indent = indentVal;
+                                this.quill.insertText(range.index, '\n', Quill.sources.USER);
+                                this.quill.formatLine(range.index + 1, 1, fmtObj, Quill.sources.USER);
+                                this.quill.setSelection(range.index + 1, 0, Quill.sources.SILENT);
+                                return false;
+                            }
+                        },
+                        'quote-item empty enter': {
+                            key: 'Enter',
+                            collapsed: true,
+                            format: ['quote-item'],
+                            empty: true,
+                            handler: function (range, context) {
+                                const [line] = this.quill.getLine(range.index);
+                                const lineFormats = (line && typeof line.formats === 'function') ? line.formats() : {};
+                                const curIndent = parseInt((context.format && context.format.indent) || lineFormats.indent || 0, 10) || 0;
+                                if (curIndent > 0) {
+                                    this.quill.formatLine(range.index, 1, 'indent', curIndent > 1 ? curIndent - 1 : false, Quill.sources.USER);
+                                    this.quill.formatLine(range.index, 1, 'quote-item', true, Quill.sources.USER);
+                                    return false;
+                                }
+                                this.quill.formatLine(range.index, 1, 'list', false, Quill.sources.USER);
+                                this.quill.formatLine(range.index, 1, 'quote-item', false, Quill.sources.USER);
+                                this.quill.formatLine(range.index, 1, 'blockquote', true, Quill.sources.USER);
+                                return false;
+                            }
+                        },
+                        'blockquote empty enter': {
+                            key: 'Enter',
+                            collapsed: true,
+                            format: ['blockquote'],
+                            empty: true,
+                            handler: function (range) {
+                                this.quill.formatLine(range.index, 1, 'blockquote', false, Quill.sources.USER);
+                                return false;
+                            }
+                        },
+                        'code-block smart list enter': {
+                            key: 'Enter',
+                            collapsed: true,
+                            shiftKey: false,
+                            format: ['code-block'],
+                            handler: function (range, context) {
+                                const [line, offset] = this.quill.getLine(range.index);
+                                const lineFormats = (line && typeof line.formats === 'function') ? line.formats() : context.format;
+                                if (!isLineCodeBlock(line, lineFormats)) return true;
+                                const rawText = (line && line.domNode) ? (line.domNode.textContent || '') : '';
+                                const match = rawText.match(/^([ \t]*)(\u2610 |\u2611 |\u2022 |(\d+)\. )(.*)$/);
+                                if (!match) return true;
+                                const indent = match[1], prefix = match[2], numStr = match[3], rest = match[4];
+                                if (offset < indent.length) return true;
+                                if (rest.trim() === '' && offset >= indent.length + prefix.length) {
+                                    const lineStart = this.quill.getIndex(line);
+                                    this.quill.deleteText(lineStart + indent.length, prefix.length, Quill.sources.USER);
+                                    this.quill.setSelection(lineStart + indent.length, 0, Quill.sources.SILENT);
+                                    return false;
+                                }
+                                let nextPrefix = prefix;
+                                if (prefix === '\u2611 ' || prefix === '\u2610 ') nextPrefix = '\u2610 ';
+                                else if (numStr) nextPrefix = `${parseInt(numStr, 10) + 1}. `;
+                                const codeBlockVal = (lineFormats && lineFormats['code-block']) || (context.format && context.format['code-block']) || true;
+                                const Delta = Quill.import('delta');
+                                const delta = new Delta();
+                                if (range.index > 0) delta.retain(range.index);
+                                delta.insert('\n', { 'code-block': codeBlockVal }).insert(indent + nextPrefix);
+                                this.quill.updateContents(delta, Quill.sources.USER);
+                                this.quill.setSelection(range.index + 1 + indent.length + nextPrefix.length, 0, Quill.sources.SILENT);
+                                return false;
+                            }
+                        }
+                    }
+                },
+                clipboard: {
+                    matchers: [
+                        [Node.ELEMENT_NODE, function (node, delta) {
+                            const isZenHighlight = node && node.nodeType === 1 && (
+                                node.tagName === 'MARK' ||
+                                (typeof node.hasAttribute === 'function' && node.hasAttribute('data-zen-highlight'))
+                            );
+                            const hasOwnBg = node && node.nodeType === 1 && (
+                                Boolean(node.style && (node.style.backgroundColor || node.style.background)) ||
+                                Boolean(node.classList && Array.from(node.classList).some(c => c.startsWith('ql-bg-')))
+                            );
+                            const tagUpper = node && node.nodeType === 1 ? String(node.tagName || '').toUpperCase() : '';
+                            const inPre = node && node.nodeType === 1 && node.closest && Boolean(node.closest('pre'));
+                            const inlineWeight = node && node.nodeType === 1 && node.style ? String(node.style.fontWeight || '').trim() : '';
+                            const weightNum = parseInt(inlineWeight, 10);
+                            const clsStr = (node && node.nodeType === 1 && node.getAttribute) ? (node.getAttribute('class') || '') : '';
+                            const hasSemiOrTailwindBold = !inPre && !/^(H[1-6]|PRE|CODE)$/.test(tagUpper) && (
+                                (!Number.isNaN(weightNum) && weightNum >= 600 && weightNum < 700) ||
+                                /\b(font-bold|font-semibold|font-extrabold|font-black)\b/i.test(clsStr)
+                            );
+                            delta.ops.forEach(op => {
+                                if (op.attributes) {
+                                    delete op.attributes.color;
+                                    if (!isZenHighlight && hasOwnBg) {
+                                        if (!node.querySelector || !node.querySelector('mark, [data-zen-highlight]') || op.attributes.background !== '#fef08a') {
+                                            delete op.attributes.background;
+                                        }
+                                    }
+                                    delete op.attributes.font;
+                                }
+                                if (hasSemiOrTailwindBold && typeof op.insert === 'string' && !/^\n+$/.test(op.insert)) {
+                                    op.attributes = { ...(op.attributes || {}), bold: true };
+                                }
+                            });
+                            return delta;
+                        }],
+                        ['mark', function (node, delta) {
+                            const Delta = Quill.import('delta');
+                            return delta.reduce((acc, op) => {
+                                if (!op.insert) return acc;
+                                return acc.insert(op.insert, { ...(op.attributes || {}), background: '#fef08a' });
+                            }, new Delta());
+                        }],
+                        ['br.ql-softbreak', function () {
+                            const Delta = Quill.import('delta');
+                            return new Delta().insert({ softbreak: true });
+                        }]
+                    ]
+                },
+                toolbar: {
+                    container: TOOLBAR_CONTAINER,
+                    handlers: {
+                        'special-char': function () {
+                            _savedSpecialCharRange = this.quill.getSelection();
+                            if (opts && typeof opts.onOpenSpecialChar === 'function') opts.onOpenSpecialChar();
+                        },
+                        'markdown-help': function () {
+                            openMarkdownHelpModal();
+                        },
+                        'list': function (value) {
+                            const range = this.quill.getSelection();
+                            if (!range) return;
+                            const targetLen = range.length > 0 ? range.length : 1;
+                            const lines = this.quill.getLines(range.index, targetLen) || [];
+                            if (lines.length > 0 && lines.every((l) => isLineCodeBlock(l, typeof l.formats === 'function' ? l.formats() : null))) {
+                                toggleCodeBlockListPrefix(this.quill, range, value);
+                                return;
+                            }
+                            const formats = this.quill.getFormat(range);
+                            const [line] = this.quill.getLine(range.index);
+                            const lineFormats = (line && typeof line.formats === 'function') ? line.formats() : formats;
+                            const currentList = formats.list || lineFormats.list;
+                            let targetList;
+                            if (value === 'check') {
+                                targetList = (currentList === 'checked' || currentList === 'unchecked' || currentList === 'check') ? false : 'unchecked';
+                            } else {
+                                targetList = (currentList === value) ? false : value;
+                            }
+                            const editableSnapshots = lines
+                                .filter((l) => !isLineCodeBlock(l, typeof l.formats === 'function' ? l.formats() : null))
+                                .map((l) => ({
+                                    idx: this.quill.getIndex(l),
+                                    inQuote: isLineInQuote(l, typeof l.formats === 'function' ? l.formats() : {})
+                                }));
+                            if (!editableSnapshots.length) return;
+                            editableSnapshots.forEach((item) => {
+                                this.quill.formatLine(item.idx, 1, 'list', targetList, Quill.sources.USER);
+                                if (item.inQuote) {
+                                    if (targetList) this.quill.formatLine(item.idx, 1, 'quote-item', true, Quill.sources.USER);
+                                    else {
+                                        this.quill.formatLine(item.idx, 1, 'quote-item', false, Quill.sources.USER);
+                                        this.quill.formatLine(item.idx, 1, 'blockquote', true, Quill.sources.USER);
+                                    }
+                                }
+                            });
+                        },
+                        'blockquote': function () {
+                            const range = this.quill.getSelection();
+                            if (!range) return;
+                            const targetLen = range.length > 0 ? range.length : 1;
+                            const lines = this.quill.getLines(range.index, targetLen) || [];
+                            const editableLines = lines.filter((l) => !isLineCodeBlock(l, typeof l.formats === 'function' ? l.formats() : null));
+                            if (!editableLines.length) return;
+                            const allQuoted = editableLines.every((l) => isLineInQuote(l, typeof l.formats === 'function' ? l.formats() : {}));
+                            const nextState = !allQuoted;
+                            editableLines.forEach((l) => {
+                                const idx = this.quill.getIndex(l);
+                                const lf = (typeof l.formats === 'function') ? l.formats() : {};
+                                const hasList = !!(lf.list || (l.domNode && l.domNode.tagName === 'LI'));
+                                if (hasList) this.quill.formatLine(idx, 1, 'quote-item', nextState, Quill.sources.USER);
+                                else this.quill.formatLine(idx, 1, 'blockquote', nextState, Quill.sources.USER);
+                            });
+                        },
+                        'link': function (value) {
+                            if (value) {
+                                openLinkHandler();
+                            } else {
+                                this.quill.format('link', false);
+                            }
+                        },
+                        'undo': function () { this.quill.history.undo(); },
+                        'redo': function () { this.quill.history.redo(); },
+                        'table': function () {
+                            if (_toggleTableToolbarMenuFn) _toggleTableToolbarMenuFn();
+                            else if (_createDefaultTableFn) _createDefaultTableFn();
+                        },
+                        'video': customVideoHandler,
+                        'image': function () {
+                            const input = document.createElement('input');
+                            input.setAttribute('type', 'file');
+                            input.setAttribute('accept', 'image/*');
+                            input.setAttribute('multiple', 'multiple');
+                            input.onchange = () => {
+                                if (input.files && input.files.length) handleImageFiles(input.files);
+                            };
+                            input.click();
+                        },
+                        'highlight': function () {
+                            const range = this.quill.getSelection(true);
+                            if (!range) return;
+                            const curFmt = this.quill.getFormat(range);
+                            const curBg = curFmt && curFmt.background ? String(curFmt.background).toLowerCase() : '';
+                            const isYellow = curBg === '#fef08a' || curBg === 'rgb(254, 240, 138)';
+                            this.quill.format('background', isYellow ? false : '#fef08a', Quill.sources.USER);
+                        },
+                        'strike-line': function () {
+                            const range = this.quill.getSelection();
+                            if (!range) return;
+                            const [line] = this.quill.getLine(range.index);
+                            const lineIndex = this.quill.getIndex(line);
+                            const lineLength = line.length() - 1;
+                            const isStruck = lineLength === 0 ? this.quill.getFormat(range)['strike-line'] : this.quill.getFormat(lineIndex, 1)['strike-line'];
+                            if (isStruck) {
+                                if (lineLength > 0) this.quill.formatText(lineIndex, lineLength, 'strike-line', false, Quill.sources.USER);
+                                this.quill.format('strike-line', false, Quill.sources.USER);
+                            } else {
+                                if (lineLength > 0) {
+                                    this.quill.formatText(lineIndex, lineLength, 'strike-line', true, Quill.sources.USER);
+                                    const lineEnd = lineIndex + lineLength;
+                                    this.quill.insertText(lineEnd, '\u200B', Quill.sources.USER);
+                                    this.quill.setSelection(lineEnd + 1, Quill.sources.SILENT);
+                                    this.quill.format('strike-line', false, Quill.sources.USER);
+                                } else {
+                                    this.quill.format('strike-line', true, Quill.sources.USER);
+                                }
+                            }
+                        },
+                        'divider': function () {
+                            const range = this.quill.getSelection(true);
+                            if (!range) return;
+                            const [line] = this.quill.getLine(range.index);
+                            if (!line) return;
+                            const lineStart = this.quill.getIndex(line);
+                            const Delta = Quill.import('delta');
+                            if (line.length() <= 1) {
+                                const delta = new Delta();
+                                if (lineStart > 0) delta.retain(lineStart);
+                                delta.delete(1).insert({ divider: true }).insert('\n');
+                                this.quill.updateContents(delta, Quill.sources.USER);
+                                this.quill.setSelection(lineStart + 1, 0, Quill.sources.USER);
+                            } else {
+                                const lineEnd = lineStart + line.length();
+                                const delta = new Delta();
+                                if (lineEnd > 0) delta.retain(lineEnd);
+                                delta.insert({ divider: true }).insert('\n');
+                                this.quill.updateContents(delta, Quill.sources.USER);
+                                this.quill.setSelection(lineEnd + 1, 0, Quill.sources.USER);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        _activeQuill = quill;
+
+        // Wire toolbar tooltips and prevent button focus theft on toolbar
+        const toolbarModule = quill.getModule('toolbar');
+        const toolbarRoot = toolbarModule ? toolbarModule.container : box.querySelector('.ql-toolbar');
+        initToolbarTooltips(toolbarRoot);
+        if (toolbarRoot) {
+            toolbarRoot.querySelectorAll('button, .ql-picker-label').forEach(el => el.setAttribute('tabindex', '-1'));
+        }
+
+        // Load Initial Data (Quill HTML verbatim, OR legacy Markdown -> Quill HTML)
+        const initialRaw = String(opts.initialValue || '').trim();
+        if (initialRaw) {
+            if (isQuillHtml(initialRaw)) {
+                quill.root.innerHTML = initialRaw;
+            } else {
+                const converted = legacyMarkdownToQuillHtml(initialRaw);
+                if (converted) quill.root.innerHTML = converted;
+            }
+            if (quill.history && typeof quill.history.clear === 'function') quill.history.clear();
+        }
+
+        // Initialize sub-engines (Table, Image Resizer/Lightbox/Menu, CodeBlock Tooltips)
+        const tableApi = setupTableEngine(quill, _activeOverlayHost, opts);
+        setupImageResizerLightboxAndMenu(quill, box.querySelector('.ql-container'), _activeOverlayHost, opts);
+        setupCodeBlockInteractions(quill, _activeOverlayHost, opts);
+
+        // STRICT FOCUS TRAP & KEYBOARD HANDLERS (capture: true on quill.root)
+        let plainPasteRequestedUntil = 0;
+        const onRootKeyDownCapture = (e) => {
+            const isVKey = (e.code === 'KeyV') || (String(e.key || '').toLowerCase() === 'v');
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && !e.altKey && isVKey) {
+                plainPasteRequestedUntil = Date.now() + 800;
+            }
+            // 1. TAB / SHIFT+TAB: MUST NEVER leave the editor!
+            if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                if (e.isComposing) return;
+
+                const range = quill.getSelection(true) || quill.getSelection();
+                if (!range) return;
+
+                // 1A. Inside Table Cell -> navigate cell to cell / auto-append row at last cell
+                if (tableApi && tableApi.isCursorInTable()) {
+                    const sel = global.getSelection();
+                    let curCell = null;
+                    if (sel && sel.anchorNode) {
+                        const n = sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement;
+                        if (n && quill.root.contains(n)) curCell = n.closest('td, th');
+                    }
+                    if (!curCell) {
+                        const [line] = quill.getLine(range.index);
+                        curCell = line && line.domNode && line.domNode.closest ? line.domNode.closest('td, th') : null;
+                    }
+                    if (curCell) {
+                        const tableEl = curCell.closest('table');
+                        const allCells = tableEl ? Array.from(tableEl.querySelectorAll('td, th')) : [];
+                        const curIdx = allCells.indexOf(curCell);
+                        if (curIdx !== -1) {
+                            const nextIdx = e.shiftKey ? curIdx - 1 : curIdx + 1;
+                            if (nextIdx >= 0 && nextIdx < allCells.length) {
+                                const targetBlot = Quill.find(allCells[nextIdx]);
+                                if (targetBlot && typeof targetBlot.offset === 'function') {
+                                    quill.setSelection(targetBlot.offset(quill.scroll), 0, Quill.sources.USER);
+                                    _lastActiveTableCellTd = allCells[nextIdx];
+                                    return;
+                                }
+                            } else if (!e.shiftKey) {
+                                tableApi.tableInsertRowBelowSafe(true);
+                                return;
+                            }
+                            return;
+                        }
+                    }
+                }
+
+                // 1B. List items (checklist / bullet / ordered, including quote-item): multi-level indent!
+                const targetLen = range.length > 0 ? range.length : 1;
+                const lines = quill.getLines(range.index, targetLen) || [];
+                const anyList = lines.some(l => {
+                    const fmts = typeof l.formats === 'function' ? l.formats() : {};
+                    return Boolean(fmts.list || (l.domNode && l.domNode.tagName === 'LI'));
+                });
+                if (anyList) {
+                    lines.forEach(l => {
+                        const fmts = typeof l.formats === 'function' ? l.formats() : {};
+                        if (!fmts.list && !(l.domNode && l.domNode.tagName === 'LI')) return;
+                        const curIndent = parseInt(fmts.indent || 0, 10) || 0;
+                        const nextIndent = e.shiftKey ? Math.max(0, curIndent - 1) : Math.min(8, curIndent + 1);
+                        const idx = quill.getIndex(l);
+                        quill.formatLine(idx, 1, 'indent', nextIndent > 0 ? nextIndent : false, Quill.sources.USER);
+                        if (isLineInQuote(l, fmts)) {
+                            quill.formatLine(idx, 1, 'quote-item', true, Quill.sources.USER);
+                        }
+                    });
+                    return;
+                }
+
+                // 1C. Code-block or standard paragraph: indent / outdent 4 spaces
+                if (!e.shiftKey) {
+                    if (range.length > 0) quill.deleteText(range.index, range.length, Quill.sources.USER);
+                    quill.insertText(range.index, '    ', Quill.sources.USER);
+                    quill.setSelection(range.index + 4, 0, Quill.sources.SILENT);
+                } else {
+                    const [line] = quill.getLine(range.index);
+                    if (line && line.domNode) {
+                        const lStart = quill.getIndex(line);
+                        const rawText = line.domNode.textContent || '';
+                        const leadMatch = rawText.match(/^(\t| {1,4})/);
+                        if (leadMatch) {
+                            const delLen = leadMatch[1].length;
+                            quill.deleteText(lStart, delLen, Quill.sources.USER);
+                            quill.setSelection(Math.max(lStart, range.index - delLen), 0, Quill.sources.SILENT);
+                        }
+                    }
+                }
+                return;
+            }
+
+            // 2. Smart Backspace to restore auto-converted list prefix
+            if (e.key === 'Backspace' && !e.isComposing && _lastAutoConvertedList) {
+                if (Date.now() - _lastAutoConvertedList.timestamp < 10000) {
+                    const sel = quill.getSelection();
+                    if (sel) {
+                        const [line] = quill.getLine(sel.index);
+                        if (line && line.formats().list) {
+                            const lineText = line.domNode ? line.domNode.textContent : '';
+                            if (!lineText || lineText.trim() === '' || sel.index <= _lastAutoConvertedList.lineIndex + 1) {
+                                e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                                const lineIndex = quill.getIndex(line);
+                                const prefixToRestore = _lastAutoConvertedList.prefix + ' ';
+                                const isInsideQuote = _lastAutoConvertedList.isInsideQuote;
+                                _lastAutoConvertedList = null;
+                                quill.formatLine(lineIndex, 1, 'list', false, Quill.sources.USER);
+                                if (isInsideQuote) {
+                                    quill.formatLine(lineIndex, 1, 'quote-item', false, Quill.sources.USER);
+                                    quill.formatLine(lineIndex, 1, 'blockquote', true, Quill.sources.USER);
+                                }
+                                quill.insertText(lineIndex, prefixToRestore, Quill.sources.USER);
+                                quill.setSelection(lineIndex + prefixToRestore.length, Quill.sources.USER);
+                                return;
+                            }
+                        }
+                    }
+                }
+                _lastAutoConvertedList = null;
+            }
+
+            // 3. Shift+Enter SoftBreak inside Table or Quote
+            if (e.key === 'Enter' && e.shiftKey) {
+                const selection = global.getSelection();
+                let cell = null;
+                if (selection && selection.rangeCount > 0) {
+                    const node = selection.anchorNode;
+                    cell = node && node.nodeType === 1 ? node.closest('td, th') : (node && node.parentElement ? node.parentElement.closest('td, th') : null);
+                }
+                const curRange = quill.getSelection(true) || quill.getSelection();
+                let inQuote = false;
+                if (curRange) {
+                    const formats = quill.getFormat(curRange);
+                    inQuote = Boolean(formats.blockquote || formats['quote-item']);
+                }
+                if (cell || inQuote) {
+                    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+                    if (curRange) {
+                        quill.insertEmbed(curRange.index, 'softbreak', true, Quill.sources.USER);
+                        quill.setSelection(curRange.index + 1, 0, Quill.sources.USER);
+                    }
+                    return;
+                }
+            }
+
+            // 4. Ctrl+K Link Modal shortcut
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && !e.altKey && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault(); e.stopPropagation();
+                openLinkHandler();
+                return;
+            }
+        };
+
+        // Click on anchor (Ctrl+click or regular click on local/web link inside editor -> open cleanly)
+        const onRootLinkClick = (e) => {
+            const anchor = e.target.closest('a');
+            if (!anchor) return;
+            const rawHref = anchor.getAttribute('href') || '';
+            if (e.ctrlKey || e.metaKey) {
+                if (openExternalTarget(rawHref, opts)) {
+                    e.preventDefault(); e.stopPropagation();
+                }
+            }
+        };
+
+        // Paste Support (Ctrl+Shift+V plain text, HTML Table/CodeBlock normalization, Smart Markdown auto-convert, Image paste)
+        const onPasteCapture = (e) => {
+            const clipboard = e.clipboardData || global.clipboardData;
+            if (!clipboard) return;
+
+            const isShiftPlainPaste = Date.now() <= plainPasteRequestedUntil;
+            plainPasteRequestedUntil = 0;
+            const plainText = clipboard.getData ? (clipboard.getData('text/plain') || '') : '';
+
+            // 0. Ctrl+Shift+V: 순수 원문 텍스트로 붙여넣기
+            if (isShiftPlainPaste && plainText) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const range = quill.getSelection(true);
+                if (range) {
+                    quill.clipboard.onPaste(range, { html: '', text: plainText });
+                }
+                return;
+            }
+
+            const files = extractClipboardFiles(clipboard);
+            const imageFiles = files.filter(f => f.type && f.type.startsWith('image/'));
+
+            // 1. HTML 클립보드 검사: 표/코드블록 정규화 후 Quill 붙여넣기 (에디터 이미지 복사본 보존)
+            const htmlData = clipboard.getData ? (clipboard.getData('text/html') || '') : '';
+            if (htmlData) {
+                try {
+                    const doc = new DOMParser().parseFromString(htmlData, 'text/html');
+                    const body = doc.body;
+                    const cleanedText = (body ? body.textContent : '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+                    const hasTextContent = cleanedText.length > 0;
+                    const hasStructure = Boolean(body && body.querySelector('table, ul, ol, blockquote, pre, hr, h1, h2, h3, h4, h5, h6'));
+                    const dataImgEls = body ? Array.from(body.querySelectorAll('img[src^="data:image/"]')) : [];
+                    const isEditorImageCopy = dataImgEls.length > 0 && (
+                        dataImgEls.length > 1 ||
+                        dataImgEls.some(img => img.hasAttribute('data-size') || img.hasAttribute('style'))
+                    );
+
+                    if (hasTextContent || hasStructure || isEditorImageCopy) {
+                        if (isEditorImageCopy && imageFiles.length > 0 && body && body.childElementCount === 1 && body.firstElementChild && body.firstElementChild.tagName === 'IMG') {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            const range = quill.getSelection(true);
+                            if (range) {
+                                quill.clipboard.onPaste(range, {
+                                    html: htmlData,
+                                    text: plainText
+                                });
+                            }
+                            return;
+                        }
+
+                        const curRange = quill.getSelection(true);
+                        let inCodeBlock = false;
+                        if (curRange) {
+                            const [curLine] = quill.getLine(curRange.index);
+                            const curFormats = (curLine && typeof curLine.formats === 'function') ? curLine.formats() : quill.getFormat(curRange.index);
+                            inCodeBlock = isLineCodeBlock(curLine, curFormats);
+                        }
+                        const needsHtmlNorm = Boolean(body && body.querySelector(
+                            'table, pre, [style*="white-space"], .ql-code-block-container, .hljs, .shiki, .prism-code, .code-block, .codeblock'
+                        ));
+
+                        if (!inCodeBlock && needsHtmlNorm) {
+                            const normalizedHtml = normalizePastedHtmlForQuill(htmlData);
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            if (curRange) {
+                                quill.clipboard.onPaste(curRange, {
+                                    html: normalizedHtml,
+                                    text: plainText
+                                });
+                            }
+                        }
+                        return;
+                    }
+
+                    // 텍스트/구조 없는 순수 data:image/* HTML 폴백
+                    if (imageFiles.length === 0 && dataImgEls.length > 0) {
+                        const extracted = dataImgEls
+                            .map((img, idx) => dataUrlToImageFile(img.getAttribute('src'), idx))
+                            .filter(Boolean);
+                        if (extracted.length > 0) {
+                            e.preventDefault();
+                            e.stopImmediatePropagation();
+                            handleImageFiles(extracted);
+                            return;
+                        }
+                    }
+                } catch (err) {}
+            }
+
+            // 2. 순수 외부 이미지 파일 붙여넣기
+            if (imageFiles.length > 0) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                handleImageFiles(imageFiles);
+                return;
+            }
+
+            // 3. 순수 텍스트(text/plain) 마크다운 원문 스마트 자동 변환 (AI 본문 복사 등)
+            if ((!htmlData || !htmlData.trim()) && plainText) {
+                const range = quill.getSelection(true);
+                if (range) {
+                    const [line] = quill.getLine(range.index);
+                    const lineFormats = (line && typeof line.formats === 'function') ? line.formats() : quill.getFormat(range.index);
+                    const inCodeBlock = isLineCodeBlock(line, lineFormats);
+                    const inTable = Boolean(
+                        (lineFormats && lineFormats.table) ||
+                        (line && line.domNode && line.domNode.closest && line.domNode.closest('table'))
+                    );
+                    if (!inCodeBlock && !inTable && looksLikeMarkdownText(plainText)) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+                        const mdHtml = convertMarkdownToClipboardHtml(plainText, { forClipboard: true });
+                        quill.clipboard.onPaste(range, {
+                            html: mdHtml,
+                            text: plainText
+                        });
+                        return;
+                    }
+                }
+            }
+        };
+
+        // Drag & drop image insertion
+        const onDragOver = (e) => { e.preventDefault(); e.stopPropagation(); };
+        const onDrop = (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                const imgs = Array.from(dt.files).filter(f => f && f.type && f.type.startsWith('image/'));
+                if (imgs.length > 0) handleImageFiles(imgs);
+            }
+        };
+
+        // Legacy data-list="check" normalization
+        const onCheckLegacyClick = (e) => {
+            const ui = e.target.closest('.ql-ui');
+            const li = e.target.closest('li[data-list="check"]');
+            if (li && (ui || e.target === li)) li.setAttribute('data-list', 'checked');
+        };
+
+        // K-Markdown Space trigger engine (verbatim MY 노트 V1.5.1)
+        const onTextChange = (delta, oldDelta, source) => {
+            if (source !== 'user') return;
+            const ops = delta.ops;
+            if (!ops || ops.length < 2) return;
+            const lastOp = ops[ops.length - 1];
+            if (lastOp.insert !== ' ') return;
+
+            const range = quill.getSelection();
+            if (!range) return;
+            const [line, offset] = quill.getLine(range.index);
+            if (!line || !line.domNode) return;
+            const text = line.domNode.textContent.substring(0, offset);
+            const lineStart = quill.getIndex(line);
+            const lineFormats = (line && typeof line.formats === 'function') ? line.formats() : quill.getFormat(lineStart);
+            if (isLineCodeBlock(line, lineFormats)) return;
+
+            const tableMatch = text.match(/^\|(.+)\|\s$/);
+            if (tableMatch) {
+                const inner = tableMatch[1].trim();
+                let rows = 2, cols = 2, headers = [];
+                const dimMatch = inner.match(/^(\d+)[xX](\d+)$/);
+                if (dimMatch) {
+                    rows = Math.min(10, Math.max(1, parseInt(dimMatch[1], 10)));
+                    cols = Math.min(10, Math.max(1, parseInt(dimMatch[2], 10)));
+                } else {
+                    headers = inner.split('|').map(c => c.trim()).filter(c => c.length > 0);
+                    cols = Math.max(2, headers.length);
+                    rows = 2;
+                }
+                const tableModule = quill.getModule('table');
+                if (tableModule) {
+                    quill.deleteText(lineStart, offset, Quill.sources.USER);
+                    tableModule.insertTable(rows, cols);
+                    if (headers.length > 0 && !dimMatch) {
+                        setTimeout(() => {
+                            const sel = quill.getSelection();
+                            const anchor = sel ? sel.index : lineStart;
+                            const [curLine] = quill.getLine(anchor);
+                            const tableNode = (curLine && curLine.domNode && curLine.domNode.closest && curLine.domNode.closest('table')) || quill.root.querySelector('table:last-of-type');
+                            if (tableNode) {
+                                tableNode.querySelectorAll('tr:first-child td').forEach((td, idx) => {
+                                    if (headers[idx]) td.textContent = headers[idx];
+                                });
+                            }
+                        }, 20);
+                    }
+                    return;
+                }
+            }
+
+            const blockMatch = text.match(/^(#{1,6}|>\s*(?:\*|-|\+)\s+\[\s?\]|>\s*(?:\*|-|\+)\s+\[x\]|>\s*\[\s?\]|>\s*\[x\]|>\s*\d+\.|>\s*(?:\*|-|\+)|>|(?:\*|-|\+)\s+\[\s?\]|(?:\*|-|\+)\s+\[x\]|\*|-|\+|\d+\.|\-{3}|_{3}|\*{3}|`{3}[a-zA-Z0-9_\-+]*|\[\s?\]|\[x\])\s$/i);
+            if (blockMatch) {
+                const prefix = blockMatch[1];
+                const isListPrefix = /^(\*|-|\+|\d+\.|\[\s?\]|\[x\]|(?:\*|-|\+)\s+\[\s?\]|(?:\*|-|\+)\s+\[x\]|>\s*(?:\*|-|\+)|>\s*\d+\.|>\s*(?:\*|-|\+)\s+\[\s?\]|>\s*(?:\*|-|\+)\s+\[x\]|>\s*\[\s?\]|>\s*\[x\])$/i.test(prefix);
+                const deleteLength = prefix.length + 1;
+                const formatIndex = range.index - deleteLength;
+                const curLineFormats = (line && typeof line.formats === 'function') ? line.formats() : quill.getFormat(formatIndex);
+                const isInsideQuote = isLineInQuote(line, curLineFormats);
+
+                quill.deleteText(formatIndex, deleteLength, Quill.sources.USER);
+                _lastAutoConvertedList = isListPrefix ? { lineIndex: formatIndex, prefix, isInsideQuote, timestamp: Date.now() } : null;
+
+                if (/^#{1,6}$/.test(prefix)) {
+                    quill.formatLine(formatIndex, 1, 'header', prefix.length, Quill.sources.SILENT);
+                } else if (/^>\s*(?:\*|-|\+)\s+\[\s?\]$/i.test(prefix) || /^>\s*\[\s?\]$/i.test(prefix)) {
+                    quill.formatLine(formatIndex, 1, 'list', 'unchecked', Quill.sources.USER);
+                    quill.formatLine(formatIndex, 1, 'quote-item', true, Quill.sources.USER);
+                } else if (/^>\s*(?:\*|-|\+)\s+\[x\]$/i.test(prefix) || /^>\s*\[x\]$/i.test(prefix)) {
+                    quill.formatLine(formatIndex, 1, 'list', 'checked', Quill.sources.USER);
+                    quill.formatLine(formatIndex, 1, 'quote-item', true, Quill.sources.USER);
+                } else if (/^>\s*\d+\.$/i.test(prefix)) {
+                    quill.formatLine(formatIndex, 1, 'list', 'ordered', Quill.sources.USER);
+                    quill.formatLine(formatIndex, 1, 'quote-item', true, Quill.sources.USER);
+                } else if (/^>\s*(\*|-|\+)$/i.test(prefix)) {
+                    quill.formatLine(formatIndex, 1, 'list', 'bullet', Quill.sources.USER);
+                    quill.formatLine(formatIndex, 1, 'quote-item', true, Quill.sources.USER);
+                } else if (prefix === '>') {
+                    quill.formatLine(formatIndex, 1, 'blockquote', true, Quill.sources.SILENT);
+                } else if (/^(\*|-|\+)\s+\[\s?\]$/i.test(prefix) || /^\[\s?\]$/.test(prefix)) {
+                    quill.formatLine(formatIndex, 1, 'list', 'unchecked', Quill.sources.USER);
+                    if (isInsideQuote) quill.formatLine(formatIndex, 1, 'quote-item', true, Quill.sources.USER);
+                } else if (/^(\*|-|\+)\s+\[x\]$/i.test(prefix) || /^\[x\]$/i.test(prefix)) {
+                    quill.formatLine(formatIndex, 1, 'list', 'checked', Quill.sources.USER);
+                    if (isInsideQuote) quill.formatLine(formatIndex, 1, 'quote-item', true, Quill.sources.USER);
+                } else if (prefix === '*' || prefix === '-' || prefix === '+') {
+                    quill.formatLine(formatIndex, 1, 'list', 'bullet', Quill.sources.USER);
+                    if (isInsideQuote) quill.formatLine(formatIndex, 1, 'quote-item', true, Quill.sources.USER);
+                } else if (/^\d+\.$/.test(prefix)) {
+                    quill.formatLine(formatIndex, 1, 'list', 'ordered', Quill.sources.USER);
+                    if (isInsideQuote) quill.formatLine(formatIndex, 1, 'quote-item', true, Quill.sources.USER);
+                } else if (prefix === '---' || prefix === '___' || prefix === '***') {
+                    const Delta = Quill.import('delta');
+                    const delta = new Delta();
+                    if (formatIndex > 0) delta.retain(formatIndex);
+                    delta.insert({ divider: true });
+                    if (formatIndex >= quill.getLength() - 1) delta.insert('\n');
+                    quill.updateContents(delta, Quill.sources.USER);
+                    quill.setSelection(formatIndex + 1, 0, Quill.sources.USER);
+                } else if (/^`{3}/.test(prefix)) {
+                    let lang = prefix.replace(/^`{3}/, '').toLowerCase().trim();
+                    const aliases = { js: 'javascript', ts: 'typescript', py: 'python', sh: 'bash', shell: 'bash', zsh: 'bash', 'c++': 'cpp', 'c#': 'csharp', yml: 'yaml', md: 'markdown', htm: 'html' };
+                    if (aliases[lang]) lang = aliases[lang];
+                    quill.formatLine(formatIndex, 1, 'code-block', lang || true, Quill.sources.USER);
+                }
+                return;
+            }
+
+            const fullText = quill.getText(lineStart, offset);
+            function applyInlineFormat(matchText, content, formatName, formatValue = true) {
+                const start = lineStart + offset - matchText.length;
+                const hasKorean = /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(content);
+                setTimeout(() => {
+                    quill.deleteText(start, matchText.length, Quill.sources.USER);
+                    quill.insertText(start, content, { [formatName]: formatValue }, Quill.sources.USER);
+                    if (hasKorean) {
+                        quill.insertText(start + content.length, '\u200B', { [formatName]: false }, Quill.sources.USER);
+                        quill.setSelection(start + content.length + 1, Quill.sources.SILENT);
+                        quill.format(formatName, false, Quill.sources.USER);
+                    } else {
+                        quill.insertText(start + content.length, ' ', { [formatName]: false }, Quill.sources.USER);
+                        quill.setSelection(start + content.length + 1, Quill.sources.SILENT);
+                    }
+                }, 10);
+            }
+
+            const boldMatch = fullText.match(/\*\*(.+?)\*\* $/);
+            if (boldMatch) { applyInlineFormat(boldMatch[0], boldMatch[1], 'bold'); return; }
+            const strikeMatch = fullText.match(/~~(.+?)~~ $/);
+            if (strikeMatch) { applyInlineFormat(strikeMatch[0], strikeMatch[1], 'strike'); return; }
+            const highlightMatch = fullText.match(/==(.+?)== $/);
+            if (highlightMatch) { applyInlineFormat(highlightMatch[0], highlightMatch[1], 'background', '#fef08a'); return; }
+            const underMatch = fullText.match(/__(.+?)__ $/);
+            if (underMatch) { applyInlineFormat(underMatch[0], underMatch[1], 'underline'); return; }
+            const italicMatch = fullText.match(/(\*|_)(.+?)\1 $/);
+            if (italicMatch) { applyInlineFormat(italicMatch[0], italicMatch[2], 'italic'); return; }
+            const codeMatch = fullText.match(/`([^`]+)` $/);
+            if (codeMatch) { applyInlineFormat(codeMatch[0], codeMatch[1], 'code'); return; }
+
+            const linkMdMatch = fullText.match(/\[([^\]]+)\]\(([^)]+)\) $/);
+            if (linkMdMatch) {
+                const matchedStr = linkMdMatch[0], label = linkMdMatch[1].trim(), rawUrl = linkMdMatch[2].trim();
+                if (label && rawUrl) {
+                    const cleanUrl = normalizeLinkInput(rawUrl);
+                    const start = range.index - matchedStr.length;
+                    setTimeout(() => {
+                        quill.deleteText(start, matchedStr.length, Quill.sources.USER);
+                        quill.insertText(start, label, 'link', cleanUrl, Quill.sources.USER);
+                        quill.insertText(start + label.length, ' ', { link: false }, Quill.sources.USER);
+                        quill.setSelection(start + label.length + 1, 0, Quill.sources.SILENT);
+                        quill.format('link', false, Quill.sources.SILENT);
+                    }, 10);
+                }
+            }
+        };
+
+        quill.root.addEventListener('keydown', onRootKeyDownCapture, true);
+        quill.root.addEventListener('click', onRootLinkClick);
+        quill.root.addEventListener('click', onCheckLegacyClick, true);
+        quill.root.addEventListener('paste', onPasteCapture, true);
+        quill.root.addEventListener('dragover', onDragOver);
+        quill.root.addEventListener('drop', onDrop, true);
+        quill.on('text-change', onTextChange);
+
+        _cleanupFns.push(() => {
+            quill.root.removeEventListener('keydown', onRootKeyDownCapture, true);
+            quill.root.removeEventListener('click', onRootLinkClick);
+            quill.root.removeEventListener('click', onCheckLegacyClick, true);
+            quill.root.removeEventListener('paste', onPasteCapture, true);
+            quill.root.removeEventListener('dragover', onDragOver);
+            quill.root.removeEventListener('drop', onDrop, true);
+        });
+
+        return quill;
+    }
+
+    function getPlainText() {
+        if (!_activeQuill) return '';
+        return (_activeQuill.getText() || '').replace(/\u200B/g, '').trim();
+    }
+
+    function hasMediaOrEmbeds() {
+        if (!_activeQuill || !_activeQuill.root) return false;
+        return Boolean(_activeQuill.root.querySelector('img, iframe, hr, table, .ql-code-block-container'));
+    }
+
+    function getHtml() {
+        if (!_activeQuill || !_activeQuill.root) return '';
+        if (!getPlainText() && !hasMediaOrEmbeds()) return '';
+        const clone = _activeQuill.root.cloneNode(true);
+        clone.querySelectorAll('img.zen-img-multi-selected').forEach(img => {
+            img.classList.remove('zen-img-multi-selected');
+            if (img.classList.length === 0) img.removeAttribute('class');
+        });
+        return clone.innerHTML;
+    }
+
+    function getPrintHtml() {
+        if (!_activeQuill || !_activeQuill.root) return '';
+        if (!getPlainText() && !hasMediaOrEmbeds()) return '';
+        const clone = _activeQuill.root.cloneNode(true);
+        clone.querySelectorAll('img.zen-img-multi-selected').forEach(img => {
+            img.classList.remove('zen-img-multi-selected');
+            if (img.classList.length === 0) img.removeAttribute('class');
+        });
+        clone.querySelectorAll('select.ql-ui').forEach(el => el.remove());
+        return '<div class="ql-editor little-note-view">' + clone.innerHTML + '</div>';
+    }
+
+    function insertSpecialChar(ch) {
+        if (!ch || !_activeQuill) return false;
+        const Quill = global.Quill;
+        _activeQuill.focus();
+        let index = 0;
+        if (_savedSpecialCharRange && typeof _savedSpecialCharRange.index === 'number') {
+            index = _savedSpecialCharRange.index;
+        } else {
+            const curSel = _activeQuill.getSelection();
+            index = curSel ? curSel.index : Math.max(0, _activeQuill.getLength() - 1);
+        }
+        _activeQuill.insertText(index, ch, Quill.sources.USER);
+        _savedSpecialCharRange = { index: index + ch.length, length: 0 };
+        _activeQuill.setSelection(_savedSpecialCharRange.index, 0, Quill.sources.SILENT);
+        return true;
+    }
+
+    function applyLinkFromModal({ url, text, remove } = {}) {
+        if (!_activeQuill) return;
+        const Quill = global.Quill;
+        const state = _pendingLinkState;
+        _pendingLinkState = null;
+        _activeQuill.focus();
+        if (!state) return;
+
+        if (remove) {
+            _activeQuill.setSelection(state.range.index, state.range.length, Quill.sources.SILENT);
+            _activeQuill.format('link', false, Quill.sources.USER);
+            return;
+        }
+        const cleanUrl = normalizeLinkInput(url || '');
+        if (!cleanUrl) return;
+
+        if (state.isEdit && state.range.length > 0) {
+            const existingText = _activeQuill.getText(state.range.index, state.range.length);
+            const nextLabel = (text && text.trim()) ? text.trim() : existingText;
+            if (nextLabel !== existingText) {
+                _activeQuill.deleteText(state.range.index, state.range.length, Quill.sources.USER);
+                _activeQuill.insertText(state.range.index, nextLabel, { link: cleanUrl }, Quill.sources.USER);
+                _activeQuill.setSelection(state.range.index + nextLabel.length, 0, Quill.sources.SILENT);
+            } else {
+                _activeQuill.formatText(state.range.index, state.range.length, 'link', cleanUrl, Quill.sources.USER);
+                _activeQuill.setSelection(state.range.index + state.range.length, 0, Quill.sources.SILENT);
+            }
+            _activeQuill.format('link', false, Quill.sources.SILENT);
+            return;
+        }
+
+        if (state.hasSelection && state.range.length > 0) {
+            _activeQuill.setSelection(state.range.index, state.range.length, Quill.sources.SILENT);
+            _activeQuill.format('link', cleanUrl, Quill.sources.USER);
+            _activeQuill.setSelection(state.range.index + state.range.length, 0, Quill.sources.SILENT);
+            _activeQuill.format('link', false, Quill.sources.SILENT);
+            return;
+        }
+
+        const label = (text && text.trim()) ? text.trim() : cleanUrl;
+        _activeQuill.insertText(state.range.index, label, 'link', cleanUrl, Quill.sources.USER);
+        _activeQuill.insertText(state.range.index + label.length, ' ', { link: false }, Quill.sources.USER);
+        _activeQuill.setSelection(state.range.index + label.length + 1, 0, Quill.sources.SILENT);
+        _activeQuill.format('link', false, Quill.sources.SILENT);
+    }
+
+    function cancelLinkFromModal() {
+        const state = _pendingLinkState;
+        _pendingLinkState = null;
+        if (_activeQuill) {
+            _activeQuill.focus();
+            if (state && state.range) _activeQuill.setSelection(state.range.index, state.range.length);
+        }
+    }
+
+    function handleEscape() {
+        if (_isLightboxOpenFn && _isLightboxOpenFn()) {
+            _closeLightboxFn();
+            return true;
+        }
+        const videoModal = document.getElementById('videoInsertModal');
+        if (videoModal && videoModal.open) {
+            if (_closeVideoModalFn) _closeVideoModalFn();
+            else videoModal.close();
+            return true;
+        }
+        const mdHelp = document.getElementById('markdownHelpModal');
+        if (mdHelp && mdHelp.open) {
+            closeMarkdownHelpModal();
+            return true;
+        }
+        const tblToolbarMenu = _activeOverlayHost ? _activeOverlayHost.querySelector('#zen-table-toolbar-menu') : document.getElementById('zen-table-toolbar-menu');
+        if (tblToolbarMenu && tblToolbarMenu.style.display === 'block') {
+            if (_closeTableToolbarMenuFn) _closeTableToolbarMenuFn();
+            return true;
+        }
+        const imgMenu = _activeOverlayHost ? _activeOverlayHost.querySelector('#image-context-menu') : document.getElementById('image-context-menu');
+        if (imgMenu && imgMenu.style.display === 'block') {
+            if (_hideImageMenuFn) _hideImageMenuFn();
+            return true;
+        }
+        const tblMenu = _activeOverlayHost ? _activeOverlayHost.querySelector('#table-context-menu') : document.getElementById('table-context-menu');
+        if (tblMenu && tblMenu.style.display === 'block') {
+            if (_hideTableMenuFn) _hideTableMenuFn();
+            return true;
+        }
+        if (_hasImageSelectionFn && _hasImageSelectionFn()) {
+            if (_hideResizerFn) _hideResizerFn();
+            return true;
+        }
+        return false;
+    }
+
+    global.LittleNoteEditor = {
+        mount,
+        unmount,
+        handleEscape,
+        getActiveQuill: () => _activeQuill,
+        getHtml,
+        getPrintHtml,
+        getPlainText,
+        hasMediaOrEmbeds,
+        setEnabled: (enabled) => { if (_activeQuill) _activeQuill.enable(Boolean(enabled)); },
+        focus: () => { if (_activeQuill) _activeQuill.focus(); },
+        insertSpecialChar,
+        captureSelectionRange: () => { if (_activeQuill) _savedSpecialCharRange = _activeQuill.getSelection(); },
+        applyLinkFromModal,
+        cancelLinkFromModal,
+        openMarkdownHelpModal,
+        closeMarkdownHelpModal,
+        isQuillHtml,
+        legacyMarkdownToQuillHtml,
+        stripHtmlToPlainText,
+        normalizeLinkInput,
+        isLocalFileOrFolderPath
+    };
+})(window);
